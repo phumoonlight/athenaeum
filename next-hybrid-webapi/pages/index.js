@@ -30,7 +30,10 @@ export default () => {
   const handleInput = ({ target }) => {
     const { files } = target
     try {
+      console.log(files)
       const re = mapObject(files)
+      console.log(re)
+      console.log(Array.from(files))
       re.map(eachFile => handleUpload(eachFile))
       const reurl = re.map(eachFile => URL.createObjectURL(eachFile))
       setImg([...imgs, ...reurl])
