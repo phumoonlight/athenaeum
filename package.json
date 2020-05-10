@@ -1,0 +1,11 @@
+{
+  "name": "athenaeum",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/phumoonlight/athenaeum.git",
+  "author": "Phusan Moonmuang <phumoonlight@hotmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "cd next-hybrid-webapi && yarn dev"
+  }
+}
