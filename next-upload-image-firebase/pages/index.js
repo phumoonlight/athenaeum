@@ -1,60 +1,51 @@
-import React from 'react'
-import useContent from '../src/useContent'
-import ref from '../src/useFirebaseApp'
-import getRandomString from '../src/getRandomString'
+import รีแอค from 'react'
+import คลัง from '../src/useFirebaseApp'
+import สุ่มตัวอักษร from '../src/getRandomString'
 
-const mapObject = (obj) => {
-  const keys = Object.keys(obj)
-  return keys.map((key) => obj[key])
-}
+const พิ้มพ์ = console.log
+const ใช้สถานะ = รีแอค.useState
+
+พิ้มพ์('ทดสอบ')
 
 export default () => {
-  const [imgs, setImg] = React.useState([])
-  const [d, setd] = React.useState(false)
-  const content = useContent();
+  const [รูปภาพ, เซดรูปภาพ] = ใช้สถานะ([])
+  const [ลากอยู่มั้ย, เซตค่าการลาก] = ใช้สถานะ(false)
 
-  const handleUpload = async (file) => {
+  const อัพโหลดรูป = async (ไฟล์) => {
     try {
-      console.info(file)
-      const formattedFileName = `${+new Date()}-${getRandomString(10)}`
-      const metadata = { contentType: file.type }
-      const uploadResult = await ref.child(formattedFileName).put(file, metadata)
-      console.log(uploadResult)
-      const fileUrl = await uploadResult.ref.getDownloadURL()
-      console.log(fileUrl)
-    } catch (error) {
-      console.error('error', error)
-    }
-  }
-
-  const handleInput = ({ target }) => {
-    const { files } = target
-    try {
-      console.log(files)
-      const re = mapObject(files)
-      console.log(re)
-      console.log(Array.from(files))
-      re.map(eachFile => handleUpload(eachFile))
-      const reurl = re.map(eachFile => URL.createObjectURL(eachFile))
-      setImg([...imgs, ...reurl])
+      const ชื่อใหม่ไฟล์ = `${+new Date()}-${สุ่มตัวอักษร(10)}`
+      const เมทาดาต้า = { contentType: ไฟล์.type }
+      const ผลลัพธ์ = await คลัง.child(ชื่อใหม่ไฟล์).put(ไฟล์, เมทาดาต้า)
+      const fileUrl = await ผลลัพธ์.คลัง.getDownloadURL()
     } catch (e) {
       console.error(e)
     }
   }
-  console.log(imgs)
+
+  const จัดการอินพุต = ({ target }) => {
+    try {
+      const { files } = target
+      const ไฟล์รูปแบบอาเรย์ = Array.from(files)
+      ไฟล์รูปแบบอาเรย์.map(ไฟล์ => อัพโหลดรูป(ไฟล์))
+      const urlของไฟล์ = ไฟล์รูปแบบอาเรย์.map(ไฟล์ => URL.createObjectURL(ไฟล์))
+      เซดรูปภาพ([...รูปภาพ, ...urlของไฟล์])
+    } catch (e) {
+      console.error(e)
+    }
+  }
   return (
     <div>
       <input
         type="file"
-        onChange={handleInput}
-        style={{ background: d ? 'red': '#487EB0' }}
-        onDragEnter={() => setd(true)}
-        onDragLeave={() => setd(false)}
-        onDragEnd={() => ''}
+        onChange={จัดการอินพุต}
+        style={{ background: ลากอยู่มั้ย ? 'red': '#487EB0' }}
+        onDragEnter={() => เซตค่าการลาก(true)}
+        onDragLeave={() => เซตค่าการลาก(false)}
+        onDragEnd={() => เซตค่าการลาก(false)}
         accept="image/*"
         multiple
       />
-      {imgs.map(image => <img key={image} src={image} width="50%" />)}
+      {รูปภาพ.map(image => <img key={image} src={image} width="50%" />)}
     </div>
   )
 }
