@@ -1,6 +1,8 @@
 import รีแอค from 'react'
 import คลัง from '../src/useFirebaseApp'
 import สุ่มตัวอักษร from '../src/getRandomString'
+import useLocal from '../src/useLocalStorage'
+import css from '../src/styles.module.css'
 
 const พิ้มพ์ = console.log
 const ใช้สถานะ = รีแอค.useState
@@ -10,13 +12,14 @@ const ใช้สถานะ = รีแอค.useState
 export default () => {
   const [รูปภาพ, เซดรูปภาพ] = ใช้สถานะ([])
   const [ลากอยู่มั้ย, เซตค่าการลาก] = ใช้สถานะ(false)
+  const [v, setv] = useLocal('test-key', 'init')
 
   const อัพโหลดรูป = async (ไฟล์) => {
     try {
       const ชื่อใหม่ไฟล์ = `${+new Date()}-${สุ่มตัวอักษร(10)}`
       const เมทาดาต้า = { contentType: ไฟล์.type }
       const ผลลัพธ์ = await คลัง.child(ชื่อใหม่ไฟล์).put(ไฟล์, เมทาดาต้า)
-      const fileUrl = await ผลลัพธ์.คลัง.getDownloadURL()
+      const fileUrl = await ผลลัพธ์.ref.getDownloadURL()
     } catch (e) {
       console.error(e)
     }
@@ -35,17 +38,24 @@ export default () => {
   }
   return (
     <div>
-      <input
-        type="file"
-        onChange={จัดการอินพุต}
-        style={{ background: ลากอยู่มั้ย ? 'red': '#487EB0' }}
-        onDragEnter={() => เซตค่าการลาก(true)}
-        onDragLeave={() => เซตค่าการลาก(false)}
-        onDragEnd={() => เซตค่าการลาก(false)}
-        accept="image/*"
-        multiple
-      />
+      <div className={css.wrapper}>
+        <button className={css.uploadLabel}>Click here to upload your image or Drag your image here</button>
+        <input
+          className={css.uploadInput}
+          type="file"
+          onChange={จัดการอินพุต}
+          onDragEnter={() => เซตค่าการลาก(true)}
+          onDragLeave={() => เซตค่าการลาก(false)}
+          onDragEnd={() => เซตค่าการลาก(false)}
+          onDragExit={() => เซตค่าการลาก(false)}
+          accept="image/*"
+          multiple
+        />
+      </div>
+
+
       {รูปภาพ.map(image => <img key={image} src={image} width="50%" />)}
+      <input onChange={({ target }) => setv(target.value)} value={v} />
     </div>
   )
 }
