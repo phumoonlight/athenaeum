@@ -1,0 +1,12 @@
+{
+  "name": "learn-nuxt",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nuxt"
+  },
+  "dependencies": {
+    "nuxt": "^2.14.1"
+  }
+}
