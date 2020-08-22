@@ -5,7 +5,8 @@ const db = mongoose.connection;
 
 
 const kittySchema = new mongoose.Schema({
-  name: String
+  name: String,
+  age: Number
 });
 const Kitten = mongoose.model('Kitten', kittySchema);
 
