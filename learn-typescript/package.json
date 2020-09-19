@@ -1,30 +1,15 @@
 {
-  "name": "basic-typescript",
+  "name": "learn-ts",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "next",
-    "build": "next build",
-    "start": "next start"
+    "dev": "ts-node index.ts",
+    "build": "tsc *.ts",
+    "start": "node index.js"
   },
   "devDependencies": {
-    "@types/node": "^13.13.5",
-    "@types/react": "^16.9.34",
-    "@typescript-eslint/eslint-plugin": "^2.31.0",
-    "@typescript-eslint/parser": "^2.31.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb": "^18.1.0",
-    "eslint-plugin-import": "2.20.1",
-    "eslint-plugin-jsx-a11y": "6.2.3",
-    "eslint-plugin-react": "7.19.0",
-    "eslint-plugin-react-hooks": "2.5.0",
-    "ts-node": "^8.10.1",
-    "typescript": "^3.8.3"
-  },
-  "dependencies": {
-    "next": "^9.3.6",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
   }
 }
