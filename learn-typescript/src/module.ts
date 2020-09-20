@@ -1,1 +1,0 @@
-export const someModule = () => console.log('module')
