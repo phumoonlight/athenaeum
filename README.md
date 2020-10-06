@@ -1,2 +1,3 @@
 # athenaeum
-Learning library. For research purposes!
+
+My universal learning library. For research purposes!
