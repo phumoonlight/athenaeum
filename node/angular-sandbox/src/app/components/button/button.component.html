@@ -1,1 +1,6 @@
-<p>button works!</p>
+<button [ngClass]="styled && 'styled'">
+  <ng-content select="[main]"></ng-content>
+</button>
+<button *ngIf="double">
+  <ng-content select="[double]"></ng-content>
+</button>
