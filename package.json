@@ -6,6 +6,6 @@
   "author": "Phusan Moonmuang <phumoonlight@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev:next-playground": "cd node/next-playground && yarn dev"
+    "dev:next": "cd node/next && yarn dev"
   }
 }
