@@ -1,3 +1,0 @@
-interface Gatherer {
-  name: string;
-}
