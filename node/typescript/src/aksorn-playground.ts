@@ -18,4 +18,4 @@ const hardCodedSearchSchool = async (startPage: number, schoolCode: string) => {
   hardCodedSearchSchool(startPage + 1, schoolCode)
 }
 
-hardCodedSearchSchool(1, '1095440041')
+hardCodedSearchSchool(625, '9999990435')
