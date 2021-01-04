@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.color-v {
+  color: #41b883;
+}
+
+.font-sans-serif {
+  font-family: sans-serif;
+}
