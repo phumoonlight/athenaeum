@@ -1,7 +1,7 @@
 import Axios from 'axios'
 
 const hardCodedSearchSchool = async (startPage: number, schoolCode: string) => {
-  console.info('current-page:', startPage)
+  console.info(new Date() ,'current-page:', startPage)
   const response =  await Axios.get(`https://backoffice-api.aksorn-dev.mydevkit.me/api/schools?pageNumber=${startPage}&pageSize=100`, {
     headers: {
       'X-API-KEY': 'rsBc9vJi9Tq1yilyLjpdHXKKLRtmmXwl'
@@ -18,4 +18,4 @@ const hardCodedSearchSchool = async (startPage: number, schoolCode: string) => {
   hardCodedSearchSchool(startPage + 1, schoolCode)
 }
 
-hardCodedSearchSchool(625, '9999990435')
+hardCodedSearchSchool(1, '3110011207')
