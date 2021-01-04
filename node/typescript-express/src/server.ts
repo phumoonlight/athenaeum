@@ -1,43 +1,38 @@
-import express from 'express'
+import express, { Express } from 'express'
 import compression from 'compression'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 
 import { NexusCore } from './nexus/nexus.core'
+import { IndexResponse } from './models/IndexResponse'
 
-export namespace Server {
-  const PORT = 4000
-  const LOG_PREFIX = '[server]'
-  const server = express()
-  server.use(compression())
-  server.use(cors())
-  server.use(bodyParser.json())
-  server.use(NexusCore.PRESET_PATH, NexusCore.operationHandler())
+export class Server {
+  private readonly LOG_PREFIX = '[server]'
+  private readonly PORT = 4000
+  private express: Express
 
-  server.get('/', (request, response) => {
-    response.status(200).json({
-      status_message: 'ok',
+  constructor() {
+    this.express = express()
+    this.express.use(compression())
+    this.express.use(cors())
+    this.express.use(bodyParser.json())
+    this.express.use(NexusCore.PRESET_PATH, NexusCore.operationHandler())
+
+    this.express.get('/', (request, response) => {
+      const indexResponse = new IndexResponse()
+      indexResponse.message = 'ok'
+      response.status(200).json(indexResponse)
     })
-  })
 
-  server.get('/favicon.ico', (request, response) => {
-    response.status(204).end()
-  })
+    this.express.get('/favicon.ico', (request, response) => {
+      response.status(204).end()
+    })
+  }
 
-  // server.use('/tagcollections', TagCollectionRouter.router)
-  // app.get('/', (req, res) => {
-  //   res.status(StatusCode.successOk).json({
-  //     author_github: Config.url.authorGithub,
-  //     github_repo_url: Config.url.repository,
-  //     backoffice_url: Config.url.backoffice,
-  //     available_routes: Config.availableRoutes,
-  //   })
-  // })
-
-  export const start = () => {
-    server.listen(PORT, () => {
-      console.info(LOG_PREFIX, 'app listening')
-      console.info(LOG_PREFIX, `port: ${PORT}`)
+  start() {
+    this.express.listen(this.PORT, () => {
+      console.info(this.LOG_PREFIX, 'app listening')
+      console.info(this.LOG_PREFIX, `port: ${this.PORT}`)
     })
   }
 }
