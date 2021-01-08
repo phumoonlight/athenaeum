@@ -1,0 +1,55 @@
+body {
+  background-color: #2B2E3B;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  text-align: center;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  font-size: 2.5rem;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: white;
+}
+
+.color-electron {
+  color: #9FEAF9;
+}
+
+.icon-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.icon-wrapper img {
+  width: 25%;
+}
+
+.test-button-wrapper {
+  margin-top: 2.5rem;
+}
+
+.test-button-wrapper button {
+  width: 100px;
+  padding: 10px;
+}
+
+.test-input-wrapper {
+  margin-top: 2.5rem;
+}
+
+.test-input-wrapper input {
+  width: 250px;
+  padding: 10px;
+}
+
+.test-output-wrapper {
+  font-family: sans-serif;
+  color: white;
+  font-size: 20px;
+  margin-top: 2.5rem;
+}
