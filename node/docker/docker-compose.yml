@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  athena:
+    # build: .
+    image: node:12-alpine
+    command: 'ls'
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - 8000:8000
+    # volumes: 
+    #   - .:/usr

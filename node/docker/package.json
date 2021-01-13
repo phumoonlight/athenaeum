@@ -1,0 +1,15 @@
+{
+  "name": "docker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build:image": "docker build -t athenaeum-docker .",
+    "start:container": "docker run -p 8888:8888 athenaeum-docker",
+    "test": "yarn build:image && yarn start:container"
+  },
+  "dependencies": {
+    "esm": "^3.2.25",
+    "express": "^4.17.1"
+  }
+}
