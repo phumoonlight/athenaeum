@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'Anuphan';
+  src: url('/fonts/anuphan-regular.otf');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

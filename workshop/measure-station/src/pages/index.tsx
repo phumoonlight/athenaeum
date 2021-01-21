@@ -20,8 +20,8 @@ const Index: React.FC = () => {
       <Green>G</Green>
       <Blue className="">B</Blue>
       <div className="text-5xl">TWST</div>
-      <span className="custom-me"></span>
-      hello
+      <span className="custom-me font-anuphan">ได้รับการยอมรับ</span>
+      
     </div>
   )
 }
