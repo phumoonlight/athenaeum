@@ -1,12 +1,12 @@
 @font-face {
   font-family: 'Anuphan';
-  src: url('/fonts/anuphan-regular.otf');
+  src: url('/fonts/Anuphan-Regular.otf');
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.custom-me {
-  color: violet;
+* {
+  font-family: Anuphan;
 }
