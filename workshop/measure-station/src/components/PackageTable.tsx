@@ -3,25 +3,7 @@ import styled from 'styled-components'
 import { Table } from 'antd'
 
 import { dataSource, Package } from '../constants/data'
-
-const CustomButton = styled.button`
-  border-radius: 4px;
-  background-color: #4db3b2;
-  padding: 12px 18px 12px 19px;
-  width: 140px;
-  height: 40px;
-  font-family: Anuphan;
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 1.14;
-  letter-spacing: 1.25px;
-  text-align: center;
-  color: #ffffff;
-  margin-left: 25px;
-  margin-right: 25px;
-  margin-top: 32px;
-  margin-bottom: 32px;
-`
+import { GreenButton } from '../components/Button'
 
 const Container = styled.div`
   border-radius: 8px;
@@ -61,7 +43,10 @@ const CustomTable = styled(Table)`
     padding-bottom: 8px;
     border-bottom: none;
   }
-  tr:nth-child(odd) {
+  .ant-table-tbody > tr.ant-table-row:hover > td {
+    background: none;
+  }
+  .ant-table-tbody tr:nth-child(odd) {
     background-color: #f8fbfa;
   }
 `
@@ -76,11 +61,29 @@ const IconChecked: React.FC = () => {
 
 export const PackageTable: React.FC = () => {
   return (
-    <Container>
+    <Container id="package">
       <CustomTable
         className="font-anuphan"
         dataSource={dataSource}
         pagination={false}
+        summary={() => (
+          <Table.Summary.Row>
+            <Table.Summary.Cell index={0}>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={0}>
+              <GreenButton className="mx-7 my-4">เลือกแพ็กเกจนี้</GreenButton>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={0}>
+              <GreenButton className="mx-7 my-4">เลือกแพ็กเกจนี้</GreenButton>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={0}>
+              <GreenButton className="mx-7 my-4">เลือกแพ็กเกจนี้</GreenButton>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={0}>
+              <GreenButton className="mx-7 my-4">เลือกแพ็กเกจนี้</GreenButton>
+            </Table.Summary.Cell>
+          </Table.Summary.Row>
+        )}
       >
         <Table.Column
           className="col-feature"
@@ -134,12 +137,6 @@ export const PackageTable: React.FC = () => {
           }}
         />
       </CustomTable>
-      <div className="flex justify-end">
-        <CustomButton>เลือกแพ็กเกจนี้</CustomButton>
-        <CustomButton>เลือกแพ็กเกจนี้</CustomButton>
-        <CustomButton>เลือกแพ็กเกจนี้</CustomButton>
-        <CustomButton>เลือกแพ็กเกจนี้</CustomButton>
-      </div>
     </Container>
   )
 }

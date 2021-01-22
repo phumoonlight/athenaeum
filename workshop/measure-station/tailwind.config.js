@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'anuphan': ['Anuphan']
+        'anuphan': ['Anuphan-Regular'],
+        'serif-pro': ['SourceSerifPro-SemiBold']
       }
     },
   },
