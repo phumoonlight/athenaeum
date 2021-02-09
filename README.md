@@ -1,3 +1,3 @@
 # athenaeum
 
-My universal learning library. For research purposes!
+Workspace for learning and practice.
