@@ -1,3 +1,5 @@
-import { Server } from './server'
+import { listen } from './server'
 
-Server.start()
+const PORT: number = 4000
+
+listen(PORT)

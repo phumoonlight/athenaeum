@@ -1,38 +1,22 @@
-import express, { Express } from 'express'
+import express, { Express, Request, Response } from 'express'
+import { json } from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
-import bodyParser from 'body-parser'
 
-import { NexusCore } from './nexus/nexus.core'
-import { IndexResponse } from './models/IndexResponse'
+const LOG_PREFIX: string = '[server]'
+const server: Express = express()
 
-export class Server {
-  private readonly LOG_PREFIX = '[server]'
-  private readonly PORT = 4000
-  private express: Express
+server.use(compression())
+server.use(cors())
+server.use(json())
 
-  constructor() {
-    this.express = express()
-    this.express.use(compression())
-    this.express.use(cors())
-    this.express.use(bodyParser.json())
-    this.express.use(NexusCore.PRESET_PATH, NexusCore.operationHandler())
+server.get('/favicon.ico', (req: Request, res: Response) => {
+  res.status(204)
+  res.end()
+})
 
-    this.express.get('/', (request, response) => {
-      const indexResponse = new IndexResponse()
-      indexResponse.message = 'ok'
-      response.status(200).json(indexResponse)
-    })
-
-    this.express.get('/favicon.ico', (request, response) => {
-      response.status(204).end()
-    })
-  }
-
-  start() {
-    this.express.listen(this.PORT, () => {
-      console.info(this.LOG_PREFIX, 'app listening')
-      console.info(this.LOG_PREFIX, `port: ${this.PORT}`)
-    })
-  }
+export const listen = (port: number): void => {
+  server.listen(port, () => {
+    console.info(LOG_PREFIX, `listening at port: ${port}`)
+  })
 }
