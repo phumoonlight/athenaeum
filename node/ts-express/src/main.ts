@@ -1,4 +1,4 @@
-import { listen } from './server'
+import { listen } from './app'
 
 const PORT: number = 4000
 
