@@ -4,6 +4,7 @@ import compression from 'compression'
 import cors from 'cors'
 import swagger from 'swagger-ui-express'
 
+import { getRequestLogger } from './logger'
 import { swaggerConfig } from './swagger/swagger.config'
 import { userController } from './core/user/user.controller'
 
@@ -13,6 +14,7 @@ app.use(compression())
 app.use(cors())
 app.use(json())
 app.use('/swagger', swagger.serve, swagger.setup(swaggerConfig))
+app.use(getRequestLogger())
 app.use('/users', userController)
 
 app.get('/favicon.ico', (req: Request, res: Response) => {
