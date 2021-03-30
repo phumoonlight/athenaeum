@@ -4,17 +4,18 @@ import compression from 'compression'
 import cors from 'cors'
 import swagger from 'swagger-ui-express'
 
-import { getRequestLogger } from './logger'
+import { getRequestLogger, RequestLogger } from './logger'
 import { swaggerConfig } from './swagger/swagger.config'
 import { userController } from './core/user/user.controller'
 
+const requestLogger: RequestLogger = getRequestLogger()
 const app: Express = express()
 
 app.use(compression())
 app.use(cors())
 app.use(json())
 app.use('/swagger', swagger.serve, swagger.setup(swaggerConfig))
-app.use(getRequestLogger())
+app.use(requestLogger)
 app.use('/users', userController)
 
 app.get('/favicon.ico', (req: Request, res: Response) => {
