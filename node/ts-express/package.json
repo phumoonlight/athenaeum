@@ -6,14 +6,20 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/main.ts",
     "build": "tsc",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js",
+    "migrate:run": "yarn typeorm migration:run",
+    "migrate:generate": "yarn typeorm migration:generate --name Migrate --pretty"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "mssql": "^6.3.1",
+    "reflect-metadata": "^0.1.13",
     "swagger-ui-express": "^4.1.6",
+    "typeorm": "^0.2.31",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

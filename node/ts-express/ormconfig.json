@@ -1,0 +1,14 @@
+{
+  "type": "mssql",
+  "host": "localhost",
+  "username": "sa",
+  "password": "Pa$$w0rd",
+  "database": "phumo",
+  "synchronize": false,
+  "logging": true,
+  "entities": ["src/core/**/*.entity.ts"],
+  "migrations": ["src/core/**/*.migration.ts"],
+  "options": {
+    "encrypt": true
+  }
+}
