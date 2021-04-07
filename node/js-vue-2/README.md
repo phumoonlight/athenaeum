@@ -1,4 +1,4 @@
-# javascript-vue
+# js-vue-2
 
 ## Project setup
 ```
