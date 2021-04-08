@@ -1,24 +1,25 @@
-import { getCount, getMappedCount } from './count.getter'
+import { getCount, getMappedCount, getLoadingStatus } from './count.getter'
+import { increaseCountAction, decreaseCountAction } from './count.action'
+import { increaseCountMutation, decreaseCountMutation, setIsLoadingMutation } from './count.mutation'
 
 export const countModule = {
   namespaced: true,
-  state: () => ({
-    globalCount: 0,
-  }),
+  state: {
+    count: 0,
+    isLoading: false,
+  },
   getters: {
     getCount,
     getMappedCount,
+    getLoadingStatus,
   },
   actions: {
-    countAction(context, val) {
-      console.log(val)
-      context.commit('mutateCount', val)
-    },
+    increaseCountAction,
+    decreaseCountAction,
   },
   mutations: {
-    mutateCount(state, result) {
-      console.log(result)
-      state.globalCount += 5
-    },
+    increaseCountMutation,
+    decreaseCountMutation,
+    setIsLoadingMutation,
   },
 }

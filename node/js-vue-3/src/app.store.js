@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 
 import { countModule } from './store/count/count.module'
+import { listModule } from './store/list/list.module'
 
 export const store = createStore({
   state: {},
@@ -8,5 +9,6 @@ export const store = createStore({
   actions: {},
   modules: {
     count: countModule,
+    list: listModule,
   },
 })

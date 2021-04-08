@@ -1,35 +1,55 @@
 <template>
   <div class="counter-root">
-    <div>Counter: {{ storeCount }}</div>
+    <div>Counter: {{ count }}</div>
     <div>Mapped Counter: {{ mappedCount }}</div>
-    <button @click="handleClick">click</button>
-    <button>click</button>
+    <button @click="onClickPlus">+</button>
+    <button @click="onClickMinus">-</button>
+    <div v-if="isLoading">Loading...</div>
+    <div>{{ localCount }}</div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
+import { mapGetters, useStore } from 'vuex'
+import {
+  increaseCountAction,
+  decreaseCountAction,
+} from '../store/count/count.action'
 
 export default defineComponent({
   name: 'counter',
   setup() {
-
+    const store = useStore()
+    console.log(store.state)
+    return {
+      localCount: '325',
+    }
   },
   computed: {
     ...mapGetters({
-      storeCount: 'count/getCount',
+      count: 'count/getCount',
       mappedCount: 'count/getMappedCount',
+      isLoading: 'count/getLoadingStatus',
     }),
   },
   methods: {
-    handleClick() {
-      this.$store.dispatch('count/countAction', 535)
+    onClickPlus() {
+      this.localCount = 5235
+      this.$store.dispatch(`count/${increaseCountAction.name}`, 1)
+      this.$emit('customEvent', this.localCount)
+    },
+    onClickMinus() {
+      this.$store.dispatch(`count/${decreaseCountAction.name}`, 1)
     },
   },
 })
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+button {
+  font-weight: bold;
+  width: 50px;
+  margin: 5px;
+}
 </style>
