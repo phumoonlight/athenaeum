@@ -1,5 +1,5 @@
 <template>
-  <div class="counter-root">
+  <div class="component-counter">
     <div>Counter: {{ count }}</div>
     <div>Mapped Counter: {{ mappedCount }}</div>
     <button @click="onClickPlus">+</button>
@@ -10,40 +10,46 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-import { mapGetters, useStore } from 'vuex'
+import { computed, ref, onMounted } from 'vue'
+import { useStore } from 'vuex'
 import {
   increaseCountAction,
   decreaseCountAction,
 } from '../store/count/count.action'
 
-export default defineComponent({
-  name: 'counter',
-  setup() {
+export default {
+  setup(props, context) {
+    const localCount = ref(325)
     const store = useStore()
-    console.log(store.state)
+
+    const count = computed(() => store.state.count.count)
+    const mappedCount = computed(() => store.state.count.count + 10)
+    const isLoading = computed(() => store.state.count.isLoading)
+
+    const onClickPlus = () => {
+      localCount.value = 5235
+      store.dispatch(`count/${increaseCountAction.name}`, 1)
+      context.emit('customEvent', localCount.value)
+    }
+
+    const onClickMinus = () => {
+      store.dispatch(`count/${decreaseCountAction.name}`, 1)
+    }
+
+    onMounted(() => {
+      console.info('counter mounted')
+    })
+
     return {
-      localCount: '325',
+      count,
+      mappedCount,
+      isLoading,
+      localCount,
+      onClickPlus,
+      onClickMinus,
     }
   },
-  computed: {
-    ...mapGetters({
-      count: 'count/getCount',
-      mappedCount: 'count/getMappedCount',
-      isLoading: 'count/getLoadingStatus',
-    }),
-  },
-  methods: {
-    onClickPlus() {
-      this.localCount = 5235
-      this.$store.dispatch(`count/${increaseCountAction.name}`, 1)
-      this.$emit('customEvent', this.localCount)
-    },
-    onClickMinus() {
-      this.$store.dispatch(`count/${decreaseCountAction.name}`, 1)
-    },
-  },
-})
+}
 </script>
 
 <style scoped>
