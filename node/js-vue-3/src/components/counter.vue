@@ -6,6 +6,7 @@
     <button @click="onClickMinus">-</button>
     <div v-if="isLoading">Loading...</div>
     <div>{{ localCount }}</div>
+    <slot name="me" />
   </div>
 </template>
 
