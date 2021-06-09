@@ -1,11 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"learn-gin/mymodule"
+)
 
 func main() {
-	fmt.Println("main")
-	helloworld()
-	constant()
-	variable()
-	sandbox()
+	mymodule.MyModuleSample()
+	// web.Run()
 }

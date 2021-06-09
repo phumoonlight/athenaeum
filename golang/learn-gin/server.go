@@ -6,8 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	etc()
+func startServer() {
 	route := gin.Default()
 
 	route.GET("/", func(context *gin.Context) {
@@ -22,5 +21,5 @@ func main() {
 		})
 	})
 
-	route.Run()
+	route.Run(`:%s`, "4000")
 }
