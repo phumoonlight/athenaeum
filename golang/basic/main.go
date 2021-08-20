@@ -1,10 +1,7 @@
 package main
 
-import (
-	"learn-gin/mymodule"
-)
+import _ "basic/practice"
 
 func main() {
-	mymodule.MyModuleSample()
-	// web.Run()
+
 }

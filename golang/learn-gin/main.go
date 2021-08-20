@@ -1,5 +1,7 @@
 package main
 
+import "learn-gin/internal/server"
+
 func main() {
-	startServer()
+	server.Serve()
 }
