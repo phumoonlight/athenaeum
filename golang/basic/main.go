@@ -1,11 +1,7 @@
 package main
 
-import "fmt"
+import _ "basic/practice"
 
 func main() {
-	fmt.Println("main")
-	helloworld()
-	constant()
-	variable()
-	sandbox()
+
 }
