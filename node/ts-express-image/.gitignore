@@ -1,4 +1,5 @@
 node_modules
-images/*
-!images/.gitkeep
+temp/*
+!temp/.gitkeep
+service-account.json
 

@@ -1,10 +1,12 @@
+import fs from 'fs'
 import express from 'express'
 import multer from 'multer'
+import { uploadFileToFirebase } from './firebase'
 
 const multerHandler = multer({
 	storage: multer.diskStorage({
 		destination(req, file, callback) {
-			callback(null, './images')
+			callback(null, './temp')
 		},
 		filename(req, file, callback) {
 			const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
@@ -29,6 +31,21 @@ app.get('/', (req, res) => {
 	res.send('OK')
 })
 
-app.post('/upload', multerHandler.single('avatar'), (req, res) => {
-	res.send('OK')
+app.post('/upload', multerHandler.single('avatar'), async (req, res) => {
+	const responseData = {
+		code: 1,
+		message: 'uploaded',
+	}
+	const isSuccess = await uploadFileToFirebase(req.file?.filename || '')
+	if (!isSuccess) {
+		res.status(500)
+		responseData.code = 0
+		responseData.message = 'failed to upload'
+		res.json(responseData)
+		return
+	}
+	// remove temp file after delay
+	setTimeout(() => fs.unlinkSync(req.file?.path || ''), 5000)
+	res.status(201)
+	res.json(responseData)
 })
