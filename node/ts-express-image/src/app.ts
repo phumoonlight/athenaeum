@@ -35,15 +35,17 @@ app.post('/upload', multerHandler.single('avatar'), async (req, res) => {
 	const responseData = {
 		code: 1,
 		message: 'uploaded',
+		uploadedUrl: '',
 	}
-	const isSuccess = await uploadFileToFirebase(req.file?.filename || '')
-	if (!isSuccess) {
+	const uploadedUrl = await uploadFileToFirebase(req.file?.filename || '')
+	if (!uploadedUrl) {
 		res.status(500)
 		responseData.code = 0
 		responseData.message = 'failed to upload'
 		res.json(responseData)
 		return
 	}
+	responseData.uploadedUrl = uploadedUrl
 	// remove temp file after delay
 	setTimeout(() => fs.unlinkSync(req.file?.path || ''), 5000)
 	res.status(201)
