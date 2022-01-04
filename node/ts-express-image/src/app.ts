@@ -1,19 +1,9 @@
-import fs from 'fs'
 import express from 'express'
 import multer from 'multer'
-import { uploadFileToFirebase } from './firebase'
+import { uploadFile } from './firebase'
 
-const multerHandler = multer({
-	storage: multer.diskStorage({
-		destination(req, file, callback) {
-			callback(null, './temp')
-		},
-		filename(req, file, callback) {
-			const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-			const [, fileExtension] = file.mimetype.split('/')
-			callback(null, `${file.fieldname}-${uniqueSuffix}.${fileExtension}`)
-		},
-	}),
+const uploadHandler = multer({
+	storage: multer.memoryStorage(),
 })
 
 export const app = express()
@@ -31,23 +21,29 @@ app.get('/', (req, res) => {
 	res.send('OK')
 })
 
-app.post('/upload', multerHandler.single('avatar'), async (req, res) => {
+app.post('/upload', uploadHandler.single('avatar'), async (req, res) => {
 	const responseData = {
 		code: 1,
 		message: 'uploaded',
 		uploadedUrl: '',
 	}
-	const uploadedUrl = await uploadFileToFirebase(req.file?.filename || '')
+	const fileSize = req.file?.size || 0
+	if (fileSize > 5 * 1024 * 1024) {
+		res.status(422)
+		responseData.code = 40001
+		responseData.message = 'maximum 5 mb allowed'
+		res.json(responseData)
+		return
+	}
+	const uploadedUrl = await uploadFile(req.file as Express.Multer.File)
 	if (!uploadedUrl) {
 		res.status(500)
-		responseData.code = 0
+		responseData.code = 500
 		responseData.message = 'failed to upload'
 		res.json(responseData)
 		return
 	}
 	responseData.uploadedUrl = uploadedUrl
-	// remove temp file after delay
-	setTimeout(() => fs.unlinkSync(req.file?.path || ''), 5000)
 	res.status(201)
 	res.json(responseData)
 })
