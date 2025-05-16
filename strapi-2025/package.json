@@ -1,5 +1,5 @@
 {
-  "name": "with-strapi",
+  "name": "strapi-2025",
   "version": "0.1.0",
   "private": true,
   "description": "A Strapi application",
@@ -38,7 +38,7 @@
     "npm": ">=6.0.0"
   },
   "strapi": {
-    "uuid": "2551b212-d639-4518-8327-75b44439e13b",
-    "installId": "c2dc67cf888163cfd13c07c0922da256a309e1c786b70ba4f0b6be1a8d4886bb"
+    "uuid": "dec4d7a9-fc3c-49a4-ba0f-663820560e6f",
+    "installId": "12ffb290d8c50df96e57acf04da2a8a37416e9adbf075594666eb3f45a4e3bac"
   }
 }
