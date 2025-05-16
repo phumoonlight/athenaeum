@@ -82,7 +82,6 @@ const afterclick = () => {
   console.log('hello', clicknumber)
 }
 
-const firstName = 'wannapon'
 const eatSnake = () => {}
 const doSomething = () => {}
 const convertStringToNumber = () => {}
