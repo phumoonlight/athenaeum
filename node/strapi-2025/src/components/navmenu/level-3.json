@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_navmenu_level_3s",
+  "info": {
+    "displayName": "level 3",
+    "icon": "apps",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  }
+}

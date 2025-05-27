@@ -9,6 +9,7 @@ export interface NavmenuLevel1 extends Struct.ComponentSchema {
   };
   attributes: {
     children: Schema.Attribute.Component<'navmenu.level-2', true>;
+    img: Schema.Attribute.Media<'images' | 'files' | 'videos'>;
     label: Schema.Attribute.String;
     url: Schema.Attribute.String;
   };
@@ -19,6 +20,21 @@ export interface NavmenuLevel2 extends Struct.ComponentSchema {
   info: {
     description: '';
     displayName: 'level 2';
+    icon: 'apps';
+  };
+  attributes: {
+    children: Schema.Attribute.Component<'navmenu.level-3', true>;
+    img: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    label: Schema.Attribute.String;
+    url: Schema.Attribute.String;
+  };
+}
+
+export interface NavmenuLevel3 extends Struct.ComponentSchema {
+  collectionName: 'components_navmenu_level_3s';
+  info: {
+    description: '';
+    displayName: 'level 3';
     icon: 'apps';
   };
   attributes: {
@@ -94,6 +110,7 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'navmenu.level-1': NavmenuLevel1;
       'navmenu.level-2': NavmenuLevel2;
+      'navmenu.level-3': NavmenuLevel3;
       'shared.media': SharedMedia;
       'shared.quote': SharedQuote;
       'shared.rich-text': SharedRichText;

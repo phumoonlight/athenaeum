@@ -11,7 +11,7 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "name": {
+    "bgColor": {
       "type": "string"
     },
     "items": {

@@ -17,6 +17,16 @@
       "type": "component",
       "repeatable": true,
       "component": "navmenu.level-2"
+    },
+    "img": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ]
     }
   }
 }
