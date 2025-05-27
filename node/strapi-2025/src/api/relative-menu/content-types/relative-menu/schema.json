@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "relative_menus",
+  "info": {
+    "singularName": "relative-menu",
+    "pluralName": "relative-menus",
+    "displayName": "Relative Menu",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "url": {
+      "type": "string"
+    },
+    "children": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::relative-menu.relative-menu"
+    }
+  }
+}

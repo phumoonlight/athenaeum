@@ -1,0 +1,23 @@
+{
+  "kind": "singleType",
+  "collectionName": "nav_menus",
+  "info": {
+    "singularName": "nav-menu",
+    "pluralName": "nav-menus",
+    "displayName": "Nav menu",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "navmenu.level-1"
+    }
+  }
+}
