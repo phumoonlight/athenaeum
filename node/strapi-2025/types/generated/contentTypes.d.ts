@@ -538,44 +538,6 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   };
 }
 
-export interface ApiMainMenuMainMenu extends Struct.CollectionTypeSchema {
-  collectionName: 'main_menus';
-  info: {
-    description: '';
-    displayName: '\u0E40\u0E21\u0E19\u0E39\u0E2B\u0E25\u0E31\u0E01';
-    pluralName: 'main-menus';
-    singularName: 'main-menu';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::main-menu.main-menu'
-    > &
-      Schema.Attribute.Private;
-    order: Schema.Attribute.Integer &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      > &
-      Schema.Attribute.DefaultTo<0>;
-    publishedAt: Schema.Attribute.DateTime;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    url: Schema.Attribute.String;
-  };
-}
-
 export interface ApiNavMenuNavMenu extends Struct.SingleTypeSchema {
   collectionName: 'nav_menus';
   info: {
@@ -1164,7 +1126,6 @@ declare module '@strapi/strapi' {
       'api::author.author': ApiAuthorAuthor;
       'api::category.category': ApiCategoryCategory;
       'api::global.global': ApiGlobalGlobal;
-      'api::main-menu.main-menu': ApiMainMenuMainMenu;
       'api::nav-menu.nav-menu': ApiNavMenuNavMenu;
       'api::relative-menu.relative-menu': ApiRelativeMenuRelativeMenu;
       'plugin::content-releases.release': PluginContentReleasesRelease;

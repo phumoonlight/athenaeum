@@ -27,6 +27,7 @@
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0",
     "rss": "^1.2.2",
+    "strapi-plugin-meilisearch": "^0.13.2",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
