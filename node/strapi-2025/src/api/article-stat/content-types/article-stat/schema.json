@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "article_stats",
+  "info": {
+    "singularName": "article-stat",
+    "pluralName": "article-stats",
+    "displayName": "Article stat"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "view": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "article": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::article.article",
+      "inversedBy": "stat"
+    }
+  }
+}

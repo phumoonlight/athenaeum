@@ -1,4 +1,4 @@
-import { searchClient } from "../../../search/client"
+// import { searchClient } from "../../../search/client"
 
 type AfterCreateEvent = {
   action: 'afterCreate'
@@ -114,20 +114,29 @@ export default {
   async afterCreate(event: AfterCreateEvent) {
     if (event?.result?.publishedAt) {
       console.log(event.result)
-      const x = await searchClient.index('app-contents').addDocuments([
-        {
-          _meilisearch_id: `article-${event.result.documentId}`,
-          documentType: 'article',
-          documentId: event.result.documentId,
-          title: event.result.title,
-          desc: event.result.description,
-          slug: event.result.slug,
-          blocks: event.result.blocks,
+      // const x = await searchClient.index('app-contents').addDocuments([
+      //   {
+      //     _meilisearch_id: `article-${event.result.documentId}`,
+      //     documentType: 'article',
+      //     documentId: event.result.documentId,
+      //     title: event.result.title,
+      //     desc: event.result.description,
+      //     slug: event.result.slug,
+      //     blocks: event.result.blocks,
+      //   }
+      // ], {
+      //   primaryKey: '_meilisearch_id'
+      // })
+      // console.log('Search index updated:', x)
+    }
+    if (event?.result && !event.result.publishedAt) {
+      const stat = await strapi.documents('api::article-stat.article-stat').create({})
+      await strapi.documents('api::article.article').update({
+        documentId: event.result.documentId,
+        data: {
+          stat: stat.id,
         }
-      ], {
-        primaryKey: '_meilisearch_id'
       })
-      console.log('Search index updated:', x)
     }
   },
   afterUpdate(event) {

@@ -58,6 +58,12 @@
       "type": "biginteger",
       "default": "0",
       "min": "0"
+    },
+    "stat": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::article-stat.article-stat",
+      "mappedBy": "article"
     }
   }
 }
