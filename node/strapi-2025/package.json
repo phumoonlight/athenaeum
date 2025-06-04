@@ -16,10 +16,10 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
-    "@strapi/plugin-cloud": "5.13.1",
-    "@strapi/plugin-users-permissions": "5.13.1",
+    "@strapi/plugin-cloud": "5.14.0",
+    "@strapi/plugin-users-permissions": "5.14.0",
     "@strapi/provider-email-nodemailer": "^5.13.1",
-    "@strapi/strapi": "5.13.1",
+    "@strapi/strapi": "5.14.0",
     "better-sqlite3": "11.3.0",
     "fs-extra": "^10.0.0",
     "koa2-ratelimit": "^1.1.3",
