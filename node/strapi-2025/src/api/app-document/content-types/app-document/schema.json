@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "app_documents",
+  "info": {
+    "singularName": "app-document",
+    "pluralName": "app-documents",
+    "displayName": "app document"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "view": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

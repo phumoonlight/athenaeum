@@ -402,6 +402,42 @@ export interface ApiAboutAbout extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiAppDocumentAppDocument extends Struct.CollectionTypeSchema {
+  collectionName: 'app_documents';
+  info: {
+    displayName: 'app document';
+    pluralName: 'app-documents';
+    singularName: 'app-document';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    file: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::app-document.app-document'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    view: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+  };
+}
+
 export interface ApiArticleStatArticleStat extends Struct.CollectionTypeSchema {
   collectionName: 'article_stats';
   info: {
@@ -1170,6 +1206,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
+      'api::app-document.app-document': ApiAppDocumentAppDocument;
       'api::article-stat.article-stat': ApiArticleStatArticleStat;
       'api::article.article': ApiArticleArticle;
       'api::author.author': ApiAuthorAuthor;
