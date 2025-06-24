@@ -14,3 +14,13 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Commands
+
+```bash
+# start emulator id Medium_Phone (you can change it to your emulator id)
+flutter emulators --launch Medium_Phone
+
+# run the app
+flutter run
+```
