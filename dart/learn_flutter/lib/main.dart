@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learn_flutter/home.dart';
+import 'package:learn_flutter/my_http.dart';
 import 'package:learn_flutter/webtoon.dart';
 
 void main() {
@@ -21,16 +22,7 @@ class MyApp extends StatelessWidget {
           body: Padding(
             padding: const EdgeInsets.all(0),
             child: TabBarView(
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: MyHomePage()),
-                    Expanded(child: MyHomePage()),
-                  ],
-                ),
-                WebtoonClone(),
-                MyHomePage(),
-              ],
+              children: [MyHomePage(), WebtoonClone(), MyHttp()],
             ),
           ),
           bottomNavigationBar: const TabBar(
