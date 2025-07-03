@@ -13,9 +13,21 @@
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": true,
+    // custom
+    "esModuleInterop": true,
+    "strict": true,
+    "strictPropertyInitialization": false
+  },
+  // learn more: https://docs.nestjs.com/faq/common-errors#file-change-detected-loops-endlessly
+  "watchOptions": {
+    "watchFile": "fixedPollingInterval"
+  },
+  // for running scripts with ts-node
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   }
 }
