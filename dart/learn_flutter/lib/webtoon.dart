@@ -18,18 +18,30 @@ class _State extends State<WebtoonClone> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Column(
-      children: [
-        Text('Count: $count'),
-        TextButton(
-          onPressed: () {
-            setState(() {
-              count++;
-            });
-          },
-          child: Text('Increment'),
+    return Scaffold(
+      appBar: AppBar(title: const Text("Webtoon Clone")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Webtoon Clone Count: $count'),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  count++;
+                });
+              },
+              child: const Text('Increment Count'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Go Back'),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

@@ -1,37 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:learn_flutter/home.dart';
-import 'package:learn_flutter/my_http.dart';
-import 'package:learn_flutter/webtoon.dart';
+import 'package:learn_flutter/view_home.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.green)),
-      home: DefaultTabController(
-        length: 4,
-        child: Scaffold(
-          appBar: AppBar(title: Text("Title")),
-          body: Padding(
-            padding: const EdgeInsets.all(0),
-            child: TabBarView(children: [MyHomePage(), WebtoonClone(), MyHttp(), MyHttp()]),
-          ),
-          bottomNavigationBar: const TabBar(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            tabs: [
-              Tab(icon: Icon(Icons.directions_car)),
-              Tab(icon: Icon(Icons.directions_transit)),
-              Tab(icon: Icon(Icons.directions_bike)),
-              Tab(icon: Icon(Icons.abc)),
-            ],
-          ),
-        ),
-      ),
+      home: const MyHomePage(),
     );
   }
 }
