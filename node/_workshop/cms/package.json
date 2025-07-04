@@ -1,6 +1,7 @@
 {
   "name": "cms",
   "private": true,
+  "packageManager": "npm@11.4.2",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -11,12 +12,11 @@
   "devDependencies": {
     "prettier": "^3.6.0",
     "turbo": "^2.5.4",
-    "typescript": "5.8.2"
+    "typescript": "^5.8.2"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
-  "packageManager": "npm@11.4.2",
   "workspaces": [
     "apps/*",
     "packages/*"
