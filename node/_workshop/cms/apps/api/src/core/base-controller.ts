@@ -1,31 +1,46 @@
-import { Body, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { BadRequestException, Body, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { BaseEntity } from 'typeorm'
 
 export class BaseController {
-  wat = 'base1'
+  entity: typeof BaseEntity
 
   @Get()
   findAll() {
-    return `This is a base controller method for finding all ${this.wat}`
+    return this.entity.find()
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return `This is a base controller method for finding user with id ${id}`
+    const formatted = +id
+    if (isNaN(formatted)) {
+      throw new BadRequestException('Invalid parameter format')
+    }
+    return this.entity.findOneBy({ id: formatted } as any)
   }
 
   @Post()
-  create(@Body() dto: Record<string, any>) {
-    return 'This is a base controller method for creating a user'
+  async create(@Body() dto: Record<string, any>) {
+    const result = await this.entity.create(dto).save()
+    return result
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: Record<string, any>) {
-    return `This is a base controller method for updating user with id ${id}`
+    const formatted = +id
+    if (isNaN(formatted)) {
+      throw new BadRequestException('Invalid parameter format')
+    }
+    return this.entity.update({ id: formatted } as any, dto)
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return `This is a base controller method for removing user with id ${id}`
+    const formatted = +id
+    if (isNaN(formatted)) {
+      throw new BadRequestException('Invalid parameter format')
+    }
+    return this.entity.delete({ id: formatted } as any)
   }
 }
 
