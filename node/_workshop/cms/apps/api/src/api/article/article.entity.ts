@@ -10,4 +10,7 @@ export class Article extends BaseEntity {
 
   @Column('text')
   content: string
+
+  @Column('text', { nullable: true })
+  desc: string | null
 }

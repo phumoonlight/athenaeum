@@ -10,8 +10,6 @@ export const database = new DataSource({
   database: DB_CONFIG.database,
   logging: DB_CONFIG.logging,
   entities: ['./dist/**/*.entity.js'],
-  migrationsTableName: '_migrations',
-  migrations: process.env.npm_lifecycle_script === 'typeorm-ts-node-commonjs' ? ['./src/database/migrations/*.ts'] : undefined,
 })
 
 export const testDatabaseConn = async () => {

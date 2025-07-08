@@ -16,11 +16,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migrate": "typeorm-ts-node-commonjs",
-    "migrate:new": "typeorm migration:create ./src/database/migrations/migration",
-    "migrate:gen": "npm run migrate -- migration:generate ./src/database/migrations/m -d ./src/database/client.ts && npm run lint:migrations",
-    "migrate:up": "npm run migrate -- migration:run -d ./src/database/client.ts",
-    "migrate:down": "npm run migrate -- migration:revert -d ./src/database/client.ts"
+    "typeorm:mg": "typeorm-ts-node-commonjs",
+    "migrate": "npm run migrate:gen && npm run migrate:up",
+    "migrate:new": "typeorm migration:create ./src/database/migrations/m",
+    "migrate:gen": "npm run typeorm:mg -- migration:generate ./src/database/migrations/m -d ./src/database/migration.ts && npm run lint:migrations",
+    "migrate:up": "npm run typeorm:mg -- migration:run -d ./src/database/migration.ts",
+    "migrate:down": "npm run typeorm:mg -- migration:revert -d ./src/database/migration.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

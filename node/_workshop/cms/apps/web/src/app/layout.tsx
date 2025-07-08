@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -7,8 +8,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html>
-      <body>{props.children}</body>
+    <html lang="en">
+      <body>
+        <AppRouterCacheProvider>
+          {props.children}
+        </AppRouterCacheProvider>
+      </body>
     </html>
   )
 }

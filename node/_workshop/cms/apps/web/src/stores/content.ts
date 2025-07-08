@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { apiClient } from '@/services/client'
 import { useEffect } from 'react'
 import { create } from 'zustand'
 
@@ -17,11 +17,17 @@ export type ContentMetadataItem = {
 
 export type ContentMetaStore = {
   metas: ContentMetadataItem[];
+  loading: boolean;
+  isInitialized: boolean;
+  setLoading: (loading: boolean) => void;
   setMetas: (metas: ContentMetadataItem[]) => void;
 }
 
 export const useContentMetadataStore = create<ContentMetaStore>((set) => ({
   metas: [],
+  loading: false,
+  isInitialized: false,
+  setLoading: (loading) => set({ loading }),
   setMetas: (metas) => set({ metas }),
 }))
 
@@ -29,9 +35,19 @@ export const useContentMetadata = (opts?: { fetchOnMounted: boolean }) => {
   const store = useContentMetadataStore()
 
   const fetchData = async () => {
-    axios('http://localhost:4000')
-      .then((response) => store.setMetas(response.data))
-      .catch((error) => console.error('Error fetching metadata:', error))
+    store.setLoading(true)
+    try {
+      const res = await apiClient.get<ContentMetadataItem[]>('/')
+      store.setMetas(res.data)
+      return res
+    } catch (err) {
+      console.error('useContentMetadata.fetchData:', err)
+    } finally {
+      useContentMetadataStore.setState({
+        loading: false,
+        isInitialized: true
+      })
+    }
   }
 
   useEffect(() => {
@@ -40,5 +56,5 @@ export const useContentMetadata = (opts?: { fetchOnMounted: boolean }) => {
     }
   }, [])
 
-  return { metas: store.metas, fetchData }
+  return { store, metas: store.metas, fetchData }
 }
