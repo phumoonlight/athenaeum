@@ -2,15 +2,8 @@
 import axios from 'axios'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { create } from 'zustand'
 import Markdown from 'react-markdown'
 import { Dropdown } from 'antd'
-
-type State = {
-  count: number;
-  inc: () => void;
-  dec: () => void;
-}
 
 type MenuItem = {
   id: number;
@@ -30,14 +23,9 @@ type NavMenu = {
   items: MenuItem[]
 }
 
-export const useX = create<State>((set) => ({
-  count: 16,
-  inc: () => set((state) => ({ count: state.count + 1 })),
-  dec: () => set((state) => ({ count: state.count - 1 })),
-}))
+
 
 export default function Page() {
-  const xxx = useX()
   const { theme, setTheme } = useTheme()
   const [list, setList] = useState<NavMenu>()
   const [about, setAbout] = useState<any>()
@@ -122,11 +110,11 @@ export default function Page() {
         ))}
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <button className="flex justify-center items-center border border-amber-200 w-10" onClick={xxx.inc}>+</button>
         <button className="flex justify-center  items-center border border-amber-200 w-10" onClick={xxx.dec}>-</button>
         <div>{xxx.count}</div>
-      </div>
+      </div> */}
       <div className="p-4">
         <div>{theme}</div>
         <button className="flex justify-center items-center border border-amber-200 w-14" onClick={() => setTheme('light')}>light</button>

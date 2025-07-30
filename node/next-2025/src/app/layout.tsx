@@ -2,7 +2,6 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { AntdRegistry } from '@ant-design/nextjs-registry'
-import { useX } from './page'
 import './globals.css'
 
 const geistSans = Geist({
@@ -26,9 +25,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const xxx = useX()
   return (
-    <html lang="en" style={{ fontSize: xxx.count }} suppressHydrationWarning >
+    <html lang="en" suppressHydrationWarning >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
