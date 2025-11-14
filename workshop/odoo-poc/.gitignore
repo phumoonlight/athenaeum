@@ -1,0 +1,118 @@
+# ======================================
+# 🧠 Odoo Local Development Ignore Rules
+# ======================================
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.eggs/
+*.egg
+*.log
+
+# Virtual environments
+.venv311/
+.venv/
+venv/
+env/
+ENV/
+*.env
+.envrc
+
+# macOS / OS generated files
+.DS_Store
+Thumbs.db
+*.tmp
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# Odoo Runtime and Temporary Files
+.odoo_data/
+.odoo-data/
+.odoo/
+*.pid
+*.log
+*.rdb
+*.db
+*.dump
+*.zip
+*.tar.gz
+*.bak
+
+# Local configuration files
+odoo.conf
+
+# Data and filestore (local only)
+filestore/
+sessions/
+data_dir/
+*.csv
+*.xlsx
+*.xls
+*.ods
+*.sql
+
+# Frontend dependencies and builds
+node_modules/
+dist/
+build/
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage / test cache
+__pycache__/
+*.cache/
+.cache/
+.pytest_cache/
+.coverage
+
+# Logs
+*.log
+logs/
+logfile/
+
+# JetBrains / VSCode specific
+.vscode/
+.idea/
+
+# ======================================
+# 🚫 Enterprise / Confidential Ignore
+# ======================================
+
+# Ignore internal enterprise modules if not licensed for deploy
+enterprise/.git/
+enterprise/.github/
+enterprise/.gitignore
+enterprise/.vscode/
+enterprise/.idea/
+enterprise/.env
+enterprise/.venv/
+enterprise/.odoo-data/
+enterprise/filestore/
+enterprise/tests/
+enterprise/**/*.log
+
+# ======================================
+# ✅ What should stay in repo
+# ======================================
+# - custom_addons/
+# - enterprise/ (เฉพาะถ้าได้รับสิทธิ์)
+# - odoo/ (community core)
+# - README.md
+# - requirements.txt
+# - manifests (__manifest__.py)
+# - static/
+# - views/
+# - data/
+# - security/
+# - scripts/ (optional)

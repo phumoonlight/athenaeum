@@ -1,0 +1,127 @@
+<odoo>
+    <record id="x_crm_lead_view_form" model="ir.ui.view">
+        <field name="name">x.crm.lead.form</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='lead_partner']" position="replace">
+                <group name="lead_partner" invisible="type == 'opportunity'">
+                    <field name="is_partner_visible" invisible='1' />
+                    <field
+                        name="partner_id"
+                        widget="res_partner_many2one"
+                        invisible="not is_partner_visible"
+                        context="{
+                            'default_parent_id': commercial_partner_id,
+                            'default_name': contact_name,
+                            'default_street': street,
+                            'default_street2': street2,
+                            'default_city': city,
+                            'default_state_id': state_id,
+                            'default_zip': zip,
+                            'default_country_id': country_id,
+                            'default_function': function,
+                            'default_phone': phone,
+                            'default_email': email_from,
+                            'default_user_id': user_id,
+                            'default_team_id': team_id,
+                            'default_website': website,
+                            'default_lang': lang_code,
+                        }"
+                    />
+                    <field name="partner_name" />
+                    <label for="street" string="Address" />
+                    <div class="o_address_format">
+                        <field name="street" placeholder="Street..." class="o_address_street" />
+                        <field name="street2" placeholder="Street 2..." class="o_address_street" />
+                        <field name="city" placeholder="City" class="o_address_city" />
+                        <field
+                            name="state_id"
+                            class="o_address_state"
+                            placeholder="State"
+                            options='{"no_open": True}'
+                        />
+                        <field
+                            name="zip"
+                            placeholder="ZIP"
+                            class="o_address_zip"
+                        />
+                        <field
+                            name="country_id"
+                            placeholder="Country"
+                            class="o_address_country"
+                            options='{"no_open": True, "no_create": True}'
+                        />
+                    </div>
+                    <field name="website" widget="url" placeholder="e.g. https://www.odoo.com" />
+                    <field name="lang_active_count" invisible="1" />
+                    <field name="lang_code" invisible="1" />
+                    <field
+                        name="lang_id"
+                        invisible="lang_active_count &lt;= 1"
+                        options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"
+                    />
+                    <field name="contact_name" />
+                    <field name="is_blacklisted" invisible="1" />
+                    <field name="phone_blacklisted" invisible="1" />
+                    <field name="email_state" invisible="1" />
+                    <field name="phone_state" invisible="1" />
+                    <field name="partner_email_update" invisible="1" />
+                    <field name="partner_phone_update" invisible="1" />
+                    <label for="email_from_group_lead_info" class="oe_inline" />
+                    <div class="o_row o_row_readonly">
+                        <button
+                            name="mail_action_blacklist_remove"
+                            class="fa fa-ban text-danger"
+                            title="This email is blacklisted for mass mailings. Click to unblacklist."
+                            type="object"
+                            groups="base.group_user"
+                            invisible="not is_blacklisted"
+                            context="{'default_email': email_from}"
+                        />
+                        <field
+                            name="email_from"
+                            id="email_from_group_lead_info"
+                            string="Email"
+                            widget="email"
+                        />
+                        <span
+                            class="fa fa-exclamation-triangle text-warning oe_edit_only"
+                            title="By saving this change, the customer email will also be updated."
+                            invisible="not partner_email_update"
+                        />
+                    </div>
+                    <field name="email_cc" groups="base.group_no_one" />
+                    <field name="function" />
+                    <label for="phone_group_lead_info" class="oe_inline" />
+                    <div class="o_row o_row_readonly">
+                        <button
+                            name="phone_action_blacklist_remove"
+                            class="fa fa-ban text-danger"
+                            title="This phone number is blacklisted for SMS Marketing. Click to unblacklist."
+                            type="object"
+                            context="{'default_phone': phone}"
+                            groups="base.group_user"
+                            invisible="not phone_blacklisted"
+                        />
+                        <field
+                            id="phone_group_lead_info"
+                            name="phone"
+                            widget="phone"
+                        />
+                        <span
+                            class="fa fa-exclamation-triangle text-warning oe_edit_only"
+                            title="By saving this change, the customer phone number will also be updated."
+                            invisible="not partner_phone_update"
+                        />
+                    </div>
+                </group>
+            </xpath>
+            <xpath expr="//group[@name='lead_info']" position="replace">
+                <group name="lead_info" invisible="type == 'opportunity'">
+
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
