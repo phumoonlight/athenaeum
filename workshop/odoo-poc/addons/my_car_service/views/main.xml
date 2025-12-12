@@ -1,0 +1,51 @@
+<odoo>
+  <!-- List View -->
+  <record id="view_my_car_service_list" model="ir.ui.view">
+    <field name="name">my_car_service.list</field>
+    <field name="model">my_car_service.service</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="service_type" />
+        <field name="model" />
+      </list>
+    </field>
+  </record>
+  <!-- Kanban View -->
+  <record id="view_my_car_service_kanban" model="ir.ui.view">
+    <field name="name">my_car_service.kanban</field>
+    <field name="model">my_car_service.service</field>
+    <field name="arch" type="xml">
+      <kanban create="false" delete="false">
+        <templates>
+          <t t-name="card">
+            <field name="service_type" />
+            <field name="model" />
+            <!-- <span>Status: <field name="state" /></span> -->
+            <!-- <footer class="justify-content-end">
+              <button name="do_tentative"
+                invisible="state not in ('needsAction', 'declined', 'accepted')" string="Uncertain"
+                type="object" class="btn fa fa-asterisk" />
+              <button name="do_accept"
+                invisible="state not in ('needsAction', 'tentative', 'declined')" string="Accept"
+                type="object" class="btn fa fa-check text-success" />
+              <button name="do_decline"
+                invisible="state not in ('needsAction', 'tentative', 'accepted')" string="Decline"
+                type="object" class="btn fa fa-times-circle text-danger" />
+            </footer> -->
+          </t>
+        </templates>
+      </kanban>
+    </field>
+  </record>
+  <!-- Calendar View -->
+  <!-- <record id="view_my_car_service_calendar" model="ir.ui.view">
+    <field name="name">my_car_service.calendar</field>
+    <field name="model">my_car_service.service</field>
+    <field name="arch" type="xml">
+      <calendar string="Car Service Calendar" date_start="date">
+        <field name="service_type" />
+        <field name="model" />
+      </calendar>
+    </field>
+  </record> -->
+</odoo>

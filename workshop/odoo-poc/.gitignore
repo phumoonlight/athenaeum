@@ -2,6 +2,8 @@
 # 🧠 Odoo Local Development Ignore Rules
 # ======================================
 
+third_party/
+
 # Python compiled files
 __pycache__/
 *.py[cod]
@@ -53,7 +55,6 @@ odoo.conf
 filestore/
 sessions/
 data_dir/
-*.csv
 *.xlsx
 *.xls
 *.ods

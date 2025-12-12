@@ -22,6 +22,6 @@
             "approval_custom/static/src/fe.js",
         ],
     },
-    "auto_install": True,
+    "auto_install": False,
     "installable": True
 }
