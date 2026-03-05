@@ -41,6 +41,10 @@ export default function ClipboardStorePage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const importFileRef = useRef<HTMLInputElement>(null);
   const [importToast, setImportToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editLabel, setEditLabel] = useState("");
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
 
 
   // Load from localStorage after hydration.
@@ -67,6 +71,14 @@ export default function ClipboardStorePage() {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [text]);
+
+  // Auto-resize edit textarea
+  useEffect(() => {
+    if (editTextareaRef.current) {
+      editTextareaRef.current.style.height = "auto";
+      editTextareaRef.current.style.height = `${editTextareaRef.current.scrollHeight}px`;
+    }
+  }, [editText]);
 
   const handleAdd = useCallback(() => {
     if (!text.trim()) return;
@@ -136,6 +148,39 @@ export default function ClipboardStorePage() {
     }
   };
 
+  const handleStartEdit = useCallback((item: ClipboardItem) => {
+    setConfirmDeleteId(null);
+    setEditingId(item.id);
+    setEditLabel(item.label);
+    setEditText(item.text);
+    setTimeout(() => editTextareaRef.current?.focus(), 50);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditText("");
+    setEditLabel("");
+  }, []);
+
+  const handleSaveEdit = useCallback(() => {
+    if (!editText.trim() || !editingId) return;
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === editingId
+          ? { ...item, text: editText.trim(), label: editLabel.trim() }
+          : item
+      )
+    );
+    setEditingId(null);
+    setEditText("");
+    setEditLabel("");
+  }, [editText, editLabel, editingId]);
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSaveEdit();
+    if (e.key === "Escape") handleCancelEdit();
+  };
+
   const handleExport = useCallback(() => {
     const exportData = {
       version: 1,
@@ -202,6 +247,7 @@ export default function ClipboardStorePage() {
 
   const filteredItems = items.filter(
     (item) =>
+      item.id === editingId ||
       item.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -559,6 +605,7 @@ export default function ClipboardStorePage() {
             const isCopied = copiedId === item.id;
             const isDeleting = deletingIds.has(item.id);
             const isPendingDelete = confirmDeleteId === item.id;
+            const isEditing = editingId === item.id;
 
             return (
               <div
@@ -566,9 +613,9 @@ export default function ClipboardStorePage() {
                 id={`snippet-${item.id}`}
                 style={{
                   background: "var(--bg-card)",
-                  border: `1px solid ${isPendingDelete ? "var(--danger)" : isCopied ? "var(--success)" : "var(--border)"}`,
+                  border: `1px solid ${isEditing ? "var(--border-focus)" : isPendingDelete ? "var(--danger)" : isCopied ? "var(--success)" : "var(--border)"}`,
                   borderRadius: 14,
-                  padding: "14px 16px",
+                  padding: isEditing ? "16px 20px" : "14px 16px",
                   display: "flex",
                   gap: 14,
                   alignItems: "flex-start",
@@ -580,253 +627,416 @@ export default function ClipboardStorePage() {
                   animationTimingFunction: "cubic-bezier(0.4,0,0.2,1)",
                   animationDelay: `${Math.min(index * 30, 150)}ms`,
                   animationFillMode: "both",
-                  boxShadow: isPendingDelete
-                    ? "0 0 24px rgba(248, 113, 113, 0.12)"
-                    : isCopied
-                      ? "0 0 20px rgba(52, 211, 153, 0.15)"
-                      : "none",
+                  boxShadow: isEditing
+                    ? "0 0 40px rgba(108, 99, 255, 0.12)"
+                    : isPendingDelete
+                      ? "0 0 24px rgba(248, 113, 113, 0.12)"
+                      : isCopied
+                        ? "0 0 20px rgba(52, 211, 153, 0.15)"
+                        : "none",
                 }}
               >
-                {/* Index badge */}
-                <div
-                  style={{
-                    flex: "0 0 auto",
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
-                    background: isCopied ? "rgba(52,211,153,0.15)" : "var(--bg-input)",
-                    border: `1px solid ${isCopied ? "var(--success)" : "var(--border)"}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: isCopied ? "var(--success)" : "var(--text-muted)",
-                    transition: "all 0.3s",
-                    marginTop: 1,
-                  }}
-                >
-                  {isCopied ? (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  {item.label && (
-                    <p style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "var(--accent-2)",
-                      marginBottom: 4,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}>
-                      {item.label}
+                {isEditing ? (
+                  /* Inline edit form */
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--accent-2)", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      Edit Snippet
                     </p>
-                  )}
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: "var(--text-primary)",
-                      lineHeight: 1.65,
-                      wordBreak: "break-word",
-                      whiteSpace: "pre-wrap",
-                      maxHeight: 120,
-                      overflow: "hidden",
-                      WebkitMaskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
-                      maskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
-                    }}
-                  >
-                    {item.text}
-                  </p>
-                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
-                    {timeAgo(item.createdAt)}
-                    {" · "}
-                    {item.text.length} chars
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: "flex", gap: 6, flex: "0 0 auto", marginTop: 1, alignItems: "center" }}>
-                  {/* Copy button — hidden while confirming delete */}
-                  {!isPendingDelete && (
-                    <button
-                      id={`copy-btn-${item.id}`}
-                      onClick={() => handleCopy(item)}
-                      title="Copy to clipboard"
+                    <input
+                      type="text"
+                      placeholder="Label (optional)…"
+                      value={editLabel}
+                      onChange={(e) => setEditLabel(e.target.value)}
+                      onKeyDown={handleEditKeyDown}
                       style={{
+                        width: "100%",
+                        background: "var(--bg-input)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        padding: "9px 14px",
+                        color: "var(--text-primary)",
+                        fontSize: 13,
+                        outline: "none",
+                        marginBottom: 10,
+                        fontFamily: "inherit",
+                        transition: "border-color 0.2s",
+                        boxSizing: "border-box",
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--border-focus)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                    />
+                    <textarea
+                      ref={editTextareaRef}
+                      placeholder="Text…"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={handleEditKeyDown}
+                      rows={3}
+                      style={{
+                        width: "100%",
+                        background: "var(--bg-input)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                        color: "var(--text-primary)",
+                        fontSize: 13,
+                        outline: "none",
+                        resize: "none",
+                        fontFamily: "inherit",
+                        lineHeight: 1.6,
+                        display: "block",
+                        overflow: "hidden",
+                        minHeight: 90,
+                        transition: "border-color 0.2s",
+                        boxSizing: "border-box",
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--border-focus)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                    />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+                      <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                        {editText.length > 0 && `${editText.length} characters`}
+                      </p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={handleCancelEdit}
+                          style={{
+                            background: "var(--bg-input)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 10,
+                            padding: "9px 16px",
+                            color: "var(--text-secondary)",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-focus)";
+                            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+                            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveEdit}
+                          disabled={!editText.trim()}
+                          style={{
+                            background: editText.trim() ? "linear-gradient(135deg, #6c63ff, #a78bfa)" : "var(--bg-input)",
+                            border: "none",
+                            borderRadius: 10,
+                            padding: "9px 20px",
+                            color: editText.trim() ? "#fff" : "var(--text-muted)",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            cursor: editText.trim() ? "pointer" : "not-allowed",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            boxShadow: editText.trim() ? "0 0 20px var(--accent-glow)" : "none",
+                          }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                          </svg>
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Index badge */}
+                    <div
+                      style={{
+                        flex: "0 0 auto",
+                        width: 28,
+                        height: 28,
+                        borderRadius: 8,
                         background: isCopied ? "rgba(52,211,153,0.15)" : "var(--bg-input)",
                         border: `1px solid ${isCopied ? "var(--success)" : "var(--border)"}`,
-                        borderRadius: 8,
-                        padding: "6px 10px",
-                        color: isCopied ? "var(--success)" : "var(--text-secondary)",
-                        cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        gap: 5,
-                        fontSize: 12,
-                        fontWeight: 500,
-                        transition: "all 0.2s",
-                        fontFamily: "inherit",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isCopied) {
-                          (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-card-hover)";
-                          (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
-                          (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isCopied) {
-                          (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-input)";
-                          (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
-                          (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
-                        }
+                        justifyContent: "center",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: isCopied ? "var(--success)" : "var(--text-muted)",
+                        transition: "all 0.3s",
+                        marginTop: 1,
                       }}
                     >
                       {isCopied ? (
-                        <>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" />
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                          </svg>
-                          Copy
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  {/* Delete — inline confirm flow */}
-                  {isPendingDelete ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        background: "rgba(248,113,113,0.08)",
-                        border: "1px solid var(--danger)",
-                        borderRadius: 8,
-                        padding: "5px 10px",
-                        animation: "fadeIn 0.15s ease",
-                      }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                        <line x1="12" y1="9" x2="12" y2="13" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                      </svg>
-                      <span style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600, whiteSpace: "nowrap" }}>
-                        Delete?
-                      </span>
-                      {/* Confirm */}
-                      <button
-                        id={`confirm-delete-btn-${item.id}`}
-                        onClick={() => handleDelete(item.id)}
-                        title="Yes, delete"
-                        style={{
-                          background: "var(--danger)",
-                          border: "none",
-                          borderRadius: 6,
-                          padding: "3px 8px",
-                          color: "#fff",
-                          fontSize: 11,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontFamily: "inherit",
-                          transition: "opacity 0.15s",
-                        }}
-                        onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.85")}
-                        onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
-                      >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        Yes
-                      </button>
-                      {/* Cancel */}
-                      <button
-                        id={`cancel-delete-btn-${item.id}`}
-                        onClick={handleCancelDelete}
-                        title="Cancel"
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          borderRadius: 6,
-                          padding: "3px 6px",
-                          color: "var(--text-muted)",
+                      ) : (
+                        index + 1
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {item.label && (
+                        <p style={{
                           fontSize: 11,
                           fontWeight: 600,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontFamily: "inherit",
-                          transition: "color 0.15s",
+                          color: "var(--accent-2)",
+                          marginBottom: 4,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}>
+                          {item.label}
+                        </p>
+                      )}
+                      <p
+                        style={{
+                          fontSize: 13,
+                          color: "var(--text-primary)",
+                          lineHeight: 1.65,
+                          wordBreak: "break-word",
+                          whiteSpace: "pre-wrap",
+                          maxHeight: 120,
+                          overflow: "hidden",
+                          WebkitMaskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
+                          maskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
                         }}
-                        onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)")}
-                        onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)")}
                       >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
-                        No
-                      </button>
+                        {item.text}
+                      </p>
+                      <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
+                        {timeAgo(item.createdAt)}
+                        {" · "}
+                        {item.text.length} chars
+                      </p>
                     </div>
-                  ) : (
-                    <button
-                      id={`delete-btn-${item.id}`}
-                      onClick={() => handleRequestDelete(item.id)}
-                      title="Delete snippet"
-                      style={{
-                        background: "var(--bg-input)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 8,
-                        padding: "6px 8px",
-                        color: "var(--text-muted)",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        transition: "all 0.2s",
-                        fontFamily: "inherit",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.background = "rgba(248,113,113,0.1)";
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--danger)";
-                        (e.currentTarget as HTMLButtonElement).style.color = "var(--danger)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-input)";
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
-                        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                        <path d="M10 11v6M14 11v6" />
-                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
+
+                    {/* Actions */}
+                    <div style={{ display: "flex", gap: 6, flex: "0 0 auto", marginTop: 1, alignItems: "center" }}>
+                      {/* Copy button — hidden while confirming delete */}
+                      {!isPendingDelete && (
+                        <button
+                          id={`copy-btn-${item.id}`}
+                          onClick={() => handleCopy(item)}
+                          title="Copy to clipboard"
+                          style={{
+                            background: isCopied ? "rgba(52,211,153,0.15)" : "var(--bg-input)",
+                            border: `1px solid ${isCopied ? "var(--success)" : "var(--border)"}`,
+                            borderRadius: 8,
+                            padding: "6px 10px",
+                            color: isCopied ? "var(--success)" : "var(--text-secondary)",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isCopied) {
+                              (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-card-hover)";
+                              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+                              (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isCopied) {
+                              (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-input)";
+                              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+                              (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+                            }
+                          }}
+                        >
+                          {isCopied ? (
+                            <>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                              </svg>
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      )}
+
+                      {/* Edit button — hidden while confirming delete */}
+                      {!isPendingDelete && (
+                        <button
+                          id={`edit-btn-${item.id}`}
+                          onClick={() => handleStartEdit(item)}
+                          title="Edit snippet"
+                          style={{
+                            background: "var(--bg-input)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            padding: "6px 10px",
+                            color: "var(--text-secondary)",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-card-hover)";
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+                            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-input)";
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+                            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+                          }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          Edit
+                        </button>
+                      )}
+
+                      {/* Delete — inline confirm flow */}
+                      {isPendingDelete ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            background: "rgba(248,113,113,0.08)",
+                            border: "1px solid var(--danger)",
+                            borderRadius: 8,
+                            padding: "5px 10px",
+                            animation: "fadeIn 0.15s ease",
+                          }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                          <span style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                            Delete?
+                          </span>
+                          {/* Confirm */}
+                          <button
+                            id={`confirm-delete-btn-${item.id}`}
+                            onClick={() => handleDelete(item.id)}
+                            title="Yes, delete"
+                            style={{
+                              background: "var(--danger)",
+                              border: "none",
+                              borderRadius: 6,
+                              padding: "3px 8px",
+                              color: "#fff",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                              fontFamily: "inherit",
+                              transition: "opacity 0.15s",
+                            }}
+                            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.85")}
+                            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Yes
+                          </button>
+                          {/* Cancel */}
+                          <button
+                            id={`cancel-delete-btn-${item.id}`}
+                            onClick={handleCancelDelete}
+                            title="Cancel"
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              borderRadius: 6,
+                              padding: "3px 6px",
+                              color: "var(--text-muted)",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                              fontFamily: "inherit",
+                              transition: "color 0.15s",
+                            }}
+                            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)")}
+                            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)")}
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          id={`delete-btn-${item.id}`}
+                          onClick={() => handleRequestDelete(item.id)}
+                          title="Delete snippet"
+                          style={{
+                            background: "var(--bg-input)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            padding: "6px 8px",
+                            color: "var(--text-muted)",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = "rgba(248,113,113,0.1)";
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--danger)";
+                            (e.currentTarget as HTMLButtonElement).style.color = "var(--danger)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-input)";
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+                            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+                          }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}
