@@ -1,0 +1,16 @@
+.root {
+  text-align: right;
+  padding: 10px;
+}
+
+.link {
+  color: rgb(50, 50, 50);
+  text-decoration: none;
+  margin: 10px;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

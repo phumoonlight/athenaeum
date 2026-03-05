@@ -1,0 +1,53 @@
+.root {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.heading {
+  text-align: center;
+  font-weight: bold;
+  margin: 25px;
+  font-size: 25px;
+}
+
+
+.imgcontainer {
+  display: inline-block;
+  height: 300px;
+}
+
+.imgcontainer > a > img {
+  margin-right: 5px;
+  margin-bottom: 2.5px;
+  height: 300px;
+}
+
+@media only screen and (max-width: 426px) {
+  .imgcontainer {
+    display: inline-block;
+    height: 150px;
+  }
+
+  .imgcontainer > a > img {
+    margin-right: 2.5px;
+    margin-bottom: 2.5px;
+    height: 150px;
+  }
+}
+
+.buttonloadimg {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-weight: bold;
+  color: white;
+  background-color: rgb(10, 10, 10) ;
+  padding: 15px;
+  margin: 50px;
+  border-radius: 50px;
+  transition: .15s;
+}
+
+.buttonloadimg:hover {
+  background-color: rgb(100, 100, 100);
+}
