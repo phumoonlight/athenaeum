@@ -1,0 +1,83 @@
+body {
+	font-family: 'Prompt', sans-serif;
+	margin-left: 7.5vw;
+	margin-right: 7.5vw;
+	margin-top: 1vw;
+}
+
+#title {
+	border: solid rgb(225, 225, 225) 0.01vw;
+	padding: 1.5vw;
+	font-size: 3.5vw;
+	font-weight: bold;
+	color: rgb(255, 208, 0);
+	background: rgb(247, 247, 247);
+}
+
+#movie-list {
+	border: solid rgb(225, 225, 225) 0.01vw;
+	text-align: center;
+}
+
+#movie-detail {
+	border: solid rgb(225, 225, 225) 0.01vw;
+}
+
+#movie-detail img {
+	padding: 2vw;
+	width: 20vw;
+	vertical-align: top;
+}
+
+#movie-detail div {
+	display: inline-block;
+	padding: 2.5vw;
+	width: 53vw;
+	font-size: 1.5vw;
+}
+
+#movie-detail div span {
+	font-size: 2.5vw;
+	font-weight: bold;
+}
+
+#movie-list img {
+	padding: 0.5vw;
+	width: 15vw;
+	height: 20vw;
+	border-radius: 10px;
+}
+
+.movie {
+	width: 16vw;
+	margin: 0.75vw;
+	text-align: left;
+	display: inline-block;
+	font-size: 1.25vw;
+	border-radius: 5px;
+	transition: 0.3s;
+}
+
+.movie-txt {
+	width: 14vw;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-left: 0.75vw;
+	padding-bottom: 0.5vw;
+}
+
+i span {
+	font-family: 'Prompt', sans-serif;
+}
+
+.movie:hover {
+	background-color: rgb(50, 50, 50);
+	color: rgb(255, 225, 95);
+	transition: 0.3s;
+	cursor: pointer;
+}
+
+a {
+	color: rgb(45, 45, 45);
+}

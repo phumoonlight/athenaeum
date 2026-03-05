@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        .title {
+            text-align: left; 
+            font-size: 2vw; 
+            padding: 5px;
+        }
+
+        table {
+            border: solid rgb(200, 200, 200) 1px; 
+            width: 100%;
+            text-align: center;
+            background-color: rgb(250, 250, 250);
+            font-size: 1.5vw;
+        }
+
+        table thead tr th {
+            padding: 7.5px;
+            border-bottom: solid rgb(200, 200, 200) 1px; 
+        }
+
+        table tbody tr td {
+            padding: 5px;
+        }
+
+        #content{
+            margin-right: 15vw;
+            margin-left: 15vw;
+            text-align: center;
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        .form{
+            text-align: left;
+        }
+
+        .form input{
+            margin: 2.5px;
+        }
+
+        #btn{
+            margin-top: 10px;
+            text-align: left; 
+        }
+
+        #btn-append{
+            font-size: 2.5vw;
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        button{
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 1.1vw;
+        }
+
+        #btn-append,#btn-refresh{
+            font-size: 2.5vw;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content">
+        <!-------------------------------------------------->
+        <div class="title">Lab - 4 / 12 / 2018</div>
+        <!-------------------------------------------------->
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Address</th>
+                    <th>Manage</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+        <!-------------------------------------------------->
+        <div class="title">Append</div>
+        <!-------------------------------------------------->
+        <form class="form">
+            Name <input type="text" name="name"><br>
+            Age <input type="number" name="age"><br>
+            Gender <input type="text" name="gender"><br>
+            City <input type="text" name="addr-city"><br>
+            Country <input type="text" name="addr-country"><br>
+        </form>
+
+        <div id="btn">
+            <button id="btn-append">Append</button>
+            <button id="btn-refresh">Refresh</button>
+        </div>
+        <!-------------------------------------------------->
+        
+    </div>
+
+    <!-- JS -->
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(function () {
+           
+            //--------------------------------
+            $('#list').on("click", "tr td button.edit", function () {
+                var edit_index = $(this).parent().parent().find("td:first").text() - 1;
+                var edit_name = $(this).parent().parent().find("td:not(td:first):eq(0)").text();
+                var edit_age = $(this).parent().parent().find("td:not(td:first):eq(1)").text();
+                var edit_gender = $(this).parent().parent().find("td:not(td:first):eq(2)").text();
+                var edit_addr = $(this).parent().parent().find("td:not(td:first):eq(3)").text();
+                var edit_html = "<td><input type='text' style='width: 100%''></td>";
+                $(this).parent().parent().find(":not(td:first)").replaceWith(edit_html);
+                
+            });
+            //--------------------------------
+            $('#list').on("click", "tr td button.del", function () {
+                var del_index = $(this).parent().parent().find("td:first").text() - 1;
+                mydata.splice(del_index, 1);
+                showlist();
+            });
+            //--------------------------------
+            showlist();
+            //--------------------------------
+            function showlist() {
+                $("#list").empty();
+                mydata.forEach(function (data, i) {
+                    $('#list').append(
+                        '<tr>' +
+                        '<td>' + (i + 1) + '</td>' +
+                        '<td>' + data.name + '</td>' +
+                        '<td>' + data.age + '</td>' +
+                        '<td>' + data.gender + '</td>' +
+                        '<td>' + data.address.city + ' ' + data.address.country + '</td>' +
+                        '<td>' + data.manage.edit + data.manage.delete + '</td>' +
+                        '</tr>'
+                    );
+                });
+            }
+            //------------------------------------------
+            $("#btn-refresh").click(function () {
+                mydata = mydata2;
+                showlist();
+            });
+            //----------------------------------------------
+            $("#btn-append").click(function () {
+                var x = {
+                    id: mydata.length + 1,
+                    name: $("input[name='name']").val(),
+                    age: $("input[name='age']").val(),
+                    gender: $("input[name='gender']").val(),
+                    address: {
+                        city: $("input[name='addr-city']").val(),
+                        country: $("input[name='addr-country']").val()
+                    },
+                    manage: {
+                        edit: "<button>Edit</button>",
+                        delete: "<button class='del'>Delete</button>"
+                    }
+                };
+                mydata.push(x);
+                showlist();
+            });
+            //----------------------------------------------
+
+            //----------------------------------------------
+        });
+    </script>
+</body>
+
+</html>

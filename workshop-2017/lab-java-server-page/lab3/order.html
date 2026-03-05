@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<link rel="icon" href="img/favicon.jpg">
+	<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+	<link href="css/style.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit">
+	<title>งานคืนสู่เหย้าครบรอบ 25 ปี</title>
+</head>
+<body>
+	<div class="shadow-title font-kanit title-text">
+		<a href="admin.jsp" ><img src="img/logo.jpg" class="logo"></a>
+		สั่งซื้อของที่ระลึก งานคืนสู่เหย้าครบรอบ 25 ปี
+	</div>
+	<div class="content">
+		<form action="OrderServlet" method="post">
+			<div class="content2">
+				<div style="text-align:center;">
+					<img src="img/book1.jpg" class="imgrounded">
+					<img src="img/book2.jpg" class="imgrounded">
+				</div><br>
+				<div style="text-align:center; font-family: 'Kanit', sans-serif;">
+					สมุดโน้ตที่ระลึก ราคาเล่มละ 99 บาท<br>
+					ทุกๆ 10 ชิ้นจะเสียค่าจัดส่งครั้งละ 70 บาท<br>
+					สั่ง 50 เล่มขึ้นไป ส่งฟรี<br><br>
+					จำนวนการสั่งซื้อ <input type="number" name="notebook" id="nb" class="width-number-input" oninput="checkinput()"> เล่ม
+				</div>
+			</div><br>
+			<div class="content3">
+				<div style="text-align:center;">
+					<img src="img/shirt2.jpg" class="imgrounded">
+				</div><br>
+				<div style="text-align:center; font-family: 'Kanit', sans-serif;">
+					เสื้อยืด Cotton เนื้อดี สีขาว<br>
+					ราคาตัวละ 199 บาท<br>
+					ค่าจัดส่งตัวละ 30 บาท<br>
+					สั่ง 15 ตัวขึ้นไป ส่งฟรี<br><br>
+					จำนวนการสั่งซื้อ <input type="number" name="whiteshirt" id="ws" class="width-number-input" oninput="checkinput()"> ตัว
+				</div>
+			</div><br>
+			<div class="content3">
+				<div style="text-align:center;">
+					<img src="img/shirt1.jpg" class="imgrounded">
+				</div><br>
+				<div style="text-align:center; font-family: 'Kanit', sans-serif;">
+					เสื้อยืด Cotton เนื้อดี สีดำ<br>
+					ราคาตัวละ 199 บาท<br>
+					ค่าจัดส่งตัวละ 30 บาท<br>
+					สั่ง 15 ตัวขึ้นไป ส่งฟรี<br><br>
+					จำนวนการสั่งซื้อ <input type="number" name="blackshirt" id="bs" class="width-number-input" oninput="checkinput()"> ตัว
+				</div>
+			</div><br>
+			<div class="content4">
+				<div style="text-align:center;">
+					<img src="img/polo.jpg" class="imgrounded">
+				</div><br>
+				<div style="text-align:center; font-family: 'Kanit', sans-serif;">
+					เสื้อโปโล Cotton เนื้อดี สีขาวและสีดำ<br>
+					ราคาตัวละ 280 บาท<br>
+					พิเศษซื้อ 2 ตัว ราคา 550 บาท<br>
+					ค่าจัดส่งตัวละ 30 บาท<br>
+					สั่ง 10 ตัวขึ้นไป ส่งฟรี<br><br>
+
+					สั่งซื้อเสื้อโปโลสีขาว <input type="number" name="whitepolo" id="wp" class="width-number-input" oninput="checkinput()"> ตัว<br><br>
+
+					สั่งซื้อเสื้อโปโลสีดำ <input type="number" name="blackpolo" id="bp" class="width-number-input" value="0"  oninput="checkinput()"> ตัว
+				</div>
+			</div><br>
+			<div class="name-address-font">
+				ระบุชื่อผู้ซื้อ (Name) <input type="text" name="name" maxlength="35" size="35" required>
+				ระบุที่อยู่ (Address) <input type="text" name="address" maxlength="35" size="37" required><br>
+			</div><br>
+			<div class="name-address-font" style="font-size: 25px; color: white;">
+				ยอดซื้อถึง 2,000 บาท จะได้รับส่วนลดเพิ่ม 10%<br>
+				ยอดซื้อถึง 3,000 บาท จะได้รับส่วนลดเพิ่ม 15%<br>
+				ยอดซื้อถึง 5,000 บาท จะได้รับส่วนลดเพิ่ม 20%<br>
+				ทุก ๆ 1,000 บาท จะได้รับบัตร Memorial of Handshake Photo set (ภาพบุคลากรในสาขา) 1 ใบ<br><br>
+				
+			</div>
+			<div class="sb-align">
+				<input class="sb-font" id="button" type="submit" value="ยืนยันการสั่งซื้อ" disabled>
+			</div>
+		</form>
+	</div>
+	<br><br>
+	<script>
+	function checkinput() {
+		var nullcount = 0;
+		if(document.getElementById('nb').value==="") {nullcount++;}
+		if(document.getElementById('ws').value==="") {nullcount++;}
+		if(document.getElementById('bs').value==="") {nullcount++;}
+		if(document.getElementById('wp').value==="") {nullcount++;} 
+		if(document.getElementById('bp').value==="") {nullcount++;} 
+		if(nullcount==5){
+			document.getElementById('button').disabled = true; 
+		}else{
+			document.getElementById('button').disabled = false;
+		}
+		if(document.getElementById('nb').value<0){document.getElementById('nb').value=0}
+		if(document.getElementById('ws').value<0){document.getElementById('ws').value=0}
+		if(document.getElementById('bs').value<0){document.getElementById('bs').value=0}
+		if(document.getElementById('wp').value<0){document.getElementById('wp').value=0}
+		if(document.getElementById('bp').value<0){document.getElementById('bp').value=0}
+	}	 
+	</script>
+</body>
+</html>

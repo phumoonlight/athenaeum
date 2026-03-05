@@ -1,0 +1,19 @@
+th,
+td {
+  font-size: .75em;
+  padding: 1%;
+  border: solid gray .01em;
+  border-spacing: 0;
+}
+
+table,
+#inc-exp-list {
+  margin: auto;
+  width: 60%;
+}
+
+input,
+button {
+  padding: .5em;
+  margin: .5em;
+}

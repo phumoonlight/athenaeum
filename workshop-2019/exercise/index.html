@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+		/>
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Exercise : Movie Ticket Machine</title>
+		<link rel="stylesheet" href="main.css" />
+		<link
+			href="https://fonts.googleapis.com/css?family=Prompt"
+			rel="stylesheet"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+			integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
+			crossorigin="anonymous"
+		/>
+	</head>
+
+	<body>
+		<div id="title">ภาพยนตร์</div>
+		<section id="movie-list"></section>
+		<script
+			src="https://code.jquery.com/jquery-3.3.1.min.js"
+			integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+			crossorigin="anonymous"
+		></script>
+		<script>
+			$(document).ready(function () {
+				$.ajax({
+					type: 'GET',
+					dataType: 'json',
+					url: 'http://www.mocky.io/v2/5bab559f3000006800a68762',
+					success: function (result) {
+						var i = -1
+						while (i++ <= result.total) {
+							$('#movie-list').append(
+								"<a href='moviedetail.html?id=" +
+									result.data[i].id +
+									"'>" +
+									"<div class='movie'>" +
+									'<img src=' +
+									result.data[i].image +
+									'>' +
+									"<div class='movie-txt'>" +
+									result.data[i].name +
+									'<br>' +
+									result.data[i].price +
+									' บาท' +
+									'</div>' +
+									'</div>' +
+									'</a>'
+							)
+						}
+					},
+				})
+			})
+		</script>
+	</body>
+</html>

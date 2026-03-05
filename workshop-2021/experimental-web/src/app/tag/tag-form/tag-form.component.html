@@ -1,0 +1,6 @@
+<form [formGroup]="createTagForm" (ngSubmit)="onSubmit()">
+  <input type="text" placeholder="reference id" formControlName="tagRefId">
+  <input type="text" placeholder="name" formControlName="tagName">
+  <textarea placeholder="description..." formControlName="tagDescription"></textarea>
+  <button [disabled]="createTagForm.invalid">Submit</button>
+</form>

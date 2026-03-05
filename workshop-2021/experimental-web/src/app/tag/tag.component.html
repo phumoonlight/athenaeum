@@ -1,0 +1,11 @@
+<router-outlet></router-outlet>
+
+<div>
+  <div class="row-flex-center">
+    <app-tag-form (formSubmit)="onSubmitCreateTag($event)"></app-tag-form>
+  </div>
+  <app-tag-list [tagList]="tagList" (delete)="onClickDelete($event)">
+    <div *ngIf="isLoading">Fetching data...</div>
+  </app-tag-list>
+</div>
+

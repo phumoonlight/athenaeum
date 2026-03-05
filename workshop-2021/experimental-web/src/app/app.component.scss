@@ -1,0 +1,105 @@
+nav {
+  position: fixed;
+  display: flex;
+  background: #e0115f;
+  justify-content: space-between;
+  padding: 10px;
+  width: 100%;
+  height: 60px;
+}
+
+nav .api-status {
+  padding: 10px;
+}
+
+nav .api-status .api-status-status {
+  background: #d6cacf;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+a {
+  text-decoration: none;
+  padding: 10px;
+}
+
+a:hover {
+  opacity: .85;
+}
+
+a.link-home {
+  color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+}
+
+main {
+  background: #ececec;
+  padding: 10px;
+  width: 100%;
+  margin-top: 60px;
+  margin-left: 210px;
+  min-height: 90vh;
+}
+
+.page-layout {
+  display: flex;
+  align-items: flex-start;
+}
+
+aside {
+  position: fixed;
+  width: 200px;
+  top: 60px;
+  section {
+    background: #ececec;
+    margin-bottom: 10px;
+  }
+}
+
+aside #side-nav {
+  a:hover {
+    background: #d3d3d3;
+  }
+  .active-link {
+    background: #d3d3d3;
+  }
+}
+
+aside #api-status {
+  a.online {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #70ac10;
+  }
+  a.online:hover {
+    color: #90d60e;
+  }
+  a.offline {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #ee0e0e;
+  }
+  a.offline:hover {
+    color: #ff0000;
+  }
+}
+
+aside .title {
+  padding: 10px;
+  font-size: 1.5em;
+}
+
+aside a {
+  display: flex;
+}
+
+.link-github {
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+}

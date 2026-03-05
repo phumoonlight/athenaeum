@@ -1,0 +1,16 @@
+<router-outlet></router-outlet>
+<app-tag-collection-form
+  [tagList]="tagList"
+  (submitForm)="onSubmitCreateTagCollection($event)"
+></app-tag-collection-form>
+<div class="container">
+  <div *ngIf="!tagCollectionList.length && !isLoading">tag collection is empty...</div>
+  <div class="item" *ngFor="let item of tagCollectionList; let index = index">
+    <div>{{ index }}</div>
+    <div>{{ item.tag_ref_id }}</div>
+    <div class="json-data" *ngFor="let data of item.data | keyvalue">
+      <span>{{ data.key }}:</span>
+      <span>{{ data.value }}</span>
+    </div>
+  </div>
+</div>

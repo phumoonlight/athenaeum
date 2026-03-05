@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+}
+
+.app-root {
+  background: ghostwhite;
+  padding: 10px;
+}
+
+.MuiTypography-h5 {
+  font-family: 'Prompt', sans-serif !important;
+}

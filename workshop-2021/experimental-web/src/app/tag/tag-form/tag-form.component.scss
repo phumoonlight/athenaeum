@@ -1,0 +1,25 @@
+form {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  width: 600px;
+  padding: 10px;
+  margin: 10px;
+  border: solid #b9b9b9 1px;
+}
+
+input, textarea {
+  padding: 10px;
+  margin-bottom: 1px;
+}
+
+textarea {
+  resize: vertical;
+  height: 200px;
+
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+}

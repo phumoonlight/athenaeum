@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>JS Ajax</title>
+    <style>
+        table {
+            border: solid 5px black;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="btn_showme" type="button" name="button">
+        SHOW ME.
+    </button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>คำนำหน้า</th>
+                <th>ชื่อ</th>
+                <th>นามสกุล</th>
+                <th>เพศ</th>
+                <th>อีเมล</th>
+                <th>เบอร์โทร</th>
+            </tr>
+        </thead>
+        <tbody id="data_panel">
+
+        </tbody>
+    </table>
+    <script src="jquery-3.3.1.min.js" charset="utf-8"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //-------------------------------------------------------------------
+            $('#btn_showme').click(function () {
+                ajax();
+            });
+            //--------------------------------------------------------------
+            setInterval(ajax(), 2500);
+            //--------------------------------------------------------------------
+            function ajax() {
+                $.ajax({
+                    method: 'get',
+                    url: 'http://ideacle.com/cs446/api-get-list.php',
+                    data: '',
+                    dataType: 'text'
+                }).done(function (data) {
+                    //------------------------------
+                    var getInfo = JSON.parse(data);
+                    var columnPrefix = '';
+                    var columnFirstName = '';
+                    var columnLastName = '';
+                    var col_gender = '';
+                    var col_email = '';
+                    var col_phone = '';
+                    //------------------------------
+                    $('#data_panel').empty();
+                    //------------------------------
+                    for (var i = 0; i < getInfo.length; i++) {
+                        columnPrefix = '<td>' + getInfo[i].m_prefix + '</td>';
+                        columnFirstName = '<td>' + getInfo[i].m_firstname + '</td>';
+                        columnLastName = '<td>' + getInfo[i].m_lastname + '</td>';
+                        col_gender = '<td>' + (getInfo[i].m_gender == "male" ? "ชาย" : "หญิง") + '</td>';
+                        col_email = '<td>' + getInfo[i].m_email + '</td>';
+                        col_phone = '<td>' + getInfo[i].m_phone + '</td>';
+                        $('#data_panel').append('<tr>' + columnPrefix +
+                            columnFirstName +
+                            columnLastName + col_gender + col_email + col_phone +
+                            '</tr>');
+                    }
+                });
+            }
+            //--------------------------------------------------------------------
+        });
+    </script>
+</body>
+
+
+</html>

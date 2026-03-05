@@ -1,0 +1,13 @@
+<div class="container">
+  <ng-content></ng-content>
+  <div class="item" *ngFor="let item of tagList">
+    <div class="name">{{ item.name }}</div>
+    <div class="ref-id">@{{ item.ref_id }}</div>
+    <div class="btn-container">
+      <button (click)="onClickDelete(item.ref_id)">edit</button>
+      <button class="btn-delete" (click)="onClickDelete(item.ref_id)">
+        <span>delete</span>
+      </button>
+    </div>
+  </div>
+</div>

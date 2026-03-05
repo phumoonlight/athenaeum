@@ -1,0 +1,127 @@
+/* GLOBAL STYLES
+-------------------------------------------------- */
+/* Padding below the footer and lighter body text */
+
+body {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  color: #5a5a5a;
+}
+
+
+/* CUSTOMIZE THE CAROUSEL
+-------------------------------------------------- */
+
+/* Carousel base class */
+.carousel {
+  margin-top: 15px;
+  
+}
+/* Since positioning the image, we need to help out the caption */
+.carousel-caption {
+  bottom: 3rem;
+  z-index: 10;
+}
+
+/* Declare heights because of positioning of img element */
+.carousel-item {
+  margin: auto;
+  max-width: auto; 
+  height: 450px;
+  background-color: #777;
+  
+}
+.carousel-item > img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  height: 100%;
+}
+
+
+/* MARKETING CONTENT
+-------------------------------------------------- */
+
+/* Center align the text within the three columns below the carousel */
+.marketing .col-lg-4 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.marketing h2 {
+  font-weight: 400;
+}
+.marketing .col-lg-4 p {
+  margin-right: .75rem;
+  margin-left: .75rem;
+}
+
+
+/* Featurettes
+------------------------- */
+
+.featurette-divider {
+  margin: 5rem 0; /* Space out the Bootstrap <hr> more */
+}
+
+/* Thin out the marketing headings */
+.featurette-heading {
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -.05rem;
+}
+
+
+/* RESPONSIVE CSS
+-------------------------------------------------- */
+
+@media (min-width: 640px) {
+  /* Bump up size of carousel content */
+  .carousel-caption p {
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+
+  .featurette-heading {
+    font-size: 50px;
+  }
+}
+
+@media (min-width: 992px) {
+  .featurette-heading {
+    margin-top: 10rem;
+} 
+}
+
+@media (max-width: 1301px) {.carousel-item {height: 406px;}}
+@media (max-width: 1251px) {.carousel-item {height: 390px;}}
+@media (max-width: 1201px) {.carousel-item {height: 375px;}}
+@media (max-width: 1151px) {.carousel-item {height: 359px;}}
+@media (max-width: 1101px) {.carousel-item {height: 343px;}}
+@media (max-width: 1051px) {.carousel-item {height: 328px;}}
+@media (max-width: 1001px) {.carousel-item {height: 312px;}}
+@media (max-width: 926px) {.carousel-item {height: 289px;}}
+@media (max-width: 876px) {.carousel-item {height: 273px;}}
+@media (max-width: 826px) {.carousel-item {height: 257px;}}
+@media (max-width: 801px) {.carousel-item {height: 250px;}}
+@media (max-width: 776px) {.carousel-item {height: 242px;}}
+@media (max-width: 751px) {.carousel-item {height: 234px;}}
+@media (max-width: 726px) {.carousel-item {height: 226px;}}
+@media (max-width: 701px) {.carousel-item {height: 218px;}}
+@media (max-width: 676px) {.carousel-item {height: 210px;}}
+@media (max-width: 651px) {.carousel-item {height: 203px;}}
+@media (max-width: 626px) {.carousel-item {height: 195px;}}
+@media (max-width: 601px) {.carousel-item {height: 187px;}}
+@media (max-width: 576px) {.carousel-item {height: 180px;}}
+@media (max-width: 551px) {.carousel-item {height: 171px;}}
+@media (max-width: 526px) {.carousel-item {height: 164px;}}
+@media (max-width: 501px) {.carousel-item {height: 156px;}}
+@media (max-width: 476px) {.carousel-item {height: 148px;}}
+@media (max-width: 451px) {.carousel-item {height: 140px;}} 
+@media (max-width: 426px) {.carousel-item {height: 132px;}} 
+@media (max-width: 401px) {.carousel-item {height: 125px;}} 
+@media (max-width: 376px) {.carousel-item {height: 117px;}} 
+@media (max-width: 351px) {.carousel-item {height: 109px;}}
+@media (max-width: 326px) {.carousel-item {height: 100px;}}
+

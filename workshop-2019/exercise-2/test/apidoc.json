@@ -1,0 +1,11 @@
+{
+  "name": "banner-service-api-doc",
+  "version": "1.0.0",
+  "description": "",
+  "title": "[Jobthai Upgrade] Banner Service",
+  "url": "https://beta-service-upgrade.jobthai.com/banner-service/api",
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  }
+}

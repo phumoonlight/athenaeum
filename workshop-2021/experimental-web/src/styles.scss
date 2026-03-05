@@ -1,0 +1,16 @@
+@import './app/shared/styles/colors';
+
+@font-face {
+  font-family: product-sans;
+  src: url('./assets/product-sans-regular.ttf');
+}
+
+body {
+  margin: 0;
+  background: $bg-color;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: product-sans;
+}

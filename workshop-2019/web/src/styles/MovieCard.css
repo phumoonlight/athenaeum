@@ -1,0 +1,31 @@
+.movie-image {
+  display: block;
+  width: 185px;
+  height: 285px;
+  margin: auto;
+}
+
+.movie-context > .date,
+.movie-context > .title,
+.movie-context > .price {
+  text-align: center;
+}
+
+.movie-context > .title {
+  font-weight: bold;
+  color: rgb(45, 45, 45);
+  padding: 1rem;
+  font-size: 1.1rem;
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-context > .date {
+  color: rgb(25, 85, 150);
+}
+
+.custom-card {
+  padding: 1.5em;
+  margin-left:20em; 
+}

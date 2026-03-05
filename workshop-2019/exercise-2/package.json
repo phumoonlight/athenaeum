@@ -1,0 +1,29 @@
+{
+  "name": "internship-exercise-2",
+  "version": "1.0.0",
+  "scripts": {
+    "app": "nodemon --exec babel-node app.js ",
+    "apidoc": "node_env=test apidoc -c apidoc/ -i apidoc -o apidoc/des",
+    "test-mongodb": "babel-node ./test/testMongodb.js",
+    "test-mongoose": "babel-node ./test/testMongoose.js"
+  },
+  "dependencies": {
+    "apidoc": "0.17.7",
+    "body-parser": "1.19.0",
+    "connect": "3.6.6",
+    "express": "4.16.4",
+    "mongodb": "3.2.4",
+    "mongoose": "5.5.8"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.4.4",
+    "@babel/core": "7.4.4",
+    "@babel/node": "7.2.2",
+    "@babel/preset-env": "7.4.4",
+    "eslint": "5.16.0",
+    "eslint-auto-fix": "1.0.0",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-plugin-import": "2.17.2",
+    "nodemon": "1.19.0"
+  }
+}

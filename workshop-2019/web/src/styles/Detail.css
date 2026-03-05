@@ -1,0 +1,41 @@
+.Img{
+  min-width: 300px;
+  background-color: #BCCE98
+}
+
+p {
+  color: #555;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul a {
+  color: darkgreen;
+  text-decoration: none;
+}
+
+#header, #footer {
+  font-size: large;
+  padding: 0.3em;
+  background: #BCCE98;
+}
+
+#left {
+  background: #DAE9BC;
+}
+
+#right {
+  background: #F7FDEB;
+}
+
+#center {
+  background: #fff;
+}
+
+#container .column {
+  padding-top: 1em;
+}

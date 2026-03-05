@@ -1,0 +1,12 @@
+<form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+  <div>Add Tag Collection</div>
+  <!-- <input type="text" placeholder="tag reference id" formControlName="tagRefId"> -->
+  <select formControlName="tagRefId">
+    <option value="" disabled selected>select tag reference id</option>
+    <option [value]="tag.ref_id" *ngFor="let tag of tagList">
+      {{ tag.ref_id }}
+    </option>
+  </select>
+  <textarea formControlName="jsonData"></textarea>
+  <button [disabled]="formGroup.invalid">add</button>
+</form>

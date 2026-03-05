@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>CS321 Data structure</title>
+</head>
+
+<body>
+	<font face="Comic Sans MS">
+		&nbsp;<b><font size=200% face="Courier New"><span class="label label-primary">CS321</span> Data Structure<br><font face="Monospace">&nbsp;นายภูศานต์ มูลเมือง 5904101353</font></font></b>
+
+		<div class="container">
+			<div class="panel panel-primary">
+				<div class="panel-heading"><b>Dictionary</b></div>
+				<div class="panel-body"><table border="1">
+                    <tr>
+                        <td style="">Dictionary Value</td>
+                        <td colspan="3">
+                            <p id="showDic"></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Adding</td>
+                        <td>                              
+                            <input class="form-control" type="text" id="dicInputKey" placeholder="key">
+                        </td>
+                        <td>
+                            <input class="form-control" type="text" id="dicInputValue" placeholder="value">
+                        </td>
+                        <td>
+                            <button class="btn" onclick="addDic();">Add</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">Dictionary Search</td>
+                        <td>
+                            <input class="form-control" type="text" id="dicgetKey" placeholder="Enter key">
+                        </td>
+                         <td>
+                            <div id="showget"></div>
+                        </td>
+                        <td>
+                            <button class="btn" onclick="getkey();">Search</button>
+                        </td>
+                       
+                    </tr>
+                </table>
+</div>
+				<div class="panel-footer"><a class="btn btn-success" href="dictionary1.js">Source Code</a></div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="panel panel-primary">
+				<div class="panel-heading"><b>Array Stack</b></div>
+				<div class="panel-body">
+					<div class="col-xs-2">
+						<input class="form-control" type="text" id="s_val">
+					</div>
+					<button onclick="stack()" class="btn">Stack</button>
+					<button onclick="pop()" class="btn">Pop</button>
+					<button onclick="Clear()" class="btn">Clear</button>
+					Output : <span id ="s_show"></span>
+				</div>
+				<div class="panel-footer"><a class="btn btn-success" href="Stack.js">Source Code</a></div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="panel panel-primary">
+				<div class="panel-heading"><b>DoublyLinkedList Bubble Sort</b></div>
+				<div class="panel-body">
+					<div class="col-xs-2">
+						<input class="form-control" type="text" id="bs_val">
+					</div>
+					<button onclick="bs_append()" class="btn">Append</button>
+					<button onclick="bs_sort()" class="btn">Sort!!</button>
+					Output : <span id ="bs_show"></span>
+				</div>
+				<div class="panel-footer"><a class="btn btn-success" href="BubbleSort.js">Source Code</a>Something wrong to Sort Button :(</div> 
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="panel panel-primary">
+				<div class="panel-heading"><b>DoublyLinkedList Queue</b></div>
+				<div class="panel-body">
+					<div class="col-xs-2">
+						<input class="form-control" type ="text" id="q_val">
+					</div>
+					<button onclick="q_en()" class="btn">EnQueue</button>
+					<button onclick="q_de()" class="btn">DeQueue</button>
+					Output : <span id = "q_show"></span>
+				</div>
+				<div class="panel-footer"><a class="btn btn-success" href="dll_queue.js">Source Code</a></div>
+			</div>
+		</div>
+
+		<b><p align="center"><font color="white" size="5">For educational of <span class="label label-primary">CS321</span> - Data Structure, Faculty of<font color=#ff6600> Science</font>, Major<font color=#3366ff> Computer Science</font>, <font color=#00cc00>Ma</font>e<font color="yellow">jo</font> University</font></p></b>
+
+		<p align="center"><audio autoplay="autoplay" src="Music/Undertale.mp3" controls></audio></p>
+		<p align="center"><font color=#f2f2f2>BGM - Undertale</font></p>
+		
+
+	</body>
+	</html>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<style>
+		body {
+			background-image: url("Background/1.png");
+			background-repeat: no-repeat;
+			background-position: center center;
+			background-attachment: fixed;
+			-o-background-size: 100% 100%, auto;
+			-moz-background-size: 100% 100%, auto;
+			-webkit-background-size: 100% 100%, auto;
+			background-size: 100% 100%, auto;
+		}
+
+		.panel-footer {
+			padding: 10px 15px;
+			background-color: #A9F5BC;
+			border-top: 0px solid #ddd;
+			border-bottom-right-radius: 3px;
+			border-bottom-left-radius: 3px;
+
+			html,body{
+				height:100%;
+			}
+
+			.header {
+				background:red;
+				width:500px;
+				height:100px;
+			}
+
+			.container {
+				background:yellow;
+				width:500px;
+				height:100%;
+			}
+
+			.footer {
+				background:green;
+				width:500px;
+				height:100px;
+				margin-top:-100px;
+			}
+		}
+
+	</style>
+
+	<script type="text/javascript" src="dictionary1.js"></script>
+	<script type="text/javascript" src="Stack.js"></script>
+	<script type="text/javascript" src="BubbleSort.js"></script>
+	<script type="text/javascript" src="dll_queue.js"></script>
+
+	<script type="text/javascript">
+		var q = new Queue();
+		var s = new Stack();
+		var x = new Dictionary();
+
+		function stack() {
+			s.push(document.getElementById("s_val").value);
+			document.getElementById("s_show").innerHTML = s.toString();
+			document.getElementById("s_val").value = null;
+		}
+
+		function pop() {
+			s.pop();
+			document.getElementById("s_show").innerHTML = s.toString();
+		}
+
+		function Clear() {
+			s.clear();
+			document.getElementById("s_show").innerHTML = s.toString();
+		}
+
+		function q_en(){
+			q.enQueue(document.getElementById("q_val").value);
+			document.getElementById("q_show").innerHTML = q.print();
+			document.getElementById("q_val").value = null;
+		}
+
+		function q_de(){
+			q.deQueue();
+			document.getElementById("q_show").innerHTML = q.print();
+		}
+
+		function addDic() {
+			var key = document.getElementById('dicInputKey').value;
+			var value = document.getElementById('dicInputValue').value;
+			x.set(key, value);
+			document.getElementById('dicInputKey').value = null;
+			document.getElementById('dicInputValue').value = null;
+			document.getElementById('showDic').innerHTML = JSON.stringify(x.getItems());
+		}
+
+		function getkey() {
+			var key = document.getElementById('dicgetKey').value;
+			document.getElementById('showget').innerHTML = x.get(key);
+
+		}
+	</script>
+	<script>
+		var bs1 = new BubbleSort();
+		var bs2 = new BubbleSort();
+
+		function bs_append2() {
+			bs.addMe(document.getElementById("bs_val").value)
+			document.getElementById("bs_show").innerHTML = bs.showMe();
+			document.getElementById("bs_val").value = null;
+		}
+
+		function bs_s2() {
+			document.getElementById("bs_show").innerHTML = bs.B_Sort();
+		}
+
+		function bs_append() {
+			document.getElementById("bs_show").innerHTML = bs1.showMe();
+		}
+
+		function bs_sort() {
+			document.getElementById("bs_show").innerHTML = bs2.sortNow();
+		}
+	</script>
+
+
+

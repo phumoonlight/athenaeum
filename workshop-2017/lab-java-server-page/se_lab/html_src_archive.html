@@ -1,0 +1,120 @@
+<!-- meta viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- link css -->
+<link rel="stylesheet" href="css/main.css">
+
+<!-- main tag -->
+<ul>
+    <li>.....</li>
+    <li>.....</li>
+</ul>
+
+<section>........</section>
+
+<div>...........</div>
+
+<span>.....</span>
+
+<a href="#"></a>
+
+<button>..Click me..</button>
+
+<table>
+    <tr>
+        <th>topic-1</th>
+        <th>topic-2</th>
+    </tr>
+    <tr>
+        <td>.....</td>
+        <td>.....</td>
+    </tr>
+</table>
+
+<select autofocus>
+    <option value="volvo">Volvo</option>
+    <option value="saab">Saab</option>
+    <option value="opel">Opel</option>
+    <option value="audi">Audi</option>
+</select>
+
+<!-- J query -->
+<script src="js/jquery-3.3.1.min.js"></script>
+<script>
+    // document ready event
+    $(document).ready(function () {
+            // do something
+    });
+    
+    // click event selector [ tag #id .class ]
+    $("selector").click(function () {
+        $("selector").hide();
+        $("selector").show();
+        $("selector").prepend();
+        $("selector").append();
+        $("selector").fadeIn();
+        $("selector").fadeOut();
+        $("selector").remove();
+        $("selector").empty();
+        $("selector").text();
+        $("selector").html();
+    });
+</script>
+
+<!-- JS -->
+<script>
+    // array
+    var x = new Array();
+    var x = [];
+
+    // array management
+    // set value
+    x[0] = 1;
+    x[1] = 2;
+
+    // add value
+    x.push(x);
+
+    // remove last value
+    array.pop();
+
+    // remove first value
+    array.shift();
+
+    //.length
+    x.length
+
+    // ---------------------------------------- //
+
+    // object structure
+    var x = {
+        a: 1,
+        b: 2,
+        c: function () {
+            // do something
+        }
+    }
+
+    // object management
+    console.log(x);
+    console.log(x.a);
+    x.c();
+
+    // delete [array/object]
+    delete x;
+
+    //----------------------------------------//
+
+    //function
+    function x() {
+        // do something..
+    }
+
+    // document 
+    // set / get elementby id#
+    document.getElementById('text').innerHTML = x;
+    x = document.getElementById('text').innerHTML;
+
+    // print console
+    console.log(x);
+</script>

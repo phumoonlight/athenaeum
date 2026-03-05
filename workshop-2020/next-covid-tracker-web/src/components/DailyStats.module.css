@@ -1,0 +1,36 @@
+.card {
+  display: inline-block;
+  min-width: 275px;
+  margin: 5px;
+}
+
+.center {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.number {
+  font-size: 45px;
+  font-weight: bold;
+  font-family: 'Prompt', sans-serif;
+}
+
+.blue {
+  color: rgb(0, 80, 255);
+}
+
+.orange {
+  color: rgb(255, 145, 0);
+}
+
+.green {
+  color: rgb(0, 165, 75);
+}
+
+.red {
+  color: rgb(255, 25, 0);
+}
+
+.diff {
+  font-size: 20px;
+}

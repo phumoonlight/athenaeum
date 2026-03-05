@@ -1,0 +1,44 @@
+<nav>
+  <a class="link-home" routerLink="/">experimental api backoffice</a>
+  <a
+    class="link-github"
+    href="https://github.com/phumoonlight/experimental-web"
+    target="_blank"
+  >
+    <app-github-icon></app-github-icon>
+  </a>
+</nav>
+<div class="page-layout">
+  <aside>
+    <section id="side-nav">
+      <div class="title">NAVIGATION</div>
+      <a
+        routerLink="/"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Tag
+      </a>
+      <a
+        routerLink="/tagcollections"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Tag Collections
+      </a>
+    </section>
+    <section id="api-status">
+      <div class="title">API STATUS</div>
+      <a
+        href="https://experimentalapi.herokuapp.com/"
+        target="_blank"
+        [ngClass]="isApiOk | apiStatus"
+      >
+        {{ isApiOk | apiStatus: isLoading | uppercase }}
+      </a>
+    </section>
+  </aside>
+  <main>
+    <router-outlet></router-outlet>
+  </main>
+</div>

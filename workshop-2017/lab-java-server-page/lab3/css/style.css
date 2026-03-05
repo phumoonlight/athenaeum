@@ -1,0 +1,126 @@
+.shadow-title {
+	text-align: center;
+	text-shadow: 1px 1px #1a0079;
+	font-size: 50px;
+}
+
+.img-center {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.a-center{
+	text-align: center;
+}
+
+.boldtext {
+	font-weight: bold;
+}
+
+.contentuser1 {
+    max-width: 600px;
+    margin: auto;
+    background: linear-gradient(to right, rgb(96, 160, 255), rgb(71, 90, 255));
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.contentuser2 {
+    max-width: 600px;
+    margin: auto;
+    background: rgb(240, 240, 240);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.content {
+    max-width: 1280px;
+    margin: auto;
+    background: linear-gradient(to right, rgb(96, 160, 255), rgb(71, 90, 255));
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.content2 {
+    max-width: 770px;
+    margin: auto;
+    background: rgb(240, 240, 240);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.content3 {
+    max-width: 600px;
+    margin: auto;
+    background: rgb(240, 240, 240);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.content4 {
+    max-width: 1200px;
+    margin: auto;
+    background: rgb(240, 240, 240);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.imgrounded {
+	border-radius: 5px;
+}
+
+.font-kanit{
+    font-family: 'Kanit', sans-serif;
+  
+}
+
+.title-text {
+	font-size: 48px;
+    color: #0179D8;
+}
+
+.color-blue{
+    font-family: 'Kanit', sans-serif;
+    font-size: 48px;
+    color: #0179D8;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.logo {
+    width: 25%;
+    height: 25%;
+}
+
+.clearfix {
+    overflow: auto;
+}
+
+.right-img {
+    float: right;
+}
+
+.width-number-input{
+    width: 35px;
+}
+.name-address-font{
+    text-align: center; 
+    font-family: 'Kanit', sans-serif;
+}
+.sb-align{
+    text-align: center;
+}
+.sb-font{
+    font-family: 'Kanit', sans-serif; width: 15%;
+}
+
+

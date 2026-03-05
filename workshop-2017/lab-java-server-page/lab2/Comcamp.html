@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="image/csicon.png">
+    <script src="js/bootstrap.js"></script>
+
+    <title>Comcamp xxth</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="form-validation.css" rel="stylesheet">
+    <link rel="stylesheet"href="https://fonts.googleapis.com/css?family=Kanit">
+    
+  </head>
+    <body class="bg-light">
+      <div class="container">
+        <div class="py-5 text-center">
+          <img class="d-block mx-auto mb-4 responsive" src="Image/cmp.png" alt="" width="300" height="300">
+          <h2 class="font-kanit">สมัครเข้าร่วมโครงการ<br>ค่ายยุวชนคอมพิวเตอร์<br>ครั้งที่ XX</h2>
+        </div>
+
+        <div class="row">
+        <div class="col-md-12 order-md-1">
+          <h4 class="mb-3">ส่วนที่ 1 : ข้อมูลพื้นฐาน</h4> 
+          <form class="needs-validation" novalidate>
+            <div class="row">
+                <div class="col-md-2 mb-2">
+                    <label for="firstName">&ensp;</label>
+                <select class="custom-select d-block w-100" id="country" required>
+                    <option value="">คำนำหน้า</option>
+                    <option>เด็กชาย</option>
+                    <option>นาย</option>
+                    <option>เด็กหญิง</option>
+                    <option>นางสาว</option>
+                  </select>
+                  <div class="invalid-feedback">
+                    เลือกคำนำหน้า
+                  </div>
+                </div>
+              <div class="col-md-4 mb-2">
+                <label for="firstName">ชื่อ</label>
+                <input type="text" class="form-control" id="firstName" placeholder="Name" value="" maxlength="25" required>
+                <div class="invalid-feedback">
+                  โปรดระบุชื่อ!
+                </div>
+              </div>
+              <div class="col-md-4 mb-2">
+                <label for="lastName">นามสกุล</label>
+                <input type="text" class="form-control" id="lastName" placeholder="Surname" value="" maxlength="25" required>
+                <div class="invalid-feedback">
+                  โปรดระบุนามสกุล!
+                </div>
+              </div>
+              <div class="col-md-2 mb-2">
+                    <label for="lastName">ชื่อเล่น</label>
+                    <input type="text" class="form-control" id="" placeholder="Nickname" value="" maxlength="10" required>
+                    <div class="invalid-feedback">
+                      โปรดระบุนามสกุล!
+                    </div>
+                  </div>
+            </div>
+            <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="username">หมายเลขบัตรประชาชน</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <!-- <span class="input-group-text">@</span> -->
+                </div>
+                <input type="number" class="form-control" id="" placeholder="ID" maxlength = "13" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" required>
+                <div class="invalid-feedback" style="width: 100%;">
+                  โปรดระบุหมายเลขบัตรประชาชน!
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="school">โรงเรียน</label>
+              <input type="text" class="form-control" id="Organization" placeholder="Education Institute" maxlength="25" required>
+              <div class="invalid-feedback">
+                โปรดระบุโรงเรียน!
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="email">E - mail</label>
+                <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Email" maxlength="25" required>
+                <div class="invalid-feedback">
+                  โปรดระบุโรงเรียน!
+                </div>
+              </div>
+            </div>
+
+
+            <div class="mb-3">
+              <label for="address">ที่อยู่</label>
+              <textarea type="text" class="form-control" id="address" placeholder="Address" required></textarea>
+              <div class="invalid-feedback">
+                โปรดระบุที่อยู่!
+              </div>
+            </div>
+            <div class="row">
+            <div class="col-md-4 mb-2">
+                <label for="address2">หมายเลขโทรศัพท์</label>
+                <input type="number" class="form-control" id="frmPhoneNumA" placeholder="Phone number" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="10" required>
+                <div class="invalid-feedback">
+                        โปรดระบุหมายเลขโทรศัพท์!
+                      </div>
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="address2">ชื่ออาจารย์ที่ปรีกษา</label>
+                <input type="" class="form-control" id="" maxlength="30" placeholder="Advisor" required>
+                <div class="invalid-feedback">
+                        โปรดระบุชื่ออาจารย์!
+                      </div>
+                </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="address2">หมายเลขโทรศัพท์อาจารย์</label>
+                <input type="" class="form-control" id="" placeholder="Advisor's phone number" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="10" required>
+                <div class="invalid-feedback">
+                        โปรดระบุหมายเลขโทรศัพท์อาจารย์!
+                      </div>
+            </div>   
+            </div>
+            
+            <hr class="mb-4">
+            <h4 class="mb-3">ส่วนที่ 2 : ข้อมูลเพิ่มเติม</h4> 
+            <div class="row">
+            <div class="col-md-3 mb-2">
+                    <label for="country">ระดับชั้น</label>
+                    <select class="custom-select d-block w-100" id="country" required>
+                      <option value="">เลือกระดับชั้น ...</option>
+                      <option>มัธยมศึกษาปีที่ 1</option>
+                      <option>มัธยมศึกษาปีที่ 2</option>
+                      <option>มัธยมศึกษาปีที่ 3</option>
+                      <option>มัธยมศึกษาปีที่ 4</option>
+                      <option>มัธยมศึกษาปีที่ 5</option>
+                      <option>มัธยมศึกษาปีที่ 6</option>
+
+                    </select>
+                    <div class="invalid-feedback">
+                      โปรดเลือกระดับชั้น.
+                    </div>
+
+                    
+
+                    <div class="d-block my-3">
+                            <label for="country">แผนการเรียน </label><br>
+                            <div class="custom-control custom-radio">
+                              <input id="sci" name="paymentMethod" type="radio" class="custom-control-input" required>
+                              <label class="custom-control-label" for="sci">วิทย์ - คณิต</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                              <input id="engmath" name="paymentMethod" type="radio" class="custom-control-input" required>
+                              <label class="custom-control-label" for="engmath">คณิต - อังกฤษ</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                                <input id="techno" name="paymentMethod" type="radio" class="custom-control-input" required>
+                                <label class="custom-control-label" for="techno">สายอาชีพ</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                              <input id="other" name="paymentMethod" type="radio" class="custom-control-input" required>
+                              <label class="custom-control-label" for="other">อื่นๆ</label>
+                              <div class="invalid-feedback">
+                                    โปรดเลือกแผนการเรียน
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label for="country">เลือกขนาดเสื้อ</label>
+                                <select class="custom-select d-block w-100" id="country" required>
+                                  <option value="">ขนาด ...</option>
+                                  <option>S</option>
+                                  <option>M</option>
+                                  <option>L</option>
+                                  <option>XL</option>
+                                  <option>XXL</option>
+                                  <option>XXXL</option>
+                
+                                </select>
+                                <div class="invalid-feedback">
+                                  โปรดเลือกขนาดของเสื้อ.
+                                </div>
+                              </div>
+                          </div>
+                          
+          
+            
+
+            <hr class="mb-4">
+            
+
+            <h4 class="mb-3">โรคประจำตัว / การแพ้อาหาร (หากไม่มีให้ใส่ - )</h4>
+            <div class="col-md-6 mb-3">
+            <input type="text" class="form-control" id="" placeholder="ระบุโรคประจำตัว" required>
+            <div class="invalid-feedback">
+                ระบุโรคประจำตัว หากไม่มีให้ใส่ -
+              </div>
+            <input type="text" class="form-control" id="" placeholder="ระบุการแพ้อาหาร" required>
+            <div class="invalid-feedback">
+                ระบุการแพ้อาหาร หากไม่มีให้ใส่ -
+              </div>
+
+            </div>   
+      </div>
+            </div>
+
+            <hr class="mb-4">
+            
+            <form action="" id="form1">
+            <button style="width: 250px; margin:auto;"  class="btn btn-primary btn-lg btn-block font-kanit responsive" type="submit">Register</button>
+          </form>
+        </div>
+      </div>
+
+      <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; Maejo University - Faculty of Science - Computer Science</p>
+        <ul class="list-inline">
+          <li class="list-inline-item"><a href="#">ติดต่อเรา</a></li>
+        </ul>
+      </footer>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="../../assets/js/vendor/popper.min.js"></script>
+    <script src="../../dist/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/vendor/holder.min.js"></script>
+
+    <script>
+      // Example starter JavaScript for disabling form submissions if there are invalid fields
+      (function() {
+        'use strict';
+
+        window.addEventListener('load', function() {
+          // Fetch all the forms we want to apply custom Bootstrap validation styles to
+          var forms = document.getElementsByClassName('needs-validation');
+
+          // Loop over them and prevent submission
+          var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+              if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+              form.classList.add('was-validated');
+            }, false);
+          });
+        }, false);
+      })();
+    </script>
+
+    <script>
+      function ismaxlength(obj){
+
+        var mlength = obj.getAttribute? parseInt(obj.getAttribute("maxlength")) : ""
+        if (obj.getAttribute && obj.value.length>mlength)
+        obj.value = obj.value.substring(0,mlength)
+
+      }
+    </script>
+  </body>
+</html>

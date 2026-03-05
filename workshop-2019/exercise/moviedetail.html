@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+		/>
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Exercise : Movie Ticket Machine</title>
+		<link rel="stylesheet" href="main.css" />
+		<link
+			href="https://fonts.googleapis.com/css?family=Prompt"
+			rel="stylesheet"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+			integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
+			crossorigin="anonymous"
+		/>
+	</head>
+
+	<body>
+		<div id="title">ภาพยนตร์</div>
+		<section id="movie-detail"></section>
+		<script
+			src="https://code.jquery.com/jquery-3.3.1.min.js"
+			integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+			crossorigin="anonymous"
+		></script>
+		<script>
+			$(document).ready(function () {
+				var param = GetParameterValues('id') - 1
+				function GetParameterValues(param) {
+					var url = window.location.href
+						.slice(window.location.href.indexOf('?') + 1)
+						.split('&')
+					for (var i = 0; i < url.length; i++) {
+						var urlparam = url[i].split('=')
+						if (urlparam[0] == param) {
+							return urlparam[1]
+						}
+					}
+				}
+				$.ajax({
+					type: 'GET',
+					dataType: 'json',
+					url: 'http://www.mocky.io/v2/5bab559f3000006800a68762',
+					success: function (result) {
+						$('#title').text(result.data[param].name)
+						$('#movie-detail').html(
+							"<img src='" +
+								result.data[param].image +
+								"'>" +
+								'<div><span>เรื่องย่อ</span><br>' +
+								result.data[param].shot_description +
+								'<br>' +
+								'<span>ราคา</span><br>' +
+								result.data[param].price +
+								' บาท</div>'
+						)
+					},
+				})
+			})
+		</script>
+	</body>
+</html>

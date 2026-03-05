@@ -1,0 +1,28 @@
+.root {
+  margin-top: 75px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.icon {
+  margin-right: 10px;
+}
+
+.button {
+  margin: 5px !important;
+  font-weight: bold !important;
+}
+
+.credit {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle;
+  font-family: 'Prompt', sans-serif;
+  color: #758AA2;
+}
+
+.credit > span {
+  margin-left: 10px;
+}

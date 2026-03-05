@@ -1,0 +1,22 @@
+@font-face {
+  font-family: 'product-sans';
+  src: url('/font-product-sans-regular.ttf');
+}
+
+* {
+  font-family: 'product-sans';
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+ text-decoration: none; 
+}
+
+#__next,
+main {
+  height: inherit;
+}
