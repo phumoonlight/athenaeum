@@ -1,0 +1,27 @@
+{
+  "name": "basic-socket-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/phumoonlight/basic-socket-server.git",
+  "author": "Phusan Moonmuang <phumoonlight@hotmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon --exec babel-node src/server",
+    "build": "babel -d dist src",
+    "start": "node dist/server"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.5",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "2.20.1",
+    "nodemon": "^2.0.2"
+  }
+}

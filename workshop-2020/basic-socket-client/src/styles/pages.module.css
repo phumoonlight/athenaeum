@@ -1,0 +1,52 @@
+.root {
+  padding: 25px;
+}
+
+.message {
+  margin-left: 10%;
+  margin-right: 10%;
+  padding: 5px;
+}
+
+.socketId {
+  padding: 5px;
+  text-align: center;
+  font-weight: bold;
+  font-family: 'Prompt', sans-serif;
+}
+
+.formlayout {
+  text-align: center;
+}
+
+.formBlock {
+  margin: 5px;
+}
+
+.formInput {
+  width: 100%;
+}
+
+.formContainer {
+  padding: 5px;
+  display: inline-block;
+}
+
+.page-title {
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 20px;
+  margin: 20px;
+}
+
+/* @media only screen and (max-width: 426px) {
+  .formContainer {
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+
+  .socketId {
+    margin-left: 10%;
+    margin-right: 10%;
+  } 
+} */
