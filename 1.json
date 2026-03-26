@@ -1,6 +1,6 @@
 {
   "version": 14,
-  "characterGuid": "ebc92d3704acb2afea40d6caa08d4160",
+  "characterGuid": "ebc92d3704acb2afea40d6caa08d4161",
   "characterCustomization": {
     "name": {
       "utf8LengthInBytes": 0,
@@ -130,20 +130,17 @@
     "role": 3
   },
   "discoveredObjects": [],
-  "servers": [
-    { "serverGuid": "d4cb558b849eb0daf0b5606bda757cfc" },
-    { "serverGuid": "9c0d3eb01430ac4bdb3c90e814de36e9" }
-  ],
+  "servers": [{ "serverGuid": "9c0d3eb01430ac4bdb3c90e814de36e9" }],
   "skills": [
     { "skillID": 0, "value": 9337 },
-    { "skillID": 1, "value": 142381 },
+    { "skillID": 1, "value": 142557 },
     { "skillID": 2, "value": 741 },
     { "skillID": 3, "value": 488991 },
     { "skillID": 4, "value": 3795 },
     { "skillID": 5, "value": 58 },
     { "skillID": 6, "value": 6602 },
     { "skillID": 7, "value": 238 },
-    { "skillID": 8, "value": 2372 },
+    { "skillID": 8, "value": 16 },
     { "skillID": 9, "value": 2733 },
     { "skillID": 10, "value": 504 },
     { "skillID": 11, "value": 48 }
@@ -151,6 +148,18 @@
   "activatedCrystals": [],
   "inventory": [
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
+    {
+      "objectID": 4013,
+      "amount": 1,
+      "variation": 0,
+      "variationUpdateCount": 0
+    },
+    {
+      "objectID": 5500,
+      "amount": 8,
+      "variation": 0,
+      "variationUpdateCount": 0
+    },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
@@ -158,12 +167,30 @@
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
-    { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
-    { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
-    { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
-    { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
-    { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
-    { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
+    {
+      "objectID": 4099,
+      "amount": 4,
+      "variation": 0,
+      "variationUpdateCount": 0
+    },
+    {
+      "objectID": 1006,
+      "amount": 99,
+      "variation": 0,
+      "variationUpdateCount": 0
+    },
+    {
+      "objectID": 1008,
+      "amount": 119,
+      "variation": 0,
+      "variationUpdateCount": 0
+    },
+    {
+      "objectID": 1009,
+      "amount": 131,
+      "variation": 0,
+      "variationUpdateCount": 0
+    },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
     { "objectID": 0, "amount": 0, "variation": 0, "variationUpdateCount": 0 },
@@ -283,6 +310,8 @@
   ],
   "inventoryObjectNames": [
     "",
+    "CookingPot",
+    "Mushroom",
     "",
     "",
     "",
@@ -290,12 +319,10 @@
     "",
     "",
     "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
+    "Portal",
+    "OctarineBar",
+    "SolariteBar",
+    "PandoriumBar",
     "",
     "",
     "",
@@ -678,16 +705,17 @@
     false
   ],
   "conditionsList": [
-    { "Id": 199, "Value": 25, "Duration": Infinity, "Timer": -34551.55078125 },
-    { "Id": 116, "Value": 151, "Duration": 0.0, "Timer": -2308.39990234375 },
-    { "Id": 145, "Value": 200, "Duration": 0.0, "Timer": -0.05000000074505806 },
-    { "Id": 147, "Value": 1, "Duration": 0.0, "Timer": -0.05000000074505806 }
+    { "Id": 199, "Value": 25, "Duration": Infinity, "Timer": -34879.3984375 },
+    { "Id": 116, "Value": 128, "Duration": 0.0, "Timer": -63.900001525878909 },
+    { "Id": 110, "Value": 100, "Duration": 0.0, "Timer": -63.54999923706055 },
+    { "Id": 145, "Value": 200, "Duration": 0.0, "Timer": -0.10000000149011612 },
+    { "Id": 147, "Value": 1, "Duration": 0.0, "Timer": -0.10000000149011612 }
   ],
   "hasUnlockedSouls": true,
   "coinAmount": 0,
   "collectedSouls": [1],
-  "maxHealth": 329,
-  "serverConnectCount": 18,
+  "maxHealth": 306,
+  "serverConnectCount": 1,
   "skillTalentTreeDatas": [
     { "skillTreeID": 0, "points": [5, 5, 0, 0, 0, 0, 0, 0] },
     { "skillTreeID": 1, "points": [5, 0, 5, 0, 0, 4, 0, 0] },
@@ -1393,7 +1421,10 @@
     { "objectID": 9412, "variation": 0 },
     { "objectID": 9413, "variation": 0 },
     { "objectID": 9416, "variation": 0 },
-    { "objectID": 9400, "variation": 0 }
+    { "objectID": 9400, "variation": 0 },
+    { "objectID": 5516, "variation": 0 },
+    { "objectID": 9911, "variation": 0 },
+    { "objectID": 9912, "variation": 0 }
   ],
   "disabledSoulPowers": [1],
   "hasPlayedOutro": false,
