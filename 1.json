@@ -181,13 +181,13 @@
     },
     {
       "objectID": 1008,
-      "amount": 119,
+      "amount": 1191,
       "variation": 0,
       "variationUpdateCount": 0
     },
     {
       "objectID": 1009,
-      "amount": 131,
+      "amount": 1311,
       "variation": 0,
       "variationUpdateCount": 0
     },
@@ -1428,13 +1428,5 @@
   ],
   "disabledSoulPowers": [1],
   "hasPlayedOutro": false,
-  "completedTutorials": [1, 3, 5, 2, 4],
-  "lastConnectedServerGuid": {
-    "Value": {
-      "x": 2914018296,
-      "y": 2039628195,
-      "z": 1263897718,
-      "w": 157251225
-    }
-  }
+  "completedTutorials": [1, 3, 5, 2, 4]
 }
