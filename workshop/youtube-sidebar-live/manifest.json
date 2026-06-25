@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Live Watchlist",
+  "version": "2.0.0",
+  "description": "Floating bottom-left button that shows which of your manually-followed YouTube channels are live. Checks only when you open YouTube. No API key, no background polling.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

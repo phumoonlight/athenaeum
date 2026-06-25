@@ -1,0 +1,323 @@
+/* YouTube Live Watchlist — floating button + panel (bottom-left).
+   Scoped under our own ids/classes so nothing leaks into YouTube's styling. */
+
+/* ── Floating button ────────────────────────────────────────────────────── */
+#yls-fab {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 2147483000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: #212121;
+  color: #fff;
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+#yls-fab:hover {
+  transform: translateY(-1px);
+  background: #2f2f2f;
+}
+#yls-fab .yls-fab-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+#yls-fab .yls-fab-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #555;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+#yls-fab .yls-fab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background: transparent;
+}
+#yls-fab.yls-has-live {
+  background: #c00;
+}
+#yls-fab.yls-has-live:hover {
+  background: #d00;
+}
+#yls-fab.yls-has-live .yls-fab-count {
+  background: rgba(0, 0, 0, 0.35);
+}
+#yls-fab.yls-has-live .yls-fab-dot {
+  background: #fff;
+  animation: yls-pulse 1.4s ease-in-out infinite;
+}
+/* Spin the icon subtly while checking. */
+#yls-fab.yls-checking .yls-fab-icon {
+  animation: yls-blink 0.9s ease-in-out infinite;
+}
+@keyframes yls-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+@keyframes yls-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ── Panel ──────────────────────────────────────────────────────────────── */
+#yls-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 76px;
+  z-index: 2147483000;
+  width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: #212121;
+  color: #fff;
+  font-family: "Roboto", "Arial", sans-serif;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+#yls-panel[hidden] {
+  display: none;
+}
+
+#yls-panel .yls-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 10px;
+}
+#yls-panel .yls-title {
+  flex: 1 1 auto;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+#yls-panel .yls-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+#yls-panel .yls-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+#yls-panel .yls-iconbtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+#yls-panel .yls-refresh {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+#yls-panel .yls-refresh:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+#yls-panel .yls-refresh:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#yls-panel .yls-updated {
+  padding: 0 10px 8px;
+  margin-top: -4px;
+  font-size: 11px;
+  color: #888;
+}
+
+#yls-panel .yls-warn {
+  margin: 0 8px 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 196, 0, 0.15);
+  color: #ffd54a;
+  font-size: 12px;
+}
+
+#yls-panel .yls-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+#yls-panel .yls-section-label {
+  padding: 6px 10px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #aaa;
+}
+#yls-panel .yls-panel-empty {
+  padding: 6px 10px 12px;
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+/* ── Channel row ────────────────────────────────────────────────────────── */
+#yls-panel .yls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: none;
+}
+#yls-panel a.yls-row {
+  cursor: pointer;
+}
+#yls-panel a.yls-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+#yls-panel .yls-row-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: #444;
+  object-fit: cover;
+}
+#yls-panel .yls-row-name {
+  flex: 1 1 auto;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#yls-panel .yls-row-live {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #c00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Status dot on manage rows */
+#yls-panel .yls-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  background: #777;
+}
+#yls-panel .yls-dot-live { background: #f00; box-shadow: 0 0 5px #f00; }
+#yls-panel .yls-dot-offline { background: #555; }
+#yls-panel .yls-dot-checking { background: #f5a623; animation: yls-blink 0.9s ease-in-out infinite; }
+#yls-panel .yls-dot-login,
+#yls-panel .yls-dot-network { background: #ffd54a; }
+
+/* Live rows stay fully opaque and on top; everything else fades a little but
+   stays readable. */
+#yls-panel .yls-row.yls-status-live { opacity: 1; }
+#yls-panel .yls-row.yls-status-offline,
+#yls-panel .yls-row.yls-status-unknown,
+#yls-panel .yls-row.yls-status-checking,
+#yls-panel .yls-row.yls-status-login,
+#yls-panel .yls-row.yls-status-network {
+  opacity: 0.6;
+}
+
+/* Refresh icon button: disabled + spinning while checking. */
+#yls-panel .yls-iconbtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#yls-panel .yls-iconbtn.yls-spin {
+  animation: yls-rotate 0.8s linear infinite;
+}
+@keyframes yls-rotate {
+  to { transform: rotate(360deg); }
+}
+
+#yls-panel .yls-remove {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+#yls-panel .yls-remove:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Add row ────────────────────────────────────────────────────────────── */
+#yls-panel .yls-addrow {
+  display: flex;
+  gap: 6px;
+  padding: 10px 8px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 4px;
+}
+#yls-panel .yls-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #121212;
+  color: #fff;
+  font-size: 13px;
+}
+#yls-panel .yls-input::placeholder {
+  color: #888;
+}
+#yls-panel .yls-input-error {
+  border-color: #f33;
+}
+#yls-panel .yls-add {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 36px;
+  border: none;
+  background: #3ea6ff;
+  color: #0a0a0a;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#yls-panel .yls-add:hover {
+  background: #5cb4ff;
+}
