@@ -1,0 +1,15 @@
+{
+	"name": "test-smtp",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Verify SMTP credentials and optionally send a test email",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js",
+		"send": "node index.js --send"
+	},
+	"dependencies": {
+		"dotenv": "^16.4.5",
+		"nodemailer": "^6.9.14"
+	}
+}
