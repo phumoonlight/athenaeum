@@ -16,10 +16,10 @@
   z-index: 2147483000;
   display: block;
   box-sizing: border-box;
-  width: 0.7em;
-  height: 0.7em;
-  min-width: 10px;
-  min-height: 10px;
+  width: 0.75em;
+  height: 0.75em;
+  min-width: 16px;
+  min-height: 16px;
   /* White ring so the dot separates from whatever is behind it. */
   border: 2px solid #fff;
   border-radius: 50%;

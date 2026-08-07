@@ -16,6 +16,7 @@ export const CONFIG = {
 }
 
 const READ_KEY = 'readIds'
+const FAV_KEY = 'favIds'
 
 /** Whether the content script marks bookmarked links on pages. Mirrored literally in content.js. */
 export const ANNOTATE_KEY = 'annotateLinks'
@@ -130,17 +131,19 @@ export function filterBySite(bookmarks, site) {
     .sort((a, b) => direction * (a.dateAdded - b.dateAdded))
 }
 
-/** `{ [bookmarkId]: markedAtMs }` — absence means unread. */
-export async function getReadIds() {
-  const stored = await chrome.storage.local.get(READ_KEY)
-  return stored[READ_KEY] || {}
+// Read and favourite are the same shape — `{ [bookmarkId]: markedAtMs }`, where
+// absence is the "off" state — so they share one set of helpers.
+
+async function getMarks(key) {
+  const stored = await chrome.storage.local.get(key)
+  return stored[key] || {}
 }
 
-export async function setRead(id, read) {
-  const map = await getReadIds()
-  if (read) map[id] = Date.now()
+async function setMark(key, id, on) {
+  const map = await getMarks(key)
+  if (on) map[id] = Date.now()
   else delete map[id]
-  await chrome.storage.local.set({ [READ_KEY]: map })
+  await chrome.storage.local.set({ [key]: map })
   return map
 }
 
@@ -148,15 +151,25 @@ export async function setRead(id, read) {
  * Apply many marks at once: `{ [bookmarkId]: markedAtMs | null }`, where null
  * clears the mark. One storage write for the whole batch — used by import.
  */
-export async function applyReadMarks(marks) {
-  const map = await getReadIds()
+async function applyMarks(key, marks) {
+  const map = await getMarks(key)
   for (const [id, at] of Object.entries(marks)) {
     if (at) map[id] = at
     else delete map[id]
   }
-  await chrome.storage.local.set({ [READ_KEY]: map })
+  await chrome.storage.local.set({ [key]: map })
   return map
 }
+
+/** `{ [bookmarkId]: markedAtMs }` — absence means unread. */
+export const getReadIds = () => getMarks(READ_KEY)
+export const setRead = (id, read) => setMark(READ_KEY, id, read)
+export const applyReadMarks = (marks) => applyMarks(READ_KEY, marks)
+
+/** `{ [bookmarkId]: markedAtMs }` — absence means not a favourite. */
+export const getFavIds = () => getMarks(FAV_KEY)
+export const setFavorite = (id, favorite) => setMark(FAV_KEY, id, favorite)
+export const applyFavMarks = (marks) => applyMarks(FAV_KEY, marks)
 
 /**
  * A URL reduced to what should count as "the same bookmark" across profiles:
@@ -175,17 +188,23 @@ export function urlKey(url) {
 }
 
 /**
- * Drop read marks for bookmarks that no longer exist, so deleting and
- * re-adding a bookmark brings it back as unread instead of silently read.
+ * Drop marks for bookmarks that no longer exist, so deleting and re-adding a
+ * bookmark brings it back as unread and unstarred instead of silently keeping
+ * the old marks of whatever used to hold that id.
  */
-export async function pruneReadIds(bookmarks) {
-  const map = await getReadIds()
+export async function pruneMarks(bookmarks) {
   const alive = new Set(bookmarks.map((b) => b.id))
-  const stale = Object.keys(map).filter((id) => !alive.has(id))
-  if (!stale.length) return map
-  for (const id of stale) delete map[id]
-  await chrome.storage.local.set({ [READ_KEY]: map })
-  return map
+  const out = {}
+  for (const key of [READ_KEY, FAV_KEY]) {
+    const map = await getMarks(key)
+    const stale = Object.keys(map).filter((id) => !alive.has(id))
+    if (stale.length) {
+      for (const id of stale) delete map[id]
+      await chrome.storage.local.set({ [key]: map })
+    }
+    out[key] = map
+  }
+  return { readIds: out[READ_KEY], favIds: out[FAV_KEY] }
 }
 
 export function faviconUrl(pageUrl, size = 32) {

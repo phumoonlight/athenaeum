@@ -2,12 +2,13 @@
 
 A small, personal-use Brave/Chrome extension. While you're on a site, the toolbar
 button shows **how many of your saved bookmarks for that site you haven't read
-yet**, and the popup lists them split into **Unread** and **Read** tabs. Marking
-is one click and always reversible.
+yet**, and the popup lists them split into **Unread**, **Read** and **★
+Favorites** tabs. Marking is one click and always reversible.
 
-It reads your **existing browser bookmarks**. Read/unread is the extension's own
-state, stored locally; the only thing it ever writes to your bookmarks is a new
-one you ask for with **+ Add** — nothing is modified, moved, or deleted.
+It reads your **existing browser bookmarks**. Read/unread and favourites are the
+extension's own state, stored locally; the only thing it ever writes to your
+bookmarks is a new one you ask for with **+ Add** — nothing is modified, moved,
+or deleted.
 
 ## How it works
 
@@ -25,12 +26,17 @@ one you ask for with **+ Add** — nothing is modified, moved, or deleted.
   it back. Marking is always one bookmark at a time — there is no bulk action.
   All the buttons are icons with tooltips (and `aria-label`s), drawn inline from
   [`icons.js`](icons.js).
+- The **★** button on any row — read or unread — adds it to Favorites; clicking a
+  lit star removes it. The current-page row has one too, once the page is
+  bookmarked. A third **★ tab** lists the site's favourites. Favourites
+  cut _across_ read state rather than replacing it: a starred bookmark still sits
+  in Unread or Read as well, and starring never changes whether it's read.
 - **Export** in the header downloads the current site's bookmarks as JSON —
   both tabs in one file, regardless of which one you're looking at. Nothing else
   is included: other sites stay out of it. See below for the shape.
 - **Import** opens a small page in a tab where you drop (or pick) an export file
-  and it restores the read/unread marks, matching entries to your bookmarks
-  **by URL**. It only writes marks — bookmarks are never created, edited or
+  and it restores the read/unread marks and stars, matching entries to your
+  bookmarks **by URL**. It only writes marks — bookmarks are never created, edited or
   deleted, and URLs you don't have bookmarked are listed as unmatched.
 - **Mark bookmarked links on pages** (the toggle at the bottom of the popup,
   **off by default**) puts a small dot on every link in a page that points at
@@ -41,10 +47,12 @@ one you ask for with **+ Add** — nothing is modified, moved, or deleted.
   count for each tab's site. It's fully event-driven (tab, bookmark and storage
   events) — no polling, no alarms, nothing running while you browse elsewhere.
 
-Read marks are keyed by **bookmark id** in `chrome.storage.local`. Marks for
-bookmarks that no longer exist are pruned each time the popup opens, so deleting
-and re-saving a bookmark brings it back as unread rather than silently read.
-State is local (not synced) and survives restarts.
+Read marks live in `chrome.storage.local` under `readIds`, favourites under
+`favIds` — both the same shape, `{ [bookmarkId]: markedAtMs }`, where an absent
+id is the off state. Marks for bookmarks that no longer exist are pruned each
+time the popup opens, so deleting and re-saving a bookmark brings it back unread
+and unstarred rather than inheriting whatever held that id before. State is local
+(not synced) and survives restarts.
 
 ## Marking links on pages
 
@@ -85,7 +93,7 @@ The file lands in your downloads folder as
   "match": "domain",
   "sort": "oldest",
   "exportedAt": "2026-08-07T09:12:33.401Z",
-  "counts": { "unread": 2, "read": 1, "total": 3 },
+  "counts": { "unread": 2, "read": 1, "favorite": 1, "total": 3 },
   "unread": [
     {
       "title": "Some article",
@@ -93,22 +101,29 @@ The file lands in your downloads folder as
       "folder": "Bookmarks bar / Reading",
       "dateAdded": "2026-05-02T18:20:00.000Z",
       "status": "unread",
-      "readAt": null
+      "readAt": null,
+      "favorite": true,
+      "favoritedAt": "2026-06-11T07:03:12.000Z"
     }
   ],
   "read": []
 }
 ```
 
-Both lists follow the same `SORT` order as the popup, and `readAt` records when
-you marked it. Bookmark ids are deliberately left out — they're device-specific
-and meaningless in another profile, which is why **import matches on URL**.
+There are only two lists — favourites are a `favorite` flag on the entries, since
+a starred bookmark is also either unread or read. Both lists follow the same
+`SORT` order as the popup. Bookmark ids are deliberately left out — they're
+device-specific and meaningless in another profile, which is why **import matches
+on URL**.
 
 Two URLs count as the same bookmark when they agree after dropping the `#`
 fragment, a leading `www.` and a trailing slash (`urlKey()` in
 [`common.js`](common.js)). The query string still counts, and the path stays
 case-sensitive. Importing an entry marked `read` restores its original `readAt`
-where the file has one; an `unread` entry clears any mark you had.
+where the file has one; an `unread` entry clears any mark you had. `favorite`
+restores the star (with its `favoritedAt`) and unstars anything the file says
+isn't starred, so an older export without the field clears existing stars for the
+bookmarks it does match.
 
 ## Install (load unpacked)
 

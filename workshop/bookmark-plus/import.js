@@ -2,7 +2,7 @@
 // picker from a popup can dismiss the popup before the file is chosen, which
 // would drop the result on the floor.
 
-import { applyReadMarks, getAllBookmarks, urlKey } from './common.js'
+import { applyFavMarks, applyReadMarks, getAllBookmarks, urlKey } from './common.js'
 
 const el = {
   drop: document.getElementById('drop'),
@@ -36,7 +36,13 @@ function readEntries(data) {
     if (!Array.isArray(list)) continue
     for (const row of list) {
       if (!row || typeof row.url !== 'string') continue
-      entries.push({ url: row.url, status: row.status || fallbackStatus, readAt: row.readAt })
+      entries.push({
+        url: row.url,
+        status: row.status || fallbackStatus,
+        readAt: row.readAt,
+        favorite: !!row.favorite,
+        favoritedAt: row.favoritedAt,
+      })
     }
   }
   return entries
@@ -60,8 +66,10 @@ async function importFile(file) {
   const byUrl = new Map(entries.map((entry) => [urlKey(entry.url), entry]))
   const bookmarks = await getAllBookmarks()
   const marks = {}
+  const favMarks = {}
   let read = 0
   let unread = 0
+  let favorite = 0
   const matchedKeys = new Set()
 
   for (const bookmark of bookmarks) {
@@ -77,6 +85,12 @@ async function importFile(file) {
       marks[bookmark.id] = null
       unread++
     }
+    if (entry.favorite) {
+      favMarks[bookmark.id] = Date.parse(entry.favoritedAt || '') || Date.now()
+      favorite++
+    } else {
+      favMarks[bookmark.id] = null
+    }
   }
 
   const unmatched = entries.filter((entry) => !matchedKeys.has(urlKey(entry.url)))
@@ -91,9 +105,11 @@ async function importFile(file) {
   }
 
   await applyReadMarks(marks)
+  await applyFavMarks(favMarks)
   const site = data.site ? ` for ${data.site}` : ''
   report(
-    `Imported${site}: ${read} marked read, ${unread} set back to unread` +
+    `Imported${site}: ${read} marked read, ${unread} set back to unread, ` +
+      `${favorite} starred` +
       (unmatched.length ? `, ${unmatched.length} not bookmarked here.` : '.'),
     'ok',
     unmatched.map((entry) => `not bookmarked here: ${entry.url}`)

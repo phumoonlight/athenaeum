@@ -6,6 +6,7 @@
   --hover: #f3f4f6;
   --accent: #2f6fed;
   --accent-soft: #e8efff;
+  --star: #e0a112;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,11 +18,18 @@
     --hover: #262a31;
     --accent: #7aa2ff;
     --accent-soft: #263148;
+    --star: #f0bb45;
   }
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Rules below set `display` on elements we also toggle with the hidden
+   attribute, which would otherwise win over the UA sheet's [hidden] rule. */
+[hidden] {
+  display: none !important;
 }
 
 body {
@@ -205,6 +213,24 @@ body.popup {
   color: var(--accent);
 }
 
+/* The favourites tab is a star instead of a word. */
+.tab--icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab--icon .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.tab--icon.is-active {
+  color: var(--star);
+}
+
 .list {
   list-style: none;
   margin: 0;
@@ -215,6 +241,7 @@ body.popup {
 }
 
 .item {
+  position: relative;
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -231,6 +258,20 @@ body.popup {
   min-width: 0;
   color: inherit;
   text-decoration: none;
+}
+
+/* The buttons are overlaid, so the title has to give back the space they need —
+   only while they're actually showing. A lit star shows without hovering, so
+   those rows keep room for it permanently. */
+.item:has(.star.is-on) .item-link {
+  padding-right: 30px;
+}
+
+.item:hover .item-link,
+.item:focus-within .item-link,
+.item:has(.star.is-on):hover .item-link,
+.item:has(.star.is-on):focus-within .item-link {
+  padding-right: 62px;
 }
 
 .item-title {
@@ -254,8 +295,18 @@ body.popup {
   text-decoration-color: var(--line);
 }
 
-.toggle {
-  flex: 0 0 auto;
+/* Overlaid on the row's right edge, so the title keeps the full width until the
+   buttons are actually needed. */
+.item-actions {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.act {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -264,20 +315,43 @@ body.popup {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: transparent;
+  /* Opaque: the buttons sit on top of the title text when it runs long. */
+  background: var(--bg);
   color: var(--muted);
   cursor: pointer;
   opacity: 0;
+  pointer-events: none;
 }
 
-.item:hover .toggle,
-.toggle:focus-visible {
+.item:hover .act,
+.item:focus-within .act {
   opacity: 1;
+  pointer-events: auto;
+  background: var(--hover);
 }
 
-.toggle:hover {
+.act:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* A lit star stays visible without hovering — it's status, not just an action. */
+.act.star.is-on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.star.is-on {
+  color: var(--star);
+}
+
+.star.is-on .icon {
+  fill: currentColor;
+}
+
+.star.is-on:hover {
+  border-color: var(--star);
+  color: var(--star);
 }
 
 .empty {

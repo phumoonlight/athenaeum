@@ -37,6 +37,7 @@
         <div id="current-state" class="current-state"></div>
       </div>
       <button id="current-action" class="ghost" type="button"></button>
+      <button id="current-star" class="ghost star" type="button" hidden></button>
     </section>
 
     <nav class="tabs" id="tabs">
@@ -45,6 +46,16 @@
       </button>
       <button class="tab" data-view="read" type="button">
         Read <span class="count" id="count-read">0</span>
+      </button>
+      <button
+        class="tab tab--icon"
+        data-view="favorite"
+        type="button"
+        title="Favorites"
+        aria-label="Favorites"
+      >
+        <span id="tab-fav-icon"></span>
+        <span class="count" id="count-favorite">0</span>
       </button>
     </nav>
 
