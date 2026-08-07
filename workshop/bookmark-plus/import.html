@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Import — Bookmark Plus</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="page">
+    <main class="sheet">
+      <h1>Import read/unread marks</h1>
+      <p class="lede">
+        Drop a <code>bookmark-plus-*.json</code> export here, or choose the file. Entries are
+        matched to your bookmarks <strong>by URL</strong>.
+      </p>
+
+      <div id="drop" class="drop" tabindex="0" role="button">
+        <div class="drop-main">Drop the export file here</div>
+        <div class="drop-sub">or click to choose a file</div>
+      </div>
+      <input id="file" type="file" accept=".json,application/json" hidden />
+
+      <p id="status" class="status" hidden></p>
+      <ul id="detail" class="detail" hidden></ul>
+
+      <p class="note">
+        This only restores <strong>read/unread marks</strong>. It never creates, edits, moves or
+        deletes bookmarks — a URL in the file that you don't have bookmarked is reported as
+        unmatched and otherwise ignored.
+      </p>
+    </main>
+
+    <script type="module" src="import.js"></script>
+  </body>
+</html>

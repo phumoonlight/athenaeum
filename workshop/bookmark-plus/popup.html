@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bookmark Plus</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="popup">
+    <header class="head">
+      <img id="favicon" class="favicon" alt="" />
+      <div class="head-text">
+        <div id="site" class="site">…</div>
+        <div id="scope" class="scope"></div>
+      </div>
+      <div class="head-actions">
+        <button
+          id="export"
+          class="ghost"
+          type="button"
+          title="Export this site's bookmarks as JSON"
+          aria-label="Export this site's bookmarks as JSON"
+        ></button>
+        <button
+          id="import"
+          class="ghost"
+          type="button"
+          title="Import marks from an export file"
+          aria-label="Import marks from an export file"
+        ></button>
+      </div>
+    </header>
+
+    <section id="current" class="current" hidden>
+      <span id="current-dot" class="dot"></span>
+      <div class="current-text">
+        <div id="current-title" class="current-title"></div>
+        <div id="current-state" class="current-state"></div>
+      </div>
+      <button id="current-action" class="ghost" type="button"></button>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab is-active" data-view="unread" type="button">
+        Unread <span class="count" id="count-unread">0</span>
+      </button>
+      <button class="tab" data-view="read" type="button">
+        Read <span class="count" id="count-read">0</span>
+      </button>
+    </nav>
+
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="empty" hidden></p>
+
+    <footer class="foot">
+      <label class="switch">
+        <input id="annotate" type="checkbox" />
+        <span>Mark bookmarked links on pages</span>
+      </label>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

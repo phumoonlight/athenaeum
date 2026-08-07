@@ -1,0 +1,36 @@
+/* Injected into every page — keep the surface tiny and the names unlikely to clash. */
+
+/* Added to a marked link only when the page leaves it statically positioned. */
+.bmpx-host {
+  position: relative;
+  opacity: 0.75; /* present, but not shouting over the page */
+}
+
+.bmpx-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Overhang the corner slightly so the dot sits beside the link's first
+     character instead of on top of it. */
+  transform: translate(-30%, -30%);
+  z-index: 2147483000;
+  display: block;
+  box-sizing: border-box;
+  width: 0.7em;
+  height: 0.7em;
+  min-width: 10px;
+  min-height: 10px;
+  /* White ring so the dot separates from whatever is behind it. */
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  pointer-events: none; /* never steal a click from the link itself */
+}
+
+.bmpx-mark--unread {
+  background: #2f6fed;
+}
+
+.bmpx-mark--read {
+  background: #9aa0aa;
+}

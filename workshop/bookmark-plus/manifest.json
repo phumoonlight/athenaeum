@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark Plus",
+  "version": "1.0.0",
+  "description": "Shows your browser bookmarks for the site you're currently on, split into Unread and Read tabs. Marking is local and reversible.",
+  "permissions": ["bookmarks", "storage", "tabs", "favicon"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Bookmark Plus"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
