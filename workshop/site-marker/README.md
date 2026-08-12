@@ -162,7 +162,21 @@ explicit choice. It accepts three shapes:
 - **version 2**, which already had the flag, and survives whole;
 - **version 1** exports, the single JSON object earlier builds produced.
 
-Bookmark Plus exports are a different format and are **not** accepted.
+Bookmark Plus exports are a different format and are **not** accepted — quietly guessing at
+someone else's shape is how you import nonsense. Convert one first:
+
+```
+node tools/from-bookmark-plus.mjs <export.json> [output.ndjson]
+```
+
+It maps Bookmark Plus's two arrays onto the read state and carries the star across, drops
+`folder` (no equivalent here), and folds `readAt`/`favoritedAt` into `updatedAt`. Bookmark
+Plus keys on bookmark ids, so the same page can appear twice — as two bookmarks of one URL,
+or once in each list. Site Marker keys on the URL, so those merge into one entry: read wins
+over unread, a star anywhere wins, and the tool says how many merged and how many disagreed.
+
+The output goes through the extension's own `exportText()`, so it can't drift from whatever
+the current format is.
 
 A title containing a newline, tab or quote is safe — `JSON.stringify` escapes it, so one
 entry is always exactly one line.
@@ -239,6 +253,9 @@ site-marker/
   manage.html     # all-sites list, filters, import/export
   manage.js       # grouping, filtering, file drop/pick
   ui.css          # styling for both pages (light + dark)
+  package.json    # marks the source as ES modules so tools/ can import it
+  tools/          # not part of the extension — run with node
+    from-bookmark-plus.mjs
   icons.js        # inline SVG icons for the buttons
   README.md       # this file
 ```

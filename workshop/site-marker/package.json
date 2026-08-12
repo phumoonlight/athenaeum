@@ -1,0 +1,6 @@
+{
+  "name": "site-marker",
+  "private": true,
+  "type": "module",
+  "description": "Marks it as ES modules so tools/ can import the extension's own code. The extension itself has no build step and no dependencies; Chrome ignores this file."
+}
