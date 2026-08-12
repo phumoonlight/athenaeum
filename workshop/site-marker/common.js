@@ -55,7 +55,7 @@ function stripWww(host) {
 }
 
 /** `sub.example.co.uk` → `example.co.uk` */
-export function registrableDomain(host) {
+function registrableDomain(host) {
   const parts = host.split('.')
   if (parts.length <= 2) return host
   const lastTwo = parts.slice(-2).join('.')
@@ -100,7 +100,7 @@ export function urlKey(url) {
 }
 
 /** Does an entry belong to `site`, under the configured MATCH mode? */
-export function matchesSite(entry, site) {
+function matchesSite(entry, site) {
   if (!entry || !site) return false
   return CONFIG.MATCH === 'host' ? entry.host === site.host : entry.domain === site.domain
 }
@@ -119,7 +119,7 @@ export function matchesSite(entry, site) {
 
 const storageKey = (url) => ENTRY_PREFIX + urlKey(url)
 
-export class StorageFullError extends Error {
+class StorageFullError extends Error {
   constructor(cause) {
     super('Out of storage space — nothing was saved.')
     this.name = 'StorageFullError'
@@ -165,12 +165,6 @@ export async function getEntries() {
     if (key.startsWith(ENTRY_PREFIX)) out[key.slice(ENTRY_PREFIX.length)] = value
   }
   return out
-}
-
-export async function getEntry(url) {
-  await ensureMigrated()
-  const key = storageKey(url)
-  return (await chrome.storage.local.get(key))[key] || null
 }
 
 function newEntry(url, now) {
@@ -228,10 +222,6 @@ export function setFavorite(url, on, meta) {
     entry.favorite = on
     entry.favoritedAt = on ? now : null
   })
-}
-
-export function removeEntry(url) {
-  return removeEntries([urlKey(url)])
 }
 
 /** Drop many at once — one storage call for the batch. */
@@ -312,7 +302,7 @@ const ms = (value) => {
 }
 
 /** Internal entry → the on-disk shape, timestamps as ISO strings. */
-export function entryOut(entry) {
+function entryOut(entry) {
   const out = {}
   for (const field of ENTRY_FIELDS) {
     const value = field.endsWith('At') ? iso(entry[field]) : entry[field]
@@ -325,7 +315,7 @@ export function entryOut(entry) {
 }
 
 /** On-disk shape → internal entry, or null if it isn't usable. */
-export function entryIn(raw) {
+function entryIn(raw) {
   if (!raw || typeof raw.url !== 'string') return null
   const site = siteFromUrl(raw.url)
   if (!site) return null
@@ -365,14 +355,14 @@ export function counts(list) {
   }
 }
 
-export const EXPORT_FORMAT = 'site-marker'
-export const EXPORT_VERSION = 2
+const EXPORT_FORMAT = 'site-marker'
+const EXPORT_VERSION = 2
 
 /** NDJSON, with a trailing newline so the last line is a proper line. */
-export const toNdjson = (records) => records.map((r) => JSON.stringify(r)).join('\n') + '\n'
+const toNdjson = (records) => records.map((r) => JSON.stringify(r)).join('\n') + '\n'
 
 /** Lines → objects, skipping blanks. Throws on the first line that isn't JSON. */
-export function fromNdjson(text) {
+function fromNdjson(text) {
   return text
     .split('\n')
     .map((line) => line.trim())
