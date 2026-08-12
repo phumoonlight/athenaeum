@@ -51,7 +51,7 @@ it moves.
 
 Everything in `chrome.storage.local` carries a prefix saying what it is: **`e:` for a
 marked page**, keyed by its normalised URL, and **`app:` for a setting** (there is one,
-`app:annotateLinks` and `app:readLinkOpacity`). Anything without a prefix is left over from a
+`app:annotateLinks` and `app:markerSize`). Anything without a prefix is left over from a
 build that has moved on,
 and gets migrated or removed on first read.
 
@@ -100,17 +100,14 @@ grey for read**, with a **gold ring** when it's a favourite — the same languag
 icon uses. A debounced `MutationObserver` catches links added later (infinite scroll, SPA
 navigation), and any change re-marks open pages immediately.
 
-**Fade links to pages you've read** sits next to the toggle: at 100% (the default) a read
-link looks like any other and only its dot marks it; lower it and things you've finished
-with recede on a page full of links.
+**Dot size** sits next to the toggle: 8–28 pixels, default 16. Bigger is easier to spot on a
+busy page, smaller keeps the dots out of dense text. The white ring scales with them.
 
-It has to be `!important` to work at all — a single class loses to nearly any rule a site
-writes for its own links, so without it the setting silently does nothing on most pages. To
-keep the default a genuine no-op, the rule is **gated behind a class on the page root that
-is only present below 100%**: at the default it doesn't match, so a site that fades its own
-links keeps doing exactly that. Both the class and the opacity variable live on the root, so
-moving the slider restyles every dimmed link at once — no rescan, nothing in the DOM touched
-again.
+The size is a CSS custom property on the page root, so dragging the slider resizes every dot
+on every open tab at once — no rescan, nothing in the DOM touched again. The width and
+height are `!important`: these are our own spans sitting inside someone else's link, and a
+site rule as ordinary as `a span { width: 4px }` is more specific than a single class, so
+without it the page would decide how big they are.
 
 The dots are **read-only** — `pointer-events: none`, and the content script has no way to
 write. A dot sits _inside_ its link on pages you are clicking through quickly, so anything
@@ -225,7 +222,7 @@ Most knobs are the `CONFIG` block at the top of [`common.js`](common.js):
   either way.
 - `SORT` (default `'oldest'`) — order the popup's list by when a page was first marked.
 
-The link dot's size and colours are in [`marker.css`](marker.css), and the toolbar icon's
+The link dot's colours are in [`marker.css`](marker.css) — its size is a setting now, and the toolbar icon's
 in the `ICON` block at the top of [`background.js`](background.js) — keep the two in step,
 since they are meant to read as the same language. The on-page toggle is a per-profile setting
 (`annotateLinks` in `chrome.storage.local`), not a `CONFIG` knob.

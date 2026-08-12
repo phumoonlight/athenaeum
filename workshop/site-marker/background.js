@@ -161,11 +161,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
  * Folder sync used to keep a directory handle in IndexedDB and two keys in
  * storage. The handle is a live reference to a folder on disk, so it is worth
  * dropping rather than leaving orphaned. `showWidget` is from the on-page marker
- * widget, also removed. Safe to delete this once every profile that ran those
- * builds has updated.
+ * widget, also removed, and `app:readLinkOpacity` from the read-link fade that
+ * became the dot-size setting. Safe to delete this once every profile that ran
+ * those builds has updated.
  */
 function dropRemovedFeatureLeftovers() {
-  chrome.storage.local.remove(['syncDirty', 'syncMeta', 'showWidget'])
+  chrome.storage.local.remove(['syncDirty', 'syncMeta', 'showWidget', 'app:readLinkOpacity'])
   indexedDB.deleteDatabase('site-marker')
 }
 

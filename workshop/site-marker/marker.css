@@ -6,20 +6,6 @@
   position: relative;
 }
 
-/* Links to pages already read, faded by however much the setting says.
-
-   `!important` because a single class loses to nearly any rule a site writes for
-   its own links — without it the setting silently does nothing on most pages.
-
-   The rule is gated behind a class on the page root, which is only there when
-   the setting is actually below 100%. That keeps the default a true no-op: at
-   100% this doesn't match at all, so a site that fades its own links keeps
-   doing exactly that. The variable is on the root too, so changing the setting
-   restyles every dimmed link at once. */
-.smk-dim-read .smk-read-link {
-  opacity: var(--smk-read-opacity, 1) !important;
-}
-
 .smk-mark {
   position: absolute;
   top: 0;
@@ -30,12 +16,14 @@
   z-index: 2147483000;
   display: block;
   box-sizing: border-box;
-  width: 0.75em;
-  height: 0.75em;
-  min-width: 16px;
-  min-height: 16px;
-  /* White ring so the dot separates from whatever is behind it. */
-  border: 2px solid #fff;
+  /* The size is a setting, set as a custom property on the page root so changing
+     it resizes every dot at once. `!important` because these are our own spans
+     inside someone else's link, and a site rule for `a > span` would otherwise
+     decide how big they are. */
+  width: var(--smk-mark-size, 16px) !important;
+  height: var(--smk-mark-size, 16px) !important;
+  /* The ring scales with the dot: 2px at the default 16, thinner when smaller. */
+  border: max(1px, calc(var(--smk-mark-size, 16px) / 8)) solid #fff;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
   /* Never takes a click: the dot only reports, and it sits inside the <a>, so

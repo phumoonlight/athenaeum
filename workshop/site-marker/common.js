@@ -37,23 +37,23 @@ const SETTING_PREFIX = 'app:'
 
 /** The content script's settings. Mirrored literally in marker.js — it can't import. */
 export const ANNOTATE_KEY = `${SETTING_PREFIX}annotateLinks`
-export const READ_OPACITY_KEY = `${SETTING_PREFIX}readLinkOpacity`
+export const MARKER_SIZE_KEY = `${SETTING_PREFIX}markerSize`
 
-/** 1 is "don't dim at all", which is the default: the dots alone say enough. */
-export const READ_OPACITY_DEFAULT = 1
-export const READ_OPACITY_MIN = 0.2
+/** The dot's diameter in pixels. 16 is what it was before it was adjustable. */
+export const MARKER_SIZE_DEFAULT = 16
+export const MARKER_SIZE_MIN = 8
+export const MARKER_SIZE_MAX = 28
 
 /**
- * Anything unusable falls back to no dimming rather than hiding links. Empty
- * values are checked before `Number()` gets to them: it turns both `null` and
- * `''` into 0, which would otherwise clamp an unset setting to the faintest
- * possible links.
+ * Anything unusable falls back to the default rather than to a dot you can't
+ * see. Empty values are checked before `Number()` gets to them: it turns both
+ * `null` and `''` into 0, which would otherwise clamp to the smallest dot.
  */
-export function clampOpacity(value) {
-  if (value === null || value === undefined || value === '') return READ_OPACITY_DEFAULT
+export function clampMarkerSize(value) {
+  if (value === null || value === undefined || value === '') return MARKER_SIZE_DEFAULT
   const number = Number(value)
-  if (!Number.isFinite(number)) return READ_OPACITY_DEFAULT
-  return Math.min(1, Math.max(READ_OPACITY_MIN, number))
+  if (!Number.isFinite(number)) return MARKER_SIZE_DEFAULT
+  return Math.min(MARKER_SIZE_MAX, Math.max(MARKER_SIZE_MIN, Math.round(number)))
 }
 
 /** The pre-`e:` layout, split out on first load and then deleted. */
