@@ -501,6 +501,33 @@ body.popup {
   border-radius: 10px;
 }
 
+.field {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field-label {
+  flex: 0 0 auto;
+}
+
+.field input[type='range'] {
+  flex: 1;
+  max-width: 220px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.field-value {
+  flex: 0 0 auto;
+  min-width: 38px;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
 .panel-lede {
   margin: 8px 0 0;
   color: var(--muted);

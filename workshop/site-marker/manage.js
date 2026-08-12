@@ -3,7 +3,10 @@
 
 import {
   ANNOTATE_KEY,
+  READ_OPACITY_DEFAULT,
+  READ_OPACITY_KEY,
   applyEntries,
+  clampOpacity,
   counts,
   exportText,
   getEntries,
@@ -19,6 +22,8 @@ const el = {
   export: document.getElementById('export'),
   import: document.getElementById('import'),
   annotate: document.getElementById('annotate'),
+  readOpacity: document.getElementById('read-opacity'),
+  readOpacityValue: document.getElementById('read-opacity-value'),
   importPanel: document.getElementById('import-panel'),
   importClose: document.getElementById('import-close'),
   importMessage: document.getElementById('import-message'),
@@ -380,6 +385,17 @@ el.annotate.addEventListener('change', () => {
   chrome.storage.local.set({ [ANNOTATE_KEY]: el.annotate.checked })
 })
 
+const showOpacity = () => {
+  el.readOpacityValue.textContent = `${Math.round(Number(el.readOpacity.value) * 100)}%`
+}
+
+// The readout tracks the drag; the write waits for it to end, so a slow sweep
+// isn't a hundred storage writes.
+el.readOpacity.addEventListener('input', showOpacity)
+el.readOpacity.addEventListener('change', () => {
+  chrome.storage.local.set({ [READ_OPACITY_KEY]: clampOpacity(el.readOpacity.value) })
+})
+
 el.chips.addEventListener('click', (event) => {
   const chip = event.target.closest('.chip')
   if (!chip) return
@@ -398,6 +414,10 @@ el.search.addEventListener('input', () => {
 // that renamed a key: the store's migration happens inside it, so a read before
 // it would find the old name still in place and the new one empty.
 reload().then(async () => {
-  const stored = await chrome.storage.local.get(ANNOTATE_KEY)
+  const stored = await chrome.storage.local.get([ANNOTATE_KEY, READ_OPACITY_KEY])
   el.annotate.checked = !!stored[ANNOTATE_KEY]
+  el.readOpacity.value = String(
+    READ_OPACITY_KEY in stored ? clampOpacity(stored[READ_OPACITY_KEY]) : READ_OPACITY_DEFAULT
+  )
+  showOpacity()
 })

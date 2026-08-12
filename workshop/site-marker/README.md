@@ -51,7 +51,8 @@ it moves.
 
 Everything in `chrome.storage.local` carries a prefix saying what it is: **`e:` for a
 marked page**, keyed by its normalised URL, and **`app:` for a setting** (there is one,
-`app:annotateLinks`). Anything without a prefix is left over from a build that has moved on,
+`app:annotateLinks` and `app:readLinkOpacity`). Anything without a prefix is left over from a
+build that has moved on,
 and gets migrated or removed on first read.
 
 **Each entry having its own key** is the part that matters most: marking a page writes ~200
@@ -98,6 +99,12 @@ When on, it puts a dot on every link pointing at a page you have marked: **blue 
 grey for read**, with a **gold ring** when it's a favourite — the same language the toolbar
 icon uses. A debounced `MutationObserver` catches links added later (infinite scroll, SPA
 navigation), and any change re-marks open pages immediately.
+
+**Fade links to pages you've read** sits next to the toggle: at 100% (the default) a read
+link looks like any other and only its dot marks it; lower it and things you've finished
+with recede on a page full of links. It's applied as a CSS custom property on the page root,
+so moving the slider restyles every dimmed link at once — no rescan, and nothing in the DOM
+is touched again.
 
 The dots are **read-only** — `pointer-events: none`, and the content script has no way to
 write. A dot sits _inside_ its link on pages you are clicking through quickly, so anything

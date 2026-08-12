@@ -6,6 +6,13 @@
   position: relative;
 }
 
+/* Links to pages already read, faded by however much the setting says. The
+   variable is set on the page root, so changing it restyles them all at once;
+   the fallback means an unset variable simply doesn't dim anything. */
+.smk-read-link {
+  opacity: var(--smk-read-opacity, 1);
+}
+
 .smk-mark {
   position: absolute;
   top: 0;

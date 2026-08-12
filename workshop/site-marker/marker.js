@@ -10,6 +10,11 @@
 // mirrored literally from common.js.
 
 const ANNOTATE_KEY = 'app:annotateLinks'
+const READ_OPACITY_KEY = 'app:readLinkOpacity'
+
+const READ_CLASS = 'smk-read-link'
+/** The page's own stylesheet reads this; see `.smk-read-link` in marker.css. */
+const OPACITY_VAR = '--smk-read-opacity'
 
 const MARK_CLASS = 'smk-mark'
 const HOST_CLASS = 'smk-host'
@@ -53,6 +58,21 @@ function teardown() {
   clearMarks()
 }
 
+/**
+ * How much to fade links to pages already read. Set as a custom property on the
+ * page root rather than on each link, so changing it restyles every dimmed link
+ * at once — no rescan, no touching the DOM again.
+ */
+function setReadOpacity(value) {
+  // Mirrors clampOpacity() in common.js. Empty values are checked before
+  // `Number()` sees them: it turns `null` and `''` into 0, which would clamp an
+  // unset setting to the faintest links rather than leaving them alone.
+  const empty = value === null || value === undefined || value === ''
+  const number = empty ? NaN : Number(value)
+  const opacity = Number.isFinite(number) ? Math.min(1, Math.max(0.2, number)) : 1
+  document.documentElement.style.setProperty(OPACITY_VAR, String(opacity))
+}
+
 function makeMark(state) {
   const status = state.status || 'marked'
   const span = document.createElement('span')
@@ -69,6 +89,9 @@ function makeMark(state) {
  */
 function markLink(link, state) {
   if (getComputedStyle(link).position === 'static') link.classList.add(HOST_CLASS)
+  // Always tagged, even at full opacity — the variable does the work, so the
+  // setting can change without every link having to be visited again.
+  if (state.status === 'read') link.classList.add(READ_CLASS)
   link.append(makeMark(state))
 }
 
@@ -107,13 +130,20 @@ function schedule() {
 function clearMarks() {
   for (const mark of document.querySelectorAll(`.${MARK_CLASS}`)) mark.remove()
   for (const el of document.querySelectorAll(`.${HOST_CLASS}`)) el.classList.remove(HOST_CLASS)
+  for (const el of document.querySelectorAll(`.${READ_CLASS}`)) el.classList.remove(READ_CLASS)
   for (const link of document.querySelectorAll(`[${SEEN_ATTR}]`)) link.removeAttribute(SEEN_ATTR)
+  document.documentElement.style.removeProperty(OPACITY_VAR)
 }
 
 function setEnabled(next) {
   if (orphaned || next === enabled) return
   enabled = next
   if (enabled) {
+    // Turning the marker on mid-session needs the current value too.
+    chrome.storage.local.get(READ_OPACITY_KEY).then(
+      (stored) => setReadOpacity(stored[READ_OPACITY_KEY]),
+      () => {}
+    )
     observer ??= new MutationObserver(schedule)
     observer.observe(document.documentElement, { childList: true, subtree: true })
     schedule()
@@ -134,16 +164,18 @@ chrome.runtime.onMessage.addListener((message) => {
 })
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes[ANNOTATE_KEY]) setEnabled(!!changes[ANNOTATE_KEY].newValue)
+  if (area !== 'local') return
+  if (changes[READ_OPACITY_KEY] && enabled) setReadOpacity(changes[READ_OPACITY_KEY].newValue)
+  if (changes[ANNOTATE_KEY]) setEnabled(!!changes[ANNOTATE_KEY].newValue)
 })
 
 // Same synchronous-throw hazard as `send()`: if this script was injected into a
 // tab that outlived an extension reload, `chrome.storage` is already gone.
 try {
-  chrome.storage.local.get(ANNOTATE_KEY).then(
-    (stored) => setEnabled(!!stored[ANNOTATE_KEY]),
-    () => teardown()
-  )
+  chrome.storage.local.get([ANNOTATE_KEY, READ_OPACITY_KEY]).then((stored) => {
+    if (stored[ANNOTATE_KEY]) setReadOpacity(stored[READ_OPACITY_KEY])
+    setEnabled(!!stored[ANNOTATE_KEY])
+  }, teardown)
 } catch {
   teardown()
 }
