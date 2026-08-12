@@ -25,8 +25,9 @@ it moves.
   clicking either of the others moves it straight there, with no cycling to think about.
   Below them, `Unread` / `Read` / `★` tabs list everything marked on the current site,
   oldest first.
-- The rows in that list have room for two buttons rather than three, so there each one
-  toggles: the first flips unread ↔ read, the star moves in and out of favourite.
+- The rows in that list carry **one** button, since every tab is a single status and there
+  is only one move worth offering: read is the destination unless the page is already read,
+  in which case it goes back to unread. A favourite you've finished with lands in read.
 - Nothing in the popup returns a page to **unmarked** — a control that sometimes deletes
   makes the everyday flip unpredictable. To drop a page entirely, use the manage page.
 - A page is recorded the moment you mark it, and **deleted the moment you unmark it** — so

@@ -64,16 +64,16 @@ async function attempt(run) {
   await reload()
 }
 
-// The list rows have room for two buttons, so each one toggles rather than
-// setting a fixed state. Neither ever lands on "unmarked": dropping a page
-// entirely is the manage page's job, so nothing in this popup can lose an entry
-// to a stray click.
-
-/** The read button: unread ↔ read, and out of favorite back to unread. */
-const nextStatus = (status) => (status === 'unread' ? 'read' : 'unread')
-
-/** The star: into favorite, or back to unread if it's already there. */
-const nextStar = (status) => (status === 'favorite' ? 'unread' : 'favorite')
+/**
+ * A list row carries one button, and every tab is a single status, so the row
+ * only ever has one sensible move: read is the destination unless the page is
+ * already read, in which case it goes back to unread. A favourite you've
+ * finished with lands in read, not back in the favourites tab.
+ *
+ * It never lands on "unmarked" — dropping a page entirely is the manage page's
+ * job, so nothing in this popup can lose an entry to a stray click.
+ */
+const nextStatus = (status) => (status === 'read' ? 'unread' : 'read')
 
 function markStatus(url, status, title) {
   return attempt(() => setStatus(url, status, { url, title }))
@@ -105,19 +105,16 @@ function itemNode(entry) {
     window.close()
   })
 
-  // Read state first, star second — the same order as the current-page row above.
-  // Deleting lives on the manage page, so a crowded list can't lose an entry to a
-  // stray click.
+  // One button, because there is only one move worth offering from a list whose
+  // rows are all the same status. Changing a page's status wholesale — including
+  // starring it — is the current-page row's job, or the manage page's.
+  const isRead = entry.status === 'read'
   const actions = document.createElement('div')
   actions.className = 'item-actions'
   actions.append(
-    button('act', entry.status === 'read' ? 'undo' : 'check', {
-      label: entry.status === 'read' ? 'Move back to Unread' : 'Mark as read',
+    button('act', isRead ? 'undo' : 'check', {
+      label: isRead ? 'Move back to unread' : 'Mark as read',
       onClick: () => markStatus(entry.url, nextStatus(entry.status), entry.title),
-    }),
-    button(entry.status === 'favorite' ? 'act star is-on' : 'act star', 'star', {
-      label: entry.status === 'favorite' ? 'Move back to Unread' : 'Mark as favorite',
-      onClick: () => markStatus(entry.url, nextStar(entry.status), entry.title),
     })
   )
 
