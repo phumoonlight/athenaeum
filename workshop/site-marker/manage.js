@@ -38,7 +38,9 @@ const state = {
   bytes: 0,
   filter: 'all',
   query: '',
-  collapsed: new Set(),
+  // Which sites are open. Tracking the exceptions rather than the rule is what
+  // makes "collapsed" the default, including for sites that appear later.
+  expanded: new Set(),
   // Storage keys, not DOM state, so a re-render keeps the selection.
   selected: new Set(),
 }
@@ -69,6 +71,9 @@ function visible() {
     return entry.title.toLowerCase().includes(query) || entry.url.toLowerCase().includes(query)
   })
 }
+
+/** Sites start closed; a search opens whatever it matched. */
+const isOpen = (domain) => !!state.query.trim() || state.expanded.has(domain)
 
 /** Busiest sites first — the ones worth scrolling to are at the top. */
 function groupByDomain(list) {
@@ -151,11 +156,13 @@ function groupNode(domain, list) {
   const toggle = document.createElement('button')
   toggle.className = 'group-toggle'
   toggle.type = 'button'
-  const collapsed = state.collapsed.has(domain)
-  toggle.textContent = `${collapsed ? '▸' : '▾'} ${domain}`
+  // A text search that hides its own results would be useless, so a query opens
+  // everything it matched; the chips only narrow, so they leave sites closed.
+  const open = isOpen(domain)
+  toggle.textContent = `${open ? '▾' : '▸'} ${domain}`
   toggle.addEventListener('click', () => {
-    if (collapsed) state.collapsed.delete(domain)
-    else state.collapsed.add(domain)
+    if (state.expanded.has(domain)) state.expanded.delete(domain)
+    else state.expanded.add(domain)
     render()
   })
 
@@ -167,7 +174,7 @@ function groupNode(domain, list) {
   head.append(pick, toggle, tally)
   section.append(head)
 
-  if (!collapsed) {
+  if (open) {
     const items = document.createElement('ul')
     items.className = 'list list--flat'
     items.append(...list.map(rowNode))

@@ -114,8 +114,14 @@ read access to all sites at install time.
 
 ### Bulk actions
 
-Every row on the manage page has a checkbox, and each site heading has one that takes the
-whole group (shown half-ticked when only some of its rows are selected). **Rows carry no
+Sites start **collapsed** — the page opens as a list of sites and their counts, not a wall
+of pages. Click a site to open it; a text search opens whatever it matched, since a search
+that hides its own results would be useless. The filter chips only narrow, so they leave
+sites closed.
+
+Every row has a checkbox, and each site heading has one that takes the whole group (shown
+half-ticked when only some of its rows are selected). A site's checkbox works whether it is
+open or not, so a whole site can be selected without expanding it. **Rows carry no
 buttons of their own** — one page is just a selection of one, and a list this long is the
 wrong place for a delete button you can hit by accident. With anything selected, the bar
 above the list turns on: **Unread**, **Read**, **★ Favorite**,
