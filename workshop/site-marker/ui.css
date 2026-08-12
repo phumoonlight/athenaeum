@@ -204,8 +204,14 @@ body.popup {
   padding: 8px 10px 0;
 }
 
+/* Each tab is an icon and its count — the icon says which list, the number says
+   how much is in it. */
 .tab {
   flex: 1;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
   padding: 7px 8px;
   border: 0;
   border-radius: 7px 7px 0 0;
@@ -215,6 +221,15 @@ body.popup {
   font-weight: 600;
   cursor: pointer;
   border-bottom: 2px solid transparent;
+}
+
+.tab-glyph {
+  display: block;
+}
+
+.tab .icon {
+  width: 15px;
+  height: 15px;
 }
 
 .tab:hover {
@@ -242,22 +257,13 @@ body.popup {
   color: var(--accent);
 }
 
-/* The favourites tab is a star instead of a word. */
-.tab--icon {
-  flex: 0 0 auto;
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: center;
-}
-
-.tab--icon .icon {
-  width: 15px;
-  height: 15px;
-}
-
-.tab--icon.is-active {
+/* The favourites tab takes the star's colour when it's the one showing. */
+.tab--star.is-active {
   color: var(--star);
+}
+
+.tab--star.is-active .icon {
+  fill: currentColor;
 }
 
 .list {

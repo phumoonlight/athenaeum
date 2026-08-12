@@ -36,20 +36,37 @@
     </section>
 
     <nav class="tabs" id="tabs">
-      <button class="tab is-active" data-view="unread" type="button">
-        Unread <span class="count" id="count-unread">0</span>
-      </button>
-      <button class="tab" data-view="read" type="button">
-        Read <span class="count" id="count-read">0</span>
+      <button
+        class="tab is-active"
+        data-view="unread"
+        data-icon="bookmark"
+        type="button"
+        title="Unread"
+        aria-label="Unread"
+      >
+        <span class="tab-glyph"></span>
+        <span class="count" id="count-unread">0</span>
       </button>
       <button
-        class="tab tab--icon"
+        class="tab"
+        data-view="read"
+        data-icon="eye"
+        type="button"
+        title="Read"
+        aria-label="Read"
+      >
+        <span class="tab-glyph"></span>
+        <span class="count" id="count-read">0</span>
+      </button>
+      <button
+        class="tab tab--star"
         data-view="favorite"
+        data-icon="star"
         type="button"
         title="Favorites"
         aria-label="Favorites"
       >
-        <span id="tab-fav-icon"></span>
+        <span class="tab-glyph"></span>
         <span class="count" id="count-favorite">0</span>
       </button>
     </nav>

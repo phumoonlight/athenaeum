@@ -20,7 +20,6 @@ const el = {
   countUnread: document.getElementById('count-unread'),
   countRead: document.getElementById('count-read'),
   countFavorite: document.getElementById('count-favorite'),
-  tabFavIcon: document.getElementById('tab-fav-icon'),
   list: document.getElementById('list'),
   empty: document.getElementById('empty'),
   current: document.getElementById('current'),
@@ -242,7 +241,10 @@ el.manage.addEventListener('click', async () => {
 
 async function init() {
   setIcon(el.manage, 'list')
-  el.tabFavIcon.append(icon('star'))
+  // Each tab names its own icon, so adding one is a markup change, not a code one.
+  for (const tab of el.tabs.querySelectorAll('.tab')) {
+    tab.querySelector('.tab-glyph').append(icon(tab.dataset.icon))
+  }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   state.site = siteFromUrl(tab?.url)
