@@ -55,6 +55,7 @@ function teardown() {
   observer = null
   clearTimeout(timer)
   clearMarks()
+  clearSizing()
 }
 
 /**
@@ -127,6 +128,14 @@ function clearMarks() {
   for (const mark of document.querySelectorAll(`.${MARK_CLASS}`)) mark.remove()
   for (const el of document.querySelectorAll(`.${HOST_CLASS}`)) el.classList.remove(HOST_CLASS)
   for (const link of document.querySelectorAll(`[${SEEN_ATTR}]`)) link.removeAttribute(SEEN_ATTR)
+}
+
+/**
+ * The size is a setting, not a mark, so it survives the clear-and-rescan that
+ * follows every change to the store. Removing it there meant marking any page
+ * silently reset every dot on screen back to the default size.
+ */
+function clearSizing() {
   document.documentElement.style.removeProperty(SIZE_VAR)
 }
 
@@ -146,6 +155,7 @@ function setEnabled(next) {
     observer?.disconnect()
     clearTimeout(timer)
     clearMarks()
+    clearSizing()
   }
 }
 
