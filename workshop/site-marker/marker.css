@@ -6,11 +6,18 @@
   position: relative;
 }
 
-/* Links to pages already read, faded by however much the setting says. The
-   variable is set on the page root, so changing it restyles them all at once;
-   the fallback means an unset variable simply doesn't dim anything. */
-.smk-read-link {
-  opacity: var(--smk-read-opacity, 1);
+/* Links to pages already read, faded by however much the setting says.
+
+   `!important` because a single class loses to nearly any rule a site writes for
+   its own links — without it the setting silently does nothing on most pages.
+
+   The rule is gated behind a class on the page root, which is only there when
+   the setting is actually below 100%. That keeps the default a true no-op: at
+   100% this doesn't match at all, so a site that fades its own links keeps
+   doing exactly that. The variable is on the root too, so changing the setting
+   restyles every dimmed link at once. */
+.smk-dim-read .smk-read-link {
+  opacity: var(--smk-read-opacity, 1) !important;
 }
 
 .smk-mark {

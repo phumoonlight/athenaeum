@@ -102,9 +102,15 @@ navigation), and any change re-marks open pages immediately.
 
 **Fade links to pages you've read** sits next to the toggle: at 100% (the default) a read
 link looks like any other and only its dot marks it; lower it and things you've finished
-with recede on a page full of links. It's applied as a CSS custom property on the page root,
-so moving the slider restyles every dimmed link at once — no rescan, and nothing in the DOM
-is touched again.
+with recede on a page full of links.
+
+It has to be `!important` to work at all — a single class loses to nearly any rule a site
+writes for its own links, so without it the setting silently does nothing on most pages. To
+keep the default a genuine no-op, the rule is **gated behind a class on the page root that
+is only present below 100%**: at the default it doesn't match, so a site that fades its own
+links keeps doing exactly that. Both the class and the opacity variable live on the root, so
+moving the slider restyles every dimmed link at once — no rescan, nothing in the DOM touched
+again.
 
 The dots are **read-only** — `pointer-events: none`, and the content script has no way to
 write. A dot sits _inside_ its link on pages you are clicking through quickly, so anything

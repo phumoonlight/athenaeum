@@ -13,7 +13,8 @@ const ANNOTATE_KEY = 'app:annotateLinks'
 const READ_OPACITY_KEY = 'app:readLinkOpacity'
 
 const READ_CLASS = 'smk-read-link'
-/** The page's own stylesheet reads this; see `.smk-read-link` in marker.css. */
+/** Both live on the page root; see `.smk-dim-read` in marker.css. */
+const DIM_CLASS = 'smk-dim-read'
 const OPACITY_VAR = '--smk-read-opacity'
 
 const MARK_CLASS = 'smk-mark'
@@ -70,7 +71,12 @@ function setReadOpacity(value) {
   const empty = value === null || value === undefined || value === ''
   const number = empty ? NaN : Number(value)
   const opacity = Number.isFinite(number) ? Math.min(1, Math.max(0.2, number)) : 1
-  document.documentElement.style.setProperty(OPACITY_VAR, String(opacity))
+
+  const root = document.documentElement
+  root.style.setProperty(OPACITY_VAR, String(opacity))
+  // The class is what arms the `!important` rule, so at 100% nothing overrides
+  // the page — a site that fades its own links keeps doing so.
+  root.classList.toggle(DIM_CLASS, opacity < 1)
 }
 
 function makeMark(state) {
@@ -133,6 +139,7 @@ function clearMarks() {
   for (const el of document.querySelectorAll(`.${READ_CLASS}`)) el.classList.remove(READ_CLASS)
   for (const link of document.querySelectorAll(`[${SEEN_ATTR}]`)) link.removeAttribute(SEEN_ATTR)
   document.documentElement.style.removeProperty(OPACITY_VAR)
+  document.documentElement.classList.remove(DIM_CLASS)
 }
 
 function setEnabled(next) {
