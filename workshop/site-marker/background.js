@@ -18,45 +18,32 @@ import { ENTRY_PREFIX, getEntries, siteFromUrl, urlKey } from './common.js'
 const ICON = {
   unread: { fill: '#2f6fed' },
   read: { fill: '#9aa0aa' },
-  // Marked as a favourite with no read state of its own.
-  marked: { fill: '#ffffff' },
+  favorite: { fill: '#f0bb45' },
   // Never marked: a hollow ring, quiet enough to ignore.
-  none: { fill: null, ring: '#8b9099' },
+  none: { ring: '#8b9099' },
 }
 
-const FAVORITE_RING = '#f0bb45'
 const SIZES = [16, 32]
 
 /** One ImageData per size, for a given page state. */
-function drawIcon(size, status, favorite) {
+function drawIcon(size, status) {
   const canvas = new OffscreenCanvas(size, size)
   const ctx = canvas.getContext('2d')
   const style = ICON[status] || ICON.none
   const centre = size / 2
   const line = size * 0.12
-  // A stroke straddles its path, so a ring meant to end at `r` is drawn at
-  // `r - line / 2`. Without that the outermost pixel row gets clipped.
-  const outer = size * 0.44
-  // A favourite gets an outer gold ring, so the dot inside has to give up room.
-  const radius = favorite ? outer - size * 0.14 : outer
+  const radius = size * 0.44
 
   ctx.lineWidth = line
-
-  if (favorite) {
-    ctx.beginPath()
-    ctx.arc(centre, centre, outer - line / 2, 0, Math.PI * 2)
-    ctx.strokeStyle = FAVORITE_RING
-    ctx.stroke()
-  }
+  ctx.beginPath()
 
   if (style.fill) {
-    ctx.beginPath()
     ctx.arc(centre, centre, radius, 0, Math.PI * 2)
     ctx.fillStyle = style.fill
     ctx.fill()
-  }
-  if (style.ring) {
-    ctx.beginPath()
+  } else {
+    // A stroke straddles its path, so a ring meant to end at `radius` is drawn
+    // at `radius - line / 2`. Without that the outermost pixel row is clipped.
     ctx.arc(centre, centre, radius - line / 2, 0, Math.PI * 2)
     ctx.strokeStyle = style.ring
     ctx.stroke()
@@ -65,23 +52,16 @@ function drawIcon(size, status, favorite) {
   return ctx.getImageData(0, 0, size, size)
 }
 
-// Six states in total, so draw each once and keep it.
+// Four states in total, so draw each once and keep it.
 const iconCache = new Map()
 
-function iconFor(status, favorite) {
-  const key = `${status}:${favorite}`
-  if (!iconCache.has(key)) {
+function iconFor(status) {
+  if (!iconCache.has(status)) {
     const imageData = {}
-    for (const size of SIZES) imageData[size] = drawIcon(size, status, favorite)
-    iconCache.set(key, imageData)
+    for (const size of SIZES) imageData[size] = drawIcon(size, status)
+    iconCache.set(status, imageData)
   }
-  return iconCache.get(key)
-}
-
-/** The page's own state — not the site's. `null` when it was never marked. */
-function pageStatus(entry) {
-  if (!entry) return 'none'
-  return entry.status || 'marked'
+  return iconCache.get(status)
 }
 
 /**
@@ -92,11 +72,11 @@ function pageStatus(entry) {
 async function paint(tabId, url, entries) {
   const entry = siteFromUrl(url) ? entries[urlKey(url)] : null
   try {
-    await chrome.action.setIcon({ tabId, imageData: iconFor(pageStatus(entry), !!entry?.favorite) })
+    await chrome.action.setIcon({ tabId, imageData: iconFor(entry?.status || 'none') })
     await chrome.action.setTitle({
       tabId,
       title: entry
-        ? `Site Marker — this page is ${entry.status || 'marked'}${entry.favorite ? ', favorite' : ''}`
+        ? `Site Marker — this page is ${entry.status}`
         : 'Site Marker — this page is not marked',
     })
   } catch {
@@ -113,7 +93,7 @@ async function refreshAllTabs() {
   // Tabs the worker never gets an event for (the new tab page, a tab opened
   // before it woke) fall back to the default icon, so give it a real one rather
   // than leaving Chrome's grey puzzle piece.
-  chrome.action.setIcon({ imageData: iconFor('none', false) }).catch(() => {})
+  chrome.action.setIcon({ imageData: iconFor('none') }).catch(() => {})
   const [tabs, entries] = await Promise.all([chrome.tabs.query({}), getEntries()])
   await Promise.all(tabs.map((tab) => paint(tab.id, tab.url, entries)))
 }
@@ -125,11 +105,8 @@ function notifyTabs(message) {
   })
 }
 
-/** What a link's dot should show, or null for a page that was never marked. */
-function linkState(entry) {
-  if (!entry) return null
-  return { status: entry.status, favorite: !!entry.favorite }
-}
+/** A link's status, or null for a page that was never marked. */
+const linkState = (entry) => entry?.status || null
 
 // The content script only ever reads. Marking is the popup's job, so nothing on
 // a page can change a status — least of all a stray click.

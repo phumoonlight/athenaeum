@@ -4,7 +4,6 @@ import {
   faviconUrl,
   getEntries,
   partition,
-  setFavorite,
   setStatus,
   siteFromUrl,
   urlKey,
@@ -65,28 +64,22 @@ async function attempt(run) {
 }
 
 /**
- * Where the current page's one toggle goes next. An unmarked page starts at
- * unread — the point of marking something is usually that you haven't read it —
- * and after that the button just flips between the two.
+ * The read toggle. An unmarked page starts at unread — the point of marking
+ * something is usually that you haven't read it — and after that it flips
+ * between the two. From favorite it comes back to unread: the three states are
+ * exclusive now, and unread is the neutral one.
  *
- * There is deliberately no "back to unmarked" step here: a three-way cycle makes
- * the common flip unpredictable. Dropping a page entirely is the manage page's
- * job, so nothing in this popup can lose an entry to a stray click.
+ * There is deliberately no "back to unmarked" step: dropping a page entirely is
+ * the manage page's job, so nothing in this popup can lose an entry to a stray
+ * click.
  */
-function nextStatus(status) {
-  if (!status) return 'unread'
-  return status === 'unread' ? 'read' : 'unread'
-}
+const nextStatus = (status) => (status === 'unread' ? 'read' : 'unread')
 
-/** Passing the status a page already has clears it — used by the list rows. */
+/** The star. Clicking a lit one returns the page to unread, not to nothing. */
+const nextStar = (status) => (status === 'favorite' ? 'unread' : 'favorite')
+
 function markStatus(url, status, title) {
-  const entry = state.entries[urlKey(url)]
-  return attempt(() => setStatus(url, entry?.status === status ? null : status, { url, title }))
-}
-
-function markFavorite(url, title) {
-  const entry = state.entries[urlKey(url)]
-  return attempt(() => setFavorite(url, !entry?.favorite, { url, title }))
+  return attempt(() => setStatus(url, status, { url, title }))
 }
 
 // --- the site list -----------------------------------------------------------
@@ -123,12 +116,11 @@ function itemNode(entry) {
   actions.append(
     button('act', entry.status === 'read' ? 'undo' : 'check', {
       label: entry.status === 'read' ? 'Move back to Unread' : 'Mark as read',
-      onClick: () =>
-        markStatus(entry.url, entry.status === 'read' ? 'unread' : 'read', entry.title),
+      onClick: () => markStatus(entry.url, nextStatus(entry.status), entry.title),
     }),
-    button(entry.favorite ? 'act star is-on' : 'act star', 'star', {
-      label: entry.favorite ? 'Remove from Favorites' : 'Add to Favorites',
-      onClick: () => markFavorite(entry.url, entry.title),
+    button(entry.status === 'favorite' ? 'act star is-on' : 'act star', 'star', {
+      label: entry.status === 'favorite' ? 'Move back to Unread' : 'Mark as favorite',
+      onClick: () => markStatus(entry.url, nextStar(entry.status), entry.title),
     })
   )
 
@@ -168,30 +160,20 @@ function renderCurrent() {
 
   el.currentTitle.textContent = state.page.title || state.page.url
   el.currentTitle.title = state.page.url
-  el.currentDot.className = `dot dot--${status || 'none'}${entry?.favorite ? ' dot--fav' : ''}`
-  el.currentState.textContent = status
-    ? entry.favorite
-      ? `${status} · favorite`
-      : status
-    : entry?.favorite
-      ? 'favorite'
-      : 'not marked'
+  el.currentDot.className = `dot dot--${status || 'none'}`
+  el.currentState.textContent = status || 'not marked'
 
-  // One button carrying both states: it shows where the page *is*, and clicking
-  // moves it on — unmarked → unread → read → unread → …
-  el.markToggle.classList.toggle('is-on', !!status)
+  // The toggle carries unread/read; the star carries the third state. Only one
+  // of the two can be lit, because only one status can be true.
+  el.markToggle.classList.toggle('is-on', status === 'unread' || status === 'read')
   setIcon(
     el.markToggle,
     status === 'read' ? 'check' : 'circle',
-    status === 'unread'
-      ? 'Mark as read'
-      : status === 'read'
-        ? 'Move back to unread'
-        : 'Mark as unread'
+    status === 'read' ? 'Move back to unread' : 'Mark as read'
   )
 
-  el.markFav.classList.toggle('is-on', !!entry?.favorite)
-  setIcon(el.markFav, 'star', entry?.favorite ? 'Remove from Favorites' : 'Add to Favorites')
+  el.markFav.classList.toggle('is-on', status === 'favorite')
+  setIcon(el.markFav, 'star', status === 'favorite' ? 'Move back to unread' : 'Mark as favorite')
 }
 
 function render() {

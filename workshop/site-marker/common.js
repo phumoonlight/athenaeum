@@ -20,6 +20,13 @@ export const CONFIG = {
  */
 export const ENTRY_PREFIX = 'e:'
 
+/**
+ * A page is in exactly one of these, or it isn't marked at all. Favourite is a
+ * status like the other two rather than a flag alongside them: starring
+ * something takes it out of the reading list, it doesn't annotate it.
+ */
+export const STATUSES = ['unread', 'read', 'favorite']
+
 /** The pre-`e:` layout, split out on first load and then deleted. */
 const LEGACY_ENTRIES_KEY = 'entries'
 
@@ -138,20 +145,38 @@ async function save(patch) {
 }
 
 /**
- * Move a pre-`e:` store to one key per entry, once. Both the worker and each
- * page run their own copy of this module, so two may race — the work is
- * idempotent, so the loser simply finds nothing left to move.
+ * Bring an older store up to date, once. Both the worker and each page run their
+ * own copy of this module, so two may race — every step is idempotent, so the
+ * loser simply finds nothing left to do.
+ *
+ * Two things can be old:
+ *   1. one `entries` blob instead of a key per entry
+ *   2. a `favorite` boolean alongside `status`, from when the two were
+ *      independent. A page that was starred **and** read can only be one of
+ *      them now, and the star is the more deliberate signal, so it wins — the
+ *      read state of a starred page is the one thing this loses.
  */
 let migration = null
 function ensureMigrated() {
   migration ??= (async () => {
-    const stored = await chrome.storage.local.get(LEGACY_ENTRIES_KEY)
-    const legacy = stored[LEGACY_ENTRIES_KEY]
-    if (!legacy || typeof legacy !== 'object') return
+    const all = await chrome.storage.local.get(null)
+
+    const legacy = all[LEGACY_ENTRIES_KEY]
+    const flat = { ...all }
+    if (legacy && typeof legacy === 'object') {
+      for (const [key, entry] of Object.entries(legacy)) flat[ENTRY_PREFIX + key] = entry
+    }
+
     const patch = {}
-    for (const [key, entry] of Object.entries(legacy)) patch[ENTRY_PREFIX + key] = entry
+    for (const [key, entry] of Object.entries(flat)) {
+      if (!key.startsWith(ENTRY_PREFIX) || !entry || typeof entry !== 'object') continue
+      if (!('favorite' in entry) && !('readAt' in entry) && !('favoritedAt' in entry)) continue
+      const { favorite, readAt, favoritedAt, ...rest } = entry
+      patch[key] = { ...rest, status: favorite ? 'favorite' : entry.status || 'unread' }
+    }
+
     if (Object.keys(patch).length) await save(patch)
-    await chrome.storage.local.remove(LEGACY_ENTRIES_KEY)
+    if (legacy) await chrome.storage.local.remove(LEGACY_ENTRIES_KEY)
   })()
   return migration
 }
@@ -175,53 +200,34 @@ function newEntry(url, now) {
     host: site?.host || '',
     domain: site?.domain || '',
     status: null,
-    favorite: false,
-    addedAt: now,
-    readAt: null,
-    favoritedAt: null,
-    updatedAt: now,
+    addedAt: now, // first ever marked
+    updatedAt: now, // last status change
   }
 }
 
 /**
- * Read, change, write back one entry — one storage key touched, whatever the
- * size of the store. An entry that ends up with neither a status nor a star is
- * deleted, so re-marking later starts clean rather than inheriting old dates.
+ * Set one page's status — one storage key touched, whatever the size of the
+ * store. `status` is 'unread', 'read', 'favorite', or null to unmark, which
+ * deletes the entry so re-marking later starts clean rather than inheriting old
+ * dates. Returns the entry, or null once it's gone.
  */
-async function mutate(url, meta, apply) {
+export async function setStatus(url, status, meta) {
   await ensureMigrated()
   const key = storageKey(url)
   const stored = (await chrome.storage.local.get(key))[key]
   const now = Date.now()
+
+  if (!status) {
+    if (stored) await chrome.storage.local.remove(key)
+    return null
+  }
+
   const entry = stored ? { ...stored } : newEntry(meta?.url || url, now)
   if (meta?.title) entry.title = meta.title
-
-  apply(entry, now)
+  entry.status = status
   entry.updatedAt = now
-
-  const gone = !entry.status && !entry.favorite
-  if (gone) await chrome.storage.local.remove(key)
-  else await save({ [key]: entry })
-  return gone ? null : entry
-}
-
-/**
- * `status` is 'unread', 'read', or null to clear it. Clearing the status of a
- * starred page keeps the entry — a favourite doesn't have to have a read state.
- */
-export function setStatus(url, status, meta) {
-  return mutate(url, meta, (entry, now) => {
-    entry.status = status
-    entry.readAt = status === 'read' ? now : null
-  })
-}
-
-/** Stars cut across read state: starring never changes whether a page is read. */
-export function setFavorite(url, on, meta) {
-  return mutate(url, meta, (entry, now) => {
-    entry.favorite = on
-    entry.favoritedAt = on ? now : null
-  })
+  await save({ [key]: entry })
+  return entry
 }
 
 /** Drop many at once — one storage call for the batch. */
@@ -231,38 +237,24 @@ export async function removeEntries(keys) {
 }
 
 /**
- * Apply one change to many entries — `{ status }`, `{ favorite }`, or both — in
- * a single read and a single write, however many are selected. Same rule as a
- * single mark: an entry left with neither a status nor a star is deleted.
+ * Set the same status on many entries, in a single read and a single write
+ * however many are selected.
  *
  * Keys that no longer exist are skipped rather than resurrected, so a stale
  * selection can't recreate something deleted in another tab.
  */
-export async function updateEntries(keys, changes) {
+export async function updateEntries(keys, status) {
   await ensureMigrated()
   const found = await chrome.storage.local.get(keys.map((key) => ENTRY_PREFIX + key))
   const now = Date.now()
   const patch = {}
-  const gone = []
 
   for (const [storageKey, stored] of Object.entries(found)) {
-    const entry = { ...stored }
-    if (changes.status !== undefined) {
-      entry.status = changes.status
-      entry.readAt = changes.status === 'read' ? now : null
-    }
-    if (changes.favorite !== undefined) {
-      entry.favorite = changes.favorite
-      entry.favoritedAt = changes.favorite ? now : null
-    }
-    entry.updatedAt = now
-    if (!entry.status && !entry.favorite) gone.push(storageKey)
-    else patch[storageKey] = entry
+    patch[storageKey] = { ...stored, status, updatedAt: now }
   }
 
-  if (gone.length) await chrome.storage.local.remove(gone)
   if (Object.keys(patch).length) await save(patch)
-  return { changed: Object.keys(patch).length, removed: gone.length }
+  return { changed: Object.keys(patch).length }
 }
 
 /** One site's entries, in CONFIG.SORT order (oldest marked first by default). */
@@ -273,12 +265,12 @@ export function entriesForSite(entries, site) {
     .sort((a, b) => direction * (a.addedAt - b.addedAt))
 }
 
-/** Unread / read / favorite. Favourites overlap the other two by design. */
+/** The three states, which no longer overlap — a page is in exactly one. */
 export function partition(list) {
   return {
     unread: list.filter((entry) => entry.status === 'unread'),
     read: list.filter((entry) => entry.status === 'read'),
-    favorite: list.filter((entry) => entry.favorite),
+    favorite: list.filter((entry) => entry.status === 'favorite'),
   }
 }
 
@@ -289,10 +281,10 @@ export function partition(list) {
 // time, so a new page is a one-line insertion that leaves its neighbours
 // untouched rather than a reshuffled array.
 //
-// Fields are written in a fixed order, and anything empty is left out entirely:
-// a `"favorite": false` on every line is noise in every diff.
+// Fields are written in a fixed order. Every entry has all four, now that a
+// status is a single value rather than a flag plus a state.
 
-const ENTRY_FIELDS = ['url', 'title', 'status', 'favorite', 'addedAt', 'readAt', 'favoritedAt']
+const ENTRY_FIELDS = ['url', 'title', 'status', 'addedAt']
 
 const iso = (ms) => (ms ? new Date(ms).toISOString() : null)
 const ms = (value) => {
@@ -305,23 +297,25 @@ const ms = (value) => {
 function entryOut(entry) {
   const out = {}
   for (const field of ENTRY_FIELDS) {
-    const value = field.endsWith('At') ? iso(entry[field]) : entry[field]
-    // `url`, `title` and `addedAt` always survive; the rest only when meaningful.
-    if (value === null || value === undefined || value === false) continue
-    out[field] = value
+    out[field] = field.endsWith('At') ? iso(entry[field]) : entry[field]
   }
   out.updatedAt = iso(entry.updatedAt || entry.addedAt)
   return out
 }
 
-/** On-disk shape → internal entry, or null if it isn't usable. */
+/**
+ * On-disk shape → internal entry, or null if it isn't usable. Files written
+ * before status became exclusive carry a `favorite` boolean instead; the star
+ * wins there, the same way the stored-data migration resolves it.
+ */
 function entryIn(raw) {
   if (!raw || typeof raw.url !== 'string') return null
   const site = siteFromUrl(raw.url)
   if (!site) return null
-  const status = raw.status === 'read' || raw.status === 'unread' ? raw.status : null
-  const favorite = !!raw.favorite
-  if (!status && !favorite) return null
+
+  const status = raw.favorite ? 'favorite' : STATUSES.includes(raw.status) ? raw.status : null
+  if (!status) return null
+
   const addedAt = ms(raw.addedAt) || Date.now()
   return {
     url: raw.url,
@@ -329,11 +323,8 @@ function entryIn(raw) {
     host: site.host,
     domain: site.domain,
     status,
-    favorite,
     addedAt,
-    readAt: status === 'read' ? ms(raw.readAt) || addedAt : null,
-    favoritedAt: favorite ? ms(raw.favoritedAt) || addedAt : null,
-    updatedAt: ms(raw.updatedAt) || ms(raw.readAt) || addedAt,
+    updatedAt: ms(raw.updatedAt) || ms(raw.favoritedAt) || ms(raw.readAt) || addedAt,
   }
 }
 
@@ -356,7 +347,9 @@ export function counts(list) {
 }
 
 const EXPORT_FORMAT = 'site-marker'
-const EXPORT_VERSION = 2
+// 1 was one JSON object; 2 added NDJSON; 3 made favourite a status rather than a flag.
+const SUPPORTED_VERSIONS = [1, 2, 3]
+const EXPORT_VERSION = 3
 
 /** NDJSON, with a trailing newline so the last line is a proper line. */
 const toNdjson = (records) => records.map((r) => JSON.stringify(r)).join('\n') + '\n'
@@ -437,8 +430,11 @@ function checkHeader(header) {
   if (header?.format !== EXPORT_FORMAT) {
     throw new Error('Not a Site Marker export file — the first line must be its header.')
   }
-  if (header.version !== EXPORT_VERSION && header.version !== 1) {
-    throw new Error(`Unsupported export version ${header.version} — this build reads 1 and 2.`)
+  if (!SUPPORTED_VERSIONS.includes(header.version)) {
+    throw new Error(
+      `Unsupported export version ${header.version} — this build reads ` +
+        `${SUPPORTED_VERSIONS.join(', ')}.`
+    )
   }
 }
 
