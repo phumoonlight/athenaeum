@@ -128,12 +128,6 @@ body.popup {
   fill: currentColor;
 }
 
-/* The status a page already has is lit *and* disabled — there is nothing to
-   click, but it must not read as unavailable. */
-.ghost.is-on:disabled {
-  opacity: 1;
-}
-
 .site {
   font-weight: 600;
   font-size: 14px;

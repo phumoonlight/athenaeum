@@ -27,8 +27,7 @@ const el = {
   currentDot: document.getElementById('current-dot'),
   currentTitle: document.getElementById('current-title'),
   currentState: document.getElementById('current-state'),
-  markUnread: document.getElementById('mark-unread'),
-  markRead: document.getElementById('mark-read'),
+  markToggle: document.getElementById('mark-toggle'),
   markFav: document.getElementById('mark-fav'),
 }
 
@@ -67,6 +66,14 @@ async function attempt(run) {
 
 /** The other read state — what a row's first button moves the page to. */
 const nextStatus = (status) => (status === 'read' ? 'unread' : 'read')
+
+/**
+ * The current page's read toggle. A page with no read state starts at unread —
+ * the point of marking something is usually that you haven't read it yet — and
+ * after that it just flips. It never returns to "no read state": that would
+ * delete an unstarred page, and a toggle that sometimes deletes is a trap.
+ */
+const nextCurrent = (status) => (status === 'unread' ? 'read' : 'unread')
 
 function markFavorite(url, favorite, title) {
   return attempt(() => setFavorite(url, favorite, { url, title }))
@@ -175,12 +182,14 @@ function renderCurrent() {
       ? 'favorite'
       : 'not marked'
 
-  // Unread and read are the same choice, so the one it's already in is lit and
-  // has nothing to do. The star is a separate question and always clickable.
-  el.markUnread.classList.toggle('is-on', status === 'unread')
-  el.markUnread.disabled = status === 'unread'
-  el.markRead.classList.toggle('is-on', status === 'read')
-  el.markRead.disabled = status === 'read'
+  // One toggle for the read state — it shows where the page *is*, and clicking
+  // moves it on. The star is a separate question, so it has its own button.
+  el.markToggle.classList.toggle('is-on', !!status)
+  setIcon(
+    el.markToggle,
+    status === 'read' ? 'check' : 'circle',
+    status === 'read' ? 'Move back to unread' : 'Mark as read'
+  )
 
   el.markFav.classList.toggle('is-on', favorite)
   setIcon(el.markFav, 'star', favorite ? 'Remove from Favorites' : 'Add to Favorites')
@@ -250,15 +259,9 @@ async function init() {
     el.scope.textContent = 'This page has no site to mark.'
   }
 
-  setIcon(el.markUnread, 'circle', 'Mark as unread')
-  setIcon(el.markRead, 'check', 'Mark as read')
-  setIcon(el.markFav, 'star', 'Add to Favorites')
-
-  el.markUnread.addEventListener('click', () => {
-    if (state.page) markStatus(state.page.url, 'unread', state.page.title)
-  })
-  el.markRead.addEventListener('click', () => {
-    if (state.page) markStatus(state.page.url, 'read', state.page.title)
+  el.markToggle.addEventListener('click', () => {
+    if (state.page)
+      markStatus(state.page.url, nextCurrent(currentEntry()?.status), state.page.title)
   })
   el.markFav.addEventListener('click', () => {
     if (state.page) markFavorite(state.page.url, !currentEntry()?.favorite, state.page.title)

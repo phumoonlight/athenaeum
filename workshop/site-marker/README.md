@@ -21,11 +21,11 @@ it moves.
 - **The toolbar icon is the state of the page you're on**: blue for unread, grey for read,
   with a **gold ring** when it's a favourite, and a quiet hollow ring when the page isn't
   marked. No badge, no count — the icon is the whole signal.
-- The popup's top row is **the page you're actually on**: its title, a state dot, and three
-  buttons — `unread`, `read`, `★`. The first two are the same choice, so whichever the page
-  is in is lit and has nothing to do; the star is a separate question and always clickable.
-  Below them, `Unread` / `Read` / `★` tabs list everything marked on the current site,
-  oldest first.
+- The popup's top row is **the page you're actually on**: its title, a state dot, and two
+  buttons. The first is **one toggle carrying the read state** — an unmarked page starts at
+  _unread_, and after that each click flips unread ↔ read. The second is `★`, a separate
+  question with its own button, so a page can be `read · favorite`. Below them,
+  `Unread` / `Read` / `★` tabs list everything marked on the current site, oldest first.
 - **What a row in that list offers depends on the tab.** Under Unread and Read the two
   useful moves are flipping the read state and starring, so those rows carry both. Under ★
   the only one is unstarring — the read state is already whatever the other tabs show.
