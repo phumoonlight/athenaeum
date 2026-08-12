@@ -99,7 +99,7 @@ function button(className, iconName, label, onClick) {
 function rowNode(entry) {
   const key = urlKey(entry.url)
   const row = document.createElement('li')
-  row.className = entry.status === 'read' ? 'item is-read' : 'item'
+  row.className = 'item'
   if (state.selected.has(key)) row.classList.add('is-picked')
 
   const pick = document.createElement('input')

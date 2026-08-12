@@ -87,7 +87,7 @@ function markStatus(url, status, title) {
 
 function itemNode(entry) {
   const li = document.createElement('li')
-  li.className = entry.status === 'read' ? 'item is-read' : 'item'
+  li.className = 'item'
 
   const link = document.createElement('a')
   link.className = 'item-link'
