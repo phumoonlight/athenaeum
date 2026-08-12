@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Site Marker</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="popup">
+    <header class="head">
+      <img id="favicon" class="favicon" alt="" />
+      <div class="head-text">
+        <div id="site" class="site">…</div>
+        <div id="scope" class="scope"></div>
+      </div>
+      <div class="head-actions">
+        <button
+          id="manage"
+          class="ghost"
+          type="button"
+          title="All marked pages, and import/export"
+          aria-label="All marked pages, and import/export"
+        ></button>
+      </div>
+    </header>
+
+    <section id="current" class="current" hidden>
+      <span id="current-dot" class="dot"></span>
+      <div class="current-text">
+        <div id="current-title" class="current-title"></div>
+        <div id="current-state" class="current-state"></div>
+      </div>
+      <div class="marks">
+        <button id="mark-toggle" class="ghost" type="button"></button>
+        <button id="mark-fav" class="ghost star" type="button"></button>
+      </div>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab is-active" data-view="unread" type="button">
+        Unread <span class="count" id="count-unread">0</span>
+      </button>
+      <button class="tab" data-view="read" type="button">
+        Read <span class="count" id="count-read">0</span>
+      </button>
+      <button
+        class="tab tab--icon"
+        data-view="favorite"
+        type="button"
+        title="Favorites"
+        aria-label="Favorites"
+      >
+        <span id="tab-fav-icon"></span>
+        <span class="count" id="count-favorite">0</span>
+      </button>
+    </nav>
+
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="empty" hidden></p>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

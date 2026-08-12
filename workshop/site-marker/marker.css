@@ -1,0 +1,47 @@
+/* Injected into every page — keep the surface tiny and the names unlikely to
+   clash. */
+
+/* Added to a marked link only when the page leaves it statically positioned. */
+.smk-host {
+  position: relative;
+}
+
+.smk-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Overhang the corner slightly so the dot sits beside the link's first
+     character instead of on top of it. */
+  transform: translate(-30%, -30%);
+  z-index: 2147483000;
+  display: block;
+  box-sizing: border-box;
+  width: 0.75em;
+  height: 0.75em;
+  min-width: 16px;
+  min-height: 16px;
+  /* White ring so the dot separates from whatever is behind it. */
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  /* Never takes a click: the dot only reports, and it sits inside the <a>, so
+     anything interactive here would be a way to change a mark by accident. */
+  pointer-events: none;
+}
+
+.smk-mark--unread {
+  background: #2f6fed;
+}
+
+.smk-mark--read {
+  background: #9aa0aa;
+}
+
+/* Starred but with no read state — the entry exists as a favourite only. */
+.smk-mark--marked {
+  background: #fff;
+}
+
+.smk-mark--fav {
+  border-color: #f0bb45;
+}

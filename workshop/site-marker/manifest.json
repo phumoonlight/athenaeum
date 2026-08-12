@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Site Marker",
+  "version": "1.0.0",
+  "description": "Mark any page unread, read or favorite. The toolbar icon shows the current page's state, and links to marked pages get a dot. Its own store, no bookmarks involved.",
+  "permissions": ["storage", "unlimitedStorage", "tabs", "favicon"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Site Marker"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["marker.js"],
+      "css": ["marker.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

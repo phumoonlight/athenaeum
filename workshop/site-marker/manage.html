@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Site Marker — all marked pages</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body>
+    <div class="sheet sheet--wide">
+      <header class="page-head">
+        <div>
+          <h1>Site Marker</h1>
+          <p id="summary" class="lede">…</p>
+        </div>
+        <div class="page-actions">
+          <button id="export" class="btn" type="button">Export</button>
+          <button id="import" class="btn" type="button">Import…</button>
+        </div>
+      </header>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>On-page marker</h2>
+        </div>
+        <label class="switch">
+          <input id="annotate" type="checkbox" />
+          <span>Show the marker on saved links</span>
+        </label>
+        <p class="panel-lede">
+          Puts a dot on every link pointing at a page you've marked — blue for unread, grey for
+          read, gold for a favorite. Clicking a dot flips that page between read and unread without
+          following the link. Applies to tabs you already have open.
+        </p>
+      </section>
+
+      <section id="import-panel" class="panel" hidden>
+        <div class="panel-head">
+          <h2>Import</h2>
+          <button id="import-close" class="link-btn" type="button">Close</button>
+        </div>
+        <div id="drop" class="drop" tabindex="0" role="button">
+          <div class="drop-main">Drop an export file here</div>
+          <div class="drop-sub">
+            or click to pick one — <code>.ndjson</code>, or an older <code>.json</code> export
+          </div>
+        </div>
+        <input
+          id="file"
+          type="file"
+          accept=".ndjson,.json,application/x-ndjson,application/json"
+          hidden
+        />
+        <div class="choice">
+          <label
+            ><input type="radio" name="mode" value="merge" checked /> Merge — newest wins</label
+          >
+          <label><input type="radio" name="mode" value="replace" /> Replace everything</label>
+        </div>
+        <p id="import-message" class="status" hidden></p>
+      </section>
+
+      <div class="toolbar">
+        <div class="chips" id="chips">
+          <button class="chip is-active" data-filter="all" type="button">All</button>
+          <button class="chip" data-filter="unread" type="button">Unread</button>
+          <button class="chip" data-filter="read" type="button">Read</button>
+          <button class="chip" data-filter="favorite" type="button">★</button>
+        </div>
+        <input id="search" class="search" type="search" placeholder="Filter by title or URL" />
+      </div>
+
+      <div class="bulk">
+        <label class="switch bulk-all">
+          <input id="select-all" type="checkbox" />
+          <span id="bulk-count">Select all</span>
+        </label>
+        <div class="bulk-actions">
+          <button class="btn" type="button" data-bulk="unread" disabled>Unread</button>
+          <button class="btn" type="button" data-bulk="read" disabled>Read</button>
+          <button class="btn" type="button" data-bulk="favorite" disabled>★ Favorite</button>
+          <button class="btn" type="button" data-bulk="unfavorite" disabled>Unfavorite</button>
+          <button class="btn btn--danger" type="button" data-bulk="delete" disabled>Delete</button>
+        </div>
+      </div>
+
+      <div id="groups" class="groups"></div>
+      <p id="empty" class="empty" hidden></p>
+    </div>
+
+    <script type="module" src="manage.js"></script>
+  </body>
+</html>
