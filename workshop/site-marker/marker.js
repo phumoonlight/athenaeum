@@ -53,10 +53,11 @@ function teardown() {
   clearMarks()
 }
 
-function makeMark(status) {
+function makeMark(state) {
+  const status = state.status || 'marked'
   const span = document.createElement('span')
-  span.className = `${MARK_CLASS} ${MARK_CLASS}--${status}`
-  span.title = status[0].toUpperCase() + status.slice(1)
+  span.className = `${MARK_CLASS} ${MARK_CLASS}--${status}${state.favorite ? ` ${MARK_CLASS}--fav` : ''}`
+  span.title = `${status[0].toUpperCase()}${status.slice(1)}${state.favorite ? ' · favorite' : ''}`
   span.setAttribute('aria-hidden', 'true')
   return span
 }
@@ -66,9 +67,9 @@ function makeMark(status) {
  * a positioning context. Only statically-positioned links are touched — anything
  * the page already positions is left exactly as the page set it.
  */
-function markLink(link, status) {
+function markLink(link, state) {
   if (getComputedStyle(link).position === 'static') link.classList.add(HOST_CLASS)
-  link.append(makeMark(status))
+  link.append(makeMark(state))
 }
 
 /** Links not looked at yet, ignoring anything that isn't a plain web link. */
@@ -92,7 +93,7 @@ async function scan() {
     const states = await send({ type: 'checkLinks', urls: batch.map((link) => link.href) })
     if (!Array.isArray(states) || !enabled) return
     batch.forEach((link, i) => {
-      link.setAttribute(SEEN_ATTR, states[i] || 'none')
+      link.setAttribute(SEEN_ATTR, states[i]?.status || 'none')
       if (states[i]) markLink(link, states[i])
     })
   }

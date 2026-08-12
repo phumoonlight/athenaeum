@@ -9,6 +9,7 @@ import {
   getEntries,
   parseExport,
   removeEntries,
+  setFavorite,
   setStatus,
   sortedEntries,
   updateEntries,
@@ -63,7 +64,10 @@ function formatBytes(bytes) {
 function visible() {
   const query = state.query.trim().toLowerCase()
   return sortedEntries(state.entries).filter((entry) => {
-    if (state.filter !== 'all' && entry.status !== state.filter) return false
+    if (state.filter === 'favorite' && !entry.favorite) return false
+    if ((state.filter === 'unread' || state.filter === 'read') && entry.status !== state.filter) {
+      return false
+    }
     if (!query) return true
     return entry.title.toLowerCase().includes(query) || entry.url.toLowerCase().includes(query)
   })
@@ -135,12 +139,11 @@ function rowNode(entry) {
       reload()
     }),
     button(
-      entry.status === 'favorite' ? 'act star is-on' : 'act star',
+      entry.favorite ? 'act star is-on' : 'act star',
       'star',
-      entry.status === 'favorite' ? 'Move back to unread' : 'Mark as favorite',
+      entry.favorite ? 'Remove from Favorites' : 'Add to Favorites',
       async () => {
-        const next = entry.status === 'favorite' ? 'unread' : 'favorite'
-        await setStatus(entry.url, next, { url: entry.url, title: entry.title })
+        await setFavorite(entry.url, !entry.favorite, { url: entry.url, title: entry.title })
         reload()
       }
     ),
@@ -255,7 +258,12 @@ function clearSelection() {
   state.selected.clear()
 }
 
-const BULK = { unread: 'unread', read: 'read', favorite: 'favorite' }
+const BULK = {
+  unread: { status: 'unread' },
+  read: { status: 'read' },
+  favorite: { favorite: true },
+  unfavorite: { favorite: false },
+}
 
 async function runBulk(action) {
   const keys = [...state.selected]
@@ -267,6 +275,21 @@ async function runBulk(action) {
     clearSelection()
     await reload()
     return
+  }
+
+  // Unstarring a favourite that has no read state removes it outright — the same
+  // rule a single unstar follows — so warn rather than silently deleting.
+  if (action === 'unfavorite') {
+    const orphans = keys.filter((key) => state.entries[key] && !state.entries[key].status).length
+    if (
+      orphans &&
+      !confirm(
+        `${orphans} of these are favorites with no read state, so unfavoriting drops them ` +
+          `entirely. Continue?`
+      )
+    ) {
+      return
+    }
   }
 
   try {

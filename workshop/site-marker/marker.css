@@ -37,6 +37,11 @@
   background: #9aa0aa;
 }
 
-.smk-mark--favorite {
-  background: #f0bb45;
+/* Starred but with no read state — the entry exists as a favourite only. */
+.smk-mark--marked {
+  background: #fff;
+}
+
+.smk-mark--fav {
+  border-color: #f0bb45;
 }
