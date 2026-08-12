@@ -183,12 +183,15 @@ function renderCurrent() {
 
   // The toggle's icon is the tab it would send the page to — an eye for read, a
   // bookmark for unread — so the buttons and the tabs speak the same language.
-  // Lit means the page has a read state at all, marked rather than untouched.
+  // Both come off `nextCurrent`, so the icon can't promise one thing while the
+  // click does another: an unmarked page shows a bookmark, because clicking adds
+  // it as unread rather than marking it read. Lit means already tracked.
+  const next = nextCurrent(status)
   el.markToggle.classList.toggle('is-on', !!status)
   setIcon(
     el.markToggle,
-    status === 'read' ? 'bookmark' : 'eye',
-    status === 'read' ? 'Move back to unread' : 'Mark as read'
+    next === 'read' ? 'eye' : 'bookmark',
+    !status ? 'Add as unread' : next === 'read' ? 'Mark as read' : 'Move back to unread'
   )
 
   el.markFav.classList.toggle('is-on', favorite)
