@@ -333,10 +333,10 @@ body.popup {
   white-space: nowrap;
 }
 
+/* Read rows recede rather than being struck through — the list is a record of
+   what you've read, not a list of things crossed off. */
 .item.is-read .item-title {
   color: var(--muted);
-  text-decoration: line-through;
-  text-decoration-color: var(--line);
 }
 
 /* Overlaid on the row's right edge, so the title keeps the full width until the
