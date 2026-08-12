@@ -26,7 +26,8 @@ const el = {
   currentDot: document.getElementById('current-dot'),
   currentTitle: document.getElementById('current-title'),
   currentState: document.getElementById('current-state'),
-  markToggle: document.getElementById('mark-toggle'),
+  markUnread: document.getElementById('mark-unread'),
+  markRead: document.getElementById('mark-read'),
   markFav: document.getElementById('mark-fav'),
 }
 
@@ -63,19 +64,15 @@ async function attempt(run) {
   await reload()
 }
 
-/**
- * The read toggle. An unmarked page starts at unread — the point of marking
- * something is usually that you haven't read it — and after that it flips
- * between the two. From favorite it comes back to unread: the three states are
- * exclusive now, and unread is the neutral one.
- *
- * There is deliberately no "back to unmarked" step: dropping a page entirely is
- * the manage page's job, so nothing in this popup can lose an entry to a stray
- * click.
- */
+// The list rows have room for two buttons, so each one toggles rather than
+// setting a fixed state. Neither ever lands on "unmarked": dropping a page
+// entirely is the manage page's job, so nothing in this popup can lose an entry
+// to a stray click.
+
+/** The read button: unread ↔ read, and out of favorite back to unread. */
 const nextStatus = (status) => (status === 'unread' ? 'read' : 'unread')
 
-/** The star. Clicking a lit one returns the page to unread, not to nothing. */
+/** The star: into favorite, or back to unread if it's already there. */
 const nextStar = (status) => (status === 'favorite' ? 'unread' : 'favorite')
 
 function markStatus(url, status, title) {
@@ -151,6 +148,15 @@ function pathOf(url) {
 
 // --- the current page --------------------------------------------------------
 
+const STATUS_ICONS = { unread: 'circle', read: 'check', favorite: 'star' }
+
+/** The three status buttons, in the order they sit in the row. */
+const CURRENT_BUTTONS = [
+  ['unread', el.markUnread],
+  ['read', el.markRead],
+  ['favorite', el.markFav],
+]
+
 function renderCurrent() {
   el.current.hidden = !state.page
   if (!state.page) return
@@ -163,17 +169,13 @@ function renderCurrent() {
   el.currentDot.className = `dot dot--${status || 'none'}`
   el.currentState.textContent = status || 'not marked'
 
-  // The toggle carries unread/read; the star carries the third state. Only one
-  // of the two can be lit, because only one status can be true.
-  el.markToggle.classList.toggle('is-on', status === 'unread' || status === 'read')
-  setIcon(
-    el.markToggle,
-    status === 'read' ? 'check' : 'circle',
-    status === 'read' ? 'Move back to unread' : 'Mark as read'
-  )
-
-  el.markFav.classList.toggle('is-on', status === 'favorite')
-  setIcon(el.markFav, 'star', status === 'favorite' ? 'Move back to unread' : 'Mark as favorite')
+  // One button per status rather than a toggle: the three states are exclusive,
+  // so the row can show all of them and let you pick, with the current one lit.
+  // Clicking the lit one does nothing — unmarking is the manage page's job.
+  for (const [value, node] of CURRENT_BUTTONS) {
+    node.classList.toggle('is-on', status === value)
+    node.disabled = status === value
+  }
 }
 
 function render() {
@@ -240,17 +242,12 @@ async function init() {
     el.scope.textContent = 'This page has no site to mark.'
   }
 
-  const markCurrent = (fn) => () => state.page && fn()
-  el.markToggle.addEventListener(
-    'click',
-    markCurrent(() =>
-      markStatus(state.page.url, nextStatus(currentEntry()?.status), state.page.title)
-    )
-  )
-  el.markFav.addEventListener(
-    'click',
-    markCurrent(() => markFavorite(state.page.url, state.page.title))
-  )
+  for (const [value, node] of CURRENT_BUTTONS) {
+    setIcon(node, STATUS_ICONS[value], `Mark as ${value}`)
+    node.addEventListener('click', () => {
+      if (state.page) markStatus(state.page.url, value, state.page.title)
+    })
+  }
 
   await reload()
 }

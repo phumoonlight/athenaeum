@@ -20,13 +20,15 @@ it moves.
 - **The toolbar icon is the state of the page you're on**: blue for unread, grey for read,
   gold for a favourite, and a quiet hollow ring when the page isn't marked at all. No badge,
   no count — the icon is the whole signal.
-- The popup's top row is **the page you're actually on**: its title, a state dot, and two
-  buttons. The first carries the read state — an unmarked page starts at _unread_, and each
-  click flips unread ↔ read. The second is `★`, which moves the page to favourite; clicking
-  a lit star sends it back to unread. Only one of the two is ever lit. Below them,
-  `Unread` / `Read` / `★` tabs list everything marked on the current site, oldest first.
-- Neither button has a "back to unmarked" step — a cycle that sometimes deletes makes the
-  everyday flip unpredictable. To drop a page entirely, use the manage page.
+- The popup's top row is **the page you're actually on**: its title, a state dot, and **one
+  button per status** — `unread`, `read`, `★`. Whichever the page is in is lit and disabled;
+  clicking either of the others moves it straight there, with no cycling to think about.
+  Below them, `Unread` / `Read` / `★` tabs list everything marked on the current site,
+  oldest first.
+- The rows in that list have room for two buttons rather than three, so there each one
+  toggles: the first flips unread ↔ read, the star moves in and out of favourite.
+- Nothing in the popup returns a page to **unmarked** — a control that sometimes deletes
+  makes the everyday flip unpredictable. To drop a page entirely, use the manage page.
 - A page is recorded the moment you mark it, and **deleted the moment you unmark it** — so
   the store is exactly the set of pages you cared about. Visiting a site records nothing;
   there is no history tracking.
