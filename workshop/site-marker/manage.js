@@ -9,13 +9,10 @@ import {
   getEntries,
   parseExport,
   removeEntries,
-  setFavorite,
-  setStatus,
   sortedEntries,
   updateEntries,
   urlKey,
 } from './common.js'
-import { icon } from './icons.js'
 
 const el = {
   summary: document.getElementById('summary'),
@@ -85,17 +82,6 @@ function groupByDomain(list) {
 
 // --- rendering ---------------------------------------------------------------
 
-function button(className, iconName, label, onClick) {
-  const node = document.createElement('button')
-  node.className = className
-  node.type = 'button'
-  node.title = label
-  node.setAttribute('aria-label', label)
-  node.append(icon(iconName))
-  node.addEventListener('click', onClick)
-  return node
-}
-
 function rowNode(entry) {
   const key = urlKey(entry.url)
   const row = document.createElement('li')
@@ -130,35 +116,10 @@ function rowNode(entry) {
 
   link.append(title, meta)
 
-  const actions = document.createElement('div')
-  actions.className = 'item-actions'
-  actions.append(
-    button(
-      'act',
-      entry.status === 'read' ? 'bookmark' : 'eye',
-      entry.status === 'read' ? 'Move back to unread' : 'Mark as read',
-      async () => {
-        const next = entry.status === 'read' ? 'unread' : 'read'
-        await setStatus(entry.url, next, { url: entry.url, title: entry.title })
-        reload()
-      }
-    ),
-    button(
-      entry.favorite ? 'act star is-on' : 'act star',
-      'star',
-      entry.favorite ? 'Remove from Favorites' : 'Add to Favorites',
-      async () => {
-        await setFavorite(entry.url, !entry.favorite, { url: entry.url, title: entry.title })
-        reload()
-      }
-    ),
-    button('act', 'trash', 'Forget this page', async () => {
-      await removeEntries([urlKey(entry.url)])
-      reload()
-    })
-  )
-
-  row.append(pick, link, actions)
+  // No per-row buttons: everything here is done by ticking rows and using the
+  // bulk bar. One page is just a selection of one, and a list this long is the
+  // wrong place for a delete button you can hit by accident.
+  row.append(pick, link)
   return row
 }
 

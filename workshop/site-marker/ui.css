@@ -302,10 +302,9 @@ body.popup {
   text-decoration: none;
 }
 
-/* The buttons are overlaid, so the title has to give back the space they need —
-   only while they're actually showing. The popup's rows carry up to two; the
-   manage page's (`.list--flat`) carry three. A lit star shows without hovering,
-   so those rows keep room for it permanently. */
+/* The popup's row buttons are overlaid, so the title has to give back the space
+   they need — only while they're actually showing. A lit star shows without
+   hovering, so those rows keep room for it permanently. */
 .item:has(.star.is-on) .item-link {
   padding-right: 30px;
 }
@@ -317,11 +316,11 @@ body.popup {
   padding-right: 66px;
 }
 
+/* Manage-page rows have no overlaid buttons — everything there is a bulk
+   action — so their titles keep the full width. */
 .list--flat .item:hover .item-link,
-.list--flat .item:focus-within .item-link,
-.list--flat .item:has(.star.is-on):hover .item-link,
-.list--flat .item:has(.star.is-on):focus-within .item-link {
-  padding-right: 96px;
+.list--flat .item:focus-within .item-link {
+  padding-right: 0;
 }
 
 .item-title {
@@ -381,12 +380,6 @@ body.popup {
 
 /* A lit star stays visible without hovering — it's status, not just an action. */
 .act.star.is-on {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Group-level buttons aren't inside a row, so they have nothing to hover. */
-.act--static {
   opacity: 1;
   pointer-events: auto;
 }

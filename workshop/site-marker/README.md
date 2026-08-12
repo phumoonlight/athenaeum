@@ -105,8 +105,10 @@ read access to all sites at install time.
 ### Bulk actions
 
 Every row on the manage page has a checkbox, and each site heading has one that takes the
-whole group (shown half-ticked when only some of its rows are selected). With anything
-selected, the bar above the list turns on: **Unread**, **Read**, **★ Favorite**,
+whole group (shown half-ticked when only some of its rows are selected). **Rows carry no
+buttons of their own** — one page is just a selection of one, and a list this long is the
+wrong place for a delete button you can hit by accident. With anything selected, the bar
+above the list turns on: **Unread**, **Read**, **★ Favorite**,
 **Unfavorite**, **Delete**.
 
 Two rules keep it from doing more than it looks like it will:
