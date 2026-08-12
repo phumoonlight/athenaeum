@@ -4,9 +4,8 @@
 const NS = 'http://www.w3.org/2000/svg'
 
 const PATHS = {
-  check: ['m5 13 4 4L19 7'],
-  undo: ['M4 10h10a5 5 0 0 1 0 10H9', 'm4 10 4-4', 'm4 10 4 4'],
-  circle: ['M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16'],
+  // Unread and read are a bookmark and an eye everywhere — on the tabs, and on
+  // the buttons that move a page between them.
   bookmark: ['M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z'],
   eye: [
     'M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z',

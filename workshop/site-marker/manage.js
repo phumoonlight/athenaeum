@@ -133,11 +133,16 @@ function rowNode(entry) {
   const actions = document.createElement('div')
   actions.className = 'item-actions'
   actions.append(
-    button('act', entry.status === 'read' ? 'undo' : 'check', 'Toggle read', async () => {
-      const next = entry.status === 'read' ? 'unread' : 'read'
-      await setStatus(entry.url, next, { url: entry.url, title: entry.title })
-      reload()
-    }),
+    button(
+      'act',
+      entry.status === 'read' ? 'bookmark' : 'eye',
+      entry.status === 'read' ? 'Move back to unread' : 'Mark as read',
+      async () => {
+        const next = entry.status === 'read' ? 'unread' : 'read'
+        await setStatus(entry.url, next, { url: entry.url, title: entry.title })
+        reload()
+      }
+    ),
     button(
       entry.favorite ? 'act star is-on' : 'act star',
       'star',

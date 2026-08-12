@@ -124,7 +124,7 @@ function itemNode(entry) {
     )
   } else {
     actions.append(
-      button('act', isRead ? 'undo' : 'check', {
+      button('act', isRead ? 'bookmark' : 'eye', {
         label: isRead ? 'Move back to unread' : 'Mark as read',
         onClick: () => markStatus(entry.url, nextStatus(entry.status), entry.title),
       }),
@@ -181,12 +181,13 @@ function renderCurrent() {
       ? 'favorite'
       : 'not marked'
 
-  // One toggle for the read state — it shows where the page *is*, and clicking
-  // moves it on. The star is a separate question, so it has its own button.
+  // The toggle's icon is the tab it would send the page to — an eye for read, a
+  // bookmark for unread — so the buttons and the tabs speak the same language.
+  // Lit means the page has a read state at all, marked rather than untouched.
   el.markToggle.classList.toggle('is-on', !!status)
   setIcon(
     el.markToggle,
-    status === 'read' ? 'check' : 'circle',
+    status === 'read' ? 'bookmark' : 'eye',
     status === 'read' ? 'Move back to unread' : 'Mark as read'
   )
 
