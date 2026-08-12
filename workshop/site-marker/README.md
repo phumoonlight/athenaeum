@@ -37,8 +37,12 @@ it moves.
 - **Manage** (the header button) opens a page listing **every marked page across every
   site**, grouped by site, with filters, search, export/import, and **bulk actions** —
   tick rows (or a whole site) and mark them unread, read, favorite, unfavorite, or delete.
-- **Deleting only happens on the manage page.** The popup can mark and star but never
-  remove, so a crowded list can't lose an entry to a stray click.
+- **The current-page row can also forget the page**, with a third button that takes two
+  clicks: the first turns it red, the second deletes. That's instead of a confirm dialog —
+  a dialog raised from a popup steals focus, and a popup that loses focus closes, taking the
+  question with it. Anything else you click disarms it, as does four seconds of nothing.
+- **The rows below can't delete.** A crowded list is the wrong place for it; use the row's
+  buttons to change state, or the manage page to remove in bulk.
 - The background service worker keeps the icon in sync and answers the content script's
   lookups. It's fully event-driven (tab and storage events) — no polling, no alarms. The
   icons are **drawn at runtime** with `OffscreenCanvas` rather than shipped as PNGs: there

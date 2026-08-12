@@ -4,6 +4,7 @@ import {
   faviconUrl,
   getEntries,
   partition,
+  removeEntries,
   setFavorite,
   setStatus,
   siteFromUrl,
@@ -28,6 +29,7 @@ const el = {
   currentState: document.getElementById('current-state'),
   markToggle: document.getElementById('mark-toggle'),
   markFav: document.getElementById('mark-fav'),
+  markRemove: document.getElementById('mark-remove'),
 }
 
 const state = {
@@ -36,6 +38,8 @@ const state = {
   entries: {},
   items: [],
   page: null, // { url, title, key } for the tab the popup was opened on
+  // Forgetting takes two clicks; this is whether the first one has happened.
+  removeArmed: false,
 }
 
 const currentEntry = () => (state.page ? state.entries[state.page.key] || null : null)
@@ -53,6 +57,7 @@ async function reload() {
  * line instead of leaving a click that silently did nothing.
  */
 async function attempt(run) {
+  disarmRemove()
   try {
     await run()
   } catch (error) {
@@ -80,6 +85,36 @@ function markFavorite(url, favorite, title) {
 
 function markStatus(url, status, title) {
   return attempt(() => setStatus(url, status, { url, title }))
+}
+
+// --- forgetting the current page ---------------------------------------------
+//
+// Two clicks rather than a confirm dialog: a dialog raised from a popup steals
+// focus, and a popup that loses focus closes — taking the question with it. The
+// first click arms the button, and anything else you do disarms it again.
+
+let disarmTimer = null
+
+function disarmRemove() {
+  clearTimeout(disarmTimer)
+  if (!state.removeArmed) return
+  state.removeArmed = false
+  render()
+}
+
+function armRemove() {
+  state.removeArmed = true
+  clearTimeout(disarmTimer)
+  // Armed is a dangerous state to leave lying around for a later, unrelated click.
+  disarmTimer = setTimeout(disarmRemove, 4000)
+  render()
+}
+
+async function forgetCurrent() {
+  clearTimeout(disarmTimer)
+  state.removeArmed = false
+  await removeEntries([state.page.key])
+  await reload()
 }
 
 // --- the site list -----------------------------------------------------------
@@ -196,6 +231,15 @@ function renderCurrent() {
 
   el.markFav.classList.toggle('is-on', favorite)
   setIcon(el.markFav, 'star', favorite ? 'Remove from Favorites' : 'Add to Favorites')
+
+  // Nothing to forget until the page is actually marked.
+  el.markRemove.hidden = !entry
+  el.markRemove.classList.toggle('is-armed', state.removeArmed)
+  setIcon(
+    el.markRemove,
+    'trash',
+    state.removeArmed ? 'Click again to forget this page' : 'Forget this page'
+  )
 }
 
 function render() {
@@ -235,6 +279,7 @@ el.tabs.addEventListener('click', (event) => {
   const tab = event.target.closest('.tab')
   if (!tab) return
   state.view = tab.dataset.view
+  disarmRemove()
   render()
 })
 
@@ -271,6 +316,11 @@ async function init() {
   })
   el.markFav.addEventListener('click', () => {
     if (state.page) markFavorite(state.page.url, !currentEntry()?.favorite, state.page.title)
+  })
+  el.markRemove.addEventListener('click', () => {
+    if (!state.page || !currentEntry()) return
+    if (state.removeArmed) forgetCurrent()
+    else armRemove()
   })
 
   await reload()

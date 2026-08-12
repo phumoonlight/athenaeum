@@ -9,6 +9,8 @@
   --accent: #2f6fed;
   --accent-soft: #e8efff;
   --star: #e0a112;
+  --danger: #d13c3c;
+  --danger-soft: #fdeaea;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +23,8 @@
     --accent: #7aa2ff;
     --accent-soft: #263148;
     --star: #f0bb45;
+    --danger: #e05252;
+    --danger-soft: #3a2426;
   }
 }
 
@@ -126,6 +130,15 @@ body.popup {
 
 .ghost.star.is-on .icon {
   fill: currentColor;
+}
+
+/* Forgetting takes two clicks. Between them the button goes red, so the second
+   one is obviously not the same button it was. */
+.ghost.is-armed,
+.ghost.is-armed:hover {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .site {
@@ -655,8 +668,8 @@ body.popup {
 }
 
 .btn--danger:hover:not(:disabled) {
-  border-color: #e05252;
-  color: #e05252;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 /* Row and group selection. */
