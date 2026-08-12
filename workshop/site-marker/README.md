@@ -46,17 +46,24 @@ it moves.
 
 ### Where it's kept
 
-Each entry is **its own key** in `chrome.storage.local`, named `e:<normalised URL>`. That
-matters more than it sounds: marking a page writes ~200 bytes, instead of rewriting the
-whole store the way a single `entries` blob would. The cost is that listing everything
-reads all keys at once, which is fine — reads are cheap and the popup needs the whole site
-anyway.
+Everything in `chrome.storage.local` carries a prefix saying what it is: **`e:` for a
+marked page**, keyed by its normalised URL, and **`app:` for a setting** (there is one,
+`app:annotateLinks`). Anything without a prefix is left over from a build that has moved on,
+and gets migrated or removed on first read.
+
+**Each entry having its own key** is the part that matters most: marking a page writes ~200
+bytes, instead of rewriting the whole store the way a single `entries` blob would. The cost
+is that listing everything reads all keys at once, which is fine — reads are cheap and the
+popup needs the whole site anyway.
 
 State is local (not `chrome.storage.sync`) and survives restarts — sync caps out at 100 KB
 total, 8 KB per item and 512 items, so it could never hold this; export/import is the
-cross-device path instead. A store from an earlier build that used one `entries` object is
-split into per-entry keys automatically on first read, and one written while favourite was
-briefly a status of its own has those entries turned back into starred-with-no-read-state.
+cross-device path instead.
+
+Older stores are brought up to date on first read, and the migration is idempotent, so a
+current store is left untouched: one `entries` blob is split into per-entry keys; entries
+written while favourite was briefly a status of its own become starred-with-no-read-state;
+and a setting still under its old bare name moves under `app:`, keeping its value.
 
 ### How much will it hold?
 

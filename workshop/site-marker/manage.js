@@ -387,8 +387,10 @@ el.search.addEventListener('input', () => {
   render()
 })
 
-reload()
-
-chrome.storage.local.get(ANNOTATE_KEY).then((stored) => {
+// Reading the toggle only after `reload()` matters on the first run of a build
+// that renamed a key: the store's migration happens inside it, so a read before
+// it would find the old name still in place and the new one empty.
+reload().then(async () => {
+  const stored = await chrome.storage.local.get(ANNOTATE_KEY)
   el.annotate.checked = !!stored[ANNOTATE_KEY]
 })

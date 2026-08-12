@@ -9,7 +9,7 @@
 // page". Content scripts can't import ES modules, so the constant below is
 // mirrored literally from common.js.
 
-const ANNOTATE_KEY = 'annotateLinks'
+const ANNOTATE_KEY = 'app:annotateLinks'
 
 const MARK_CLASS = 'smk-mark'
 const HOST_CLASS = 'smk-host'

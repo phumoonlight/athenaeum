@@ -28,11 +28,21 @@ export const ENTRY_PREFIX = 'e:'
  */
 const STATUSES = ['unread', 'read']
 
+/**
+ * Settings go under `app:`, so every key in the storage inspector announces
+ * what it is: `app:` is a knob, `e:` is a marked page, and anything else is
+ * left over from a build that has moved on.
+ */
+const SETTING_PREFIX = 'app:'
+
+/** The content script's toggle. Mirrored literally in marker.js — it can't import. */
+export const ANNOTATE_KEY = `${SETTING_PREFIX}annotateLinks`
+
 /** The pre-`e:` layout, split out on first load and then deleted. */
 const LEGACY_ENTRIES_KEY = 'entries'
 
-/** The content script's toggle. Mirrored literally in marker.js — it can't import. */
-export const ANNOTATE_KEY = 'annotateLinks'
+/** Old name → new, for keys that were renamed rather than dropped. */
+const RENAMED_KEYS = { annotateLinks: ANNOTATE_KEY }
 
 // Hostnames whose "domain" is really the whole host — a two-label suffix list is
 // enough for personal use; anything not listed falls back to the last two labels.
@@ -202,8 +212,13 @@ function ensureMigrated() {
       patch[key] = normalise(entry)
     }
 
+    // Settings that only changed name carry their value across.
+    const renamed = Object.keys(RENAMED_KEYS).filter((old) => old in all)
+    for (const old of renamed) patch[RENAMED_KEYS[old]] = all[old]
+
     if (Object.keys(patch).length) await save(patch)
-    if (legacy) await chrome.storage.local.remove(LEGACY_ENTRIES_KEY)
+    const stale = [...renamed, ...(legacy ? [LEGACY_ENTRIES_KEY] : [])]
+    if (stale.length) await chrome.storage.local.remove(stale)
   })()
   return migration
 }
