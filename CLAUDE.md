@@ -13,6 +13,8 @@ Consequences for working here:
 - There is **no repo-wide build, lint, or test command**. Every command is scoped to a
   single project directory. Always `cd` into the project first and read its
   `package.json` / `go.mod` / `pubspec.yaml` / `requirements.txt` for the real commands.
+- A project may carry its own `README.md` and `AGENTS.md` (design, invariants, gotchas) —
+  e.g. `workshop/site-marker/AGENTS.md`. Read them before changing that project.
 - Projects are independent and must not import from each other.
 - Dependencies (`node_modules`, build output) are never committed — each project carries
   **its own `.gitignore`**. The root `.gitignore` only ignores `tmpclaude-*`, so a new
