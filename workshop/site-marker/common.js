@@ -529,8 +529,9 @@ export function exportText(entries) {
  *     dragged straight in rather than being stranded
  *   - a version 1 export: one whole JSON object holding an `entries` array
  *
- * Throws with a readable message rather than guessing at an unknown shape —
- * Bookmark Plus exports are a different format and are not accepted.
+ * Throws with a readable message rather than guessing at an unknown shape. Another
+ * tool's export is not accepted, however close it looks: quietly guessing at
+ * someone else's format is how you import nonsense.
  */
 export function parseExport(text) {
   const trimmed = text.trim()
