@@ -50,9 +50,9 @@ it moves.
 ### Where it's kept
 
 Everything in `chrome.storage.local` carries a prefix saying what it is: **`e:` for a
-marked page**, keyed by its normalised URL, and **`app:` for a setting** (there is one,
-`app:annotateLinks` and `app:markerSize`). Anything without a prefix is left over from a
-build that has moved on,
+marked page**, keyed by its normalised URL, and **`app:` for a setting**
+(`app:annotateLinks`, `app:markerSize`, `app:markerOpacity` and `app:readOpacity`).
+Anything without a prefix is left over from a build that has moved on,
 and gets migrated or removed on first read.
 
 **Each entry having its own key** is the part that matters most: marking a page writes ~200
@@ -102,12 +102,33 @@ navigation), and any change re-marks open pages immediately.
 
 **Dot size** sits next to the toggle: 8–28 pixels, default 16. Bigger is easier to spot on a
 busy page, smaller keeps the dots out of dense text. The white ring scales with them.
+**Dot opacity** is beside it: 10–100%, default 100 — turn it down to let a dot sit over a
+page without hiding what is underneath. The floor is 10 rather than 0 because a dot you
+cannot see is just the marker being off, and the toggle already does that. It is stored as a
+whole percentage rather than a 0–1 fraction, which keeps both sliders and both clamps on
+integers.
 
-The size is a CSS custom property on the page root, so dragging the slider resizes every dot
-on every open tab at once — no rescan, nothing in the DOM touched again. The width and
-height are `!important`: these are our own spans sitting inside someone else's link, and a
+**Read link opacity** fades the link itself once it points at a page you have marked read:
+20–100%, default 100, which leaves the page exactly as it styles its own links. What is
+left at full strength is what you have not got to yet. The dot sits inside the link and
+opacity applies to a whole subtree, so a faded link fades its dot with it — the right
+reading of the setting, and not something CSS lets a descendant opt out of.
+
+All three are CSS custom properties on the page root, so dragging a slider restyles every
+dot and every faded link on every open tab at once — no rescan, nothing in the DOM touched
+again. Links are tagged `.smk-read-link` when they are marked read whatever the setting
+says, so changing it never means visiting them again.
+
+`!important` throughout: these are our own spans sitting inside someone else's link, and a
 site rule as ordinary as `a span { width: 4px }` is more specific than a single class, so
-without it the page would decide how big they are.
+without it the page would decide how they look — and for the fade, a rule for a site's own
+links beats ours just as easily. The fade is additionally gated behind a `.smk-dim-read`
+class on the root, added only below 100%, so at the default the rule matches nothing at all
+and a site that fades its own visited links keeps doing exactly that.
+
+An earlier build had this fade under `app:readLinkOpacity`, holding a 0–1 fraction. That key
+is deleted as a leftover on update, and the setting is back under a different name
+(`app:readOpacity`), so a stale `0.5` can never be read as half a percent of one.
 
 The dots are **read-only** — `pointer-events: none`, and the content script has no way to
 write. A dot sits _inside_ its link on pages you are clicking through quickly, so anything

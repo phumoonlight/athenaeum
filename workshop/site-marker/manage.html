@@ -41,6 +41,26 @@
           How big the dots are, in pixels. Bigger is easier to spot on a busy page; smaller keeps
           them out of the way of dense text. Open tabs resize as you drag.
         </p>
+
+        <div class="field">
+          <label class="field-label" for="marker-opacity">Dot opacity</label>
+          <input id="marker-opacity" type="range" min="10" max="100" step="5" />
+          <output id="marker-opacity-value" class="field-value" for="marker-opacity"></output>
+        </div>
+        <p class="panel-lede">
+          How solid the dots are. Turn it down to let a dot sit over a page without hiding what's
+          underneath it. Open tabs update as you drag.
+        </p>
+
+        <div class="field">
+          <label class="field-label" for="read-opacity">Read link opacity</label>
+          <input id="read-opacity" type="range" min="20" max="100" step="5" />
+          <output id="read-opacity-value" class="field-value" for="read-opacity"></output>
+        </div>
+        <p class="panel-lede">
+          Fades the link itself when it points at a page you've marked read, so what's left is what
+          you haven't got to. At 100% the page is left alone. A faded link fades its dot too.
+        </p>
       </section>
 
       <section id="import-panel" class="panel" hidden>

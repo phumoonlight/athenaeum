@@ -6,6 +6,25 @@
   position: relative;
 }
 
+/* Links to pages already read, faded by however much the setting says.
+
+   `!important` because a single class loses to nearly any rule a site writes for
+   its own links — without it the setting silently does nothing on most pages.
+
+   The rule is gated behind a class on the page root, which is only there when
+   the setting is below 100%. That keeps the default a true no-op: at 100% this
+   does not match at all, so a site that fades its own visited links keeps doing
+   exactly that. The variable is on the root too, so changing the setting
+   restyles every faded link at once.
+
+   The dot sits inside the link, and opacity applies to the whole subtree, so a
+   faded read link fades its own dot with it. That is the right reading of the
+   setting — the entry is de-emphasised as a whole — and there is no way to opt a
+   descendant back out anyway. */
+.smk-dim-read .smk-read-link {
+  opacity: var(--smk-read-opacity, 1) !important;
+}
+
 .smk-mark {
   position: absolute;
   top: 0;
@@ -22,6 +41,9 @@
      decide how big they are. */
   width: var(--smk-mark-size, 16px) !important;
   height: var(--smk-mark-size, 16px) !important;
+  /* Also a setting, and `!important` for the same reason: a page that fades its
+     own `a span` would otherwise decide how visible our dot is. */
+  opacity: var(--smk-mark-opacity, 1) !important;
   /* The ring scales with the dot: 2px at the default 16, thinner when smaller. */
   border: max(1px, calc(var(--smk-mark-size, 16px) / 8)) solid #fff;
   border-radius: 50%;

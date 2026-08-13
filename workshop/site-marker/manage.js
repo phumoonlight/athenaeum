@@ -3,10 +3,13 @@
 
 import {
   ANNOTATE_KEY,
-  MARKER_SIZE_DEFAULT,
+  MARKER_OPACITY_KEY,
   MARKER_SIZE_KEY,
+  READ_OPACITY_KEY,
   applyEntries,
+  clampMarkerOpacity,
   clampMarkerSize,
+  clampReadOpacity,
   counts,
   exportText,
   getEntries,
@@ -24,6 +27,10 @@ const el = {
   annotate: document.getElementById('annotate'),
   markerSize: document.getElementById('marker-size'),
   markerSizeValue: document.getElementById('marker-size-value'),
+  markerOpacity: document.getElementById('marker-opacity'),
+  markerOpacityValue: document.getElementById('marker-opacity-value'),
+  readOpacity: document.getElementById('read-opacity'),
+  readOpacityValue: document.getElementById('read-opacity-value'),
   importPanel: document.getElementById('import-panel'),
   importClose: document.getElementById('import-close'),
   importMessage: document.getElementById('import-message'),
@@ -385,16 +392,47 @@ el.annotate.addEventListener('change', () => {
   chrome.storage.local.set({ [ANNOTATE_KEY]: el.annotate.checked })
 })
 
-const showMarkerSize = () => {
-  el.markerSizeValue.textContent = `${el.markerSize.value}px`
+/**
+ * The appearance sliders, which differ only in the key they write, the clamp
+ * that guards it and the unit in the readout. The clamps already answer an
+ * unset key with the default, so there is nothing else to say about a first run.
+ */
+const sliders = [
+  {
+    input: el.markerSize,
+    output: el.markerSizeValue,
+    key: MARKER_SIZE_KEY,
+    unit: 'px',
+    clamp: clampMarkerSize,
+  },
+  {
+    input: el.markerOpacity,
+    output: el.markerOpacityValue,
+    key: MARKER_OPACITY_KEY,
+    unit: '%',
+    clamp: clampMarkerOpacity,
+  },
+  {
+    input: el.readOpacity,
+    output: el.readOpacityValue,
+    key: READ_OPACITY_KEY,
+    unit: '%',
+    clamp: clampReadOpacity,
+  },
+]
+
+const showSlider = (slider) => {
+  slider.output.textContent = `${slider.input.value}${slider.unit}`
 }
 
 // The readout tracks the drag; the write waits for it to end, so a slow sweep
 // isn't a hundred storage writes.
-el.markerSize.addEventListener('input', showMarkerSize)
-el.markerSize.addEventListener('change', () => {
-  chrome.storage.local.set({ [MARKER_SIZE_KEY]: clampMarkerSize(el.markerSize.value) })
-})
+for (const slider of sliders) {
+  slider.input.addEventListener('input', () => showSlider(slider))
+  slider.input.addEventListener('change', () => {
+    chrome.storage.local.set({ [slider.key]: slider.clamp(slider.input.value) })
+  })
+}
 
 el.chips.addEventListener('click', (event) => {
   const chip = event.target.closest('.chip')
@@ -414,10 +452,10 @@ el.search.addEventListener('input', () => {
 // that renamed a key: the store's migration happens inside it, so a read before
 // it would find the old name still in place and the new one empty.
 reload().then(async () => {
-  const stored = await chrome.storage.local.get([ANNOTATE_KEY, MARKER_SIZE_KEY])
+  const stored = await chrome.storage.local.get([ANNOTATE_KEY, ...sliders.map((s) => s.key)])
   el.annotate.checked = !!stored[ANNOTATE_KEY]
-  el.markerSize.value = String(
-    MARKER_SIZE_KEY in stored ? clampMarkerSize(stored[MARKER_SIZE_KEY]) : MARKER_SIZE_DEFAULT
-  )
-  showMarkerSize()
+  for (const slider of sliders) {
+    slider.input.value = String(slider.clamp(stored[slider.key]))
+    showSlider(slider)
+  }
 })

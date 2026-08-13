@@ -11,11 +11,19 @@
 
 const ANNOTATE_KEY = 'app:annotateLinks'
 const MARKER_SIZE_KEY = 'app:markerSize'
+const MARKER_OPACITY_KEY = 'app:markerOpacity'
+const READ_OPACITY_KEY = 'app:readOpacity'
 
-/** Set on the page root; see `.smk-mark` in marker.css. */
+/** Set on the page root; see `.smk-mark` and `.smk-dim-read` in marker.css. */
 const SIZE_VAR = '--smk-mark-size'
+const OPACITY_VAR = '--smk-mark-opacity'
+const READ_OPACITY_VAR = '--smk-read-opacity'
+
+/** On the page root, and only below 100% — see `setReadOpacity()`. */
+const DIM_CLASS = 'smk-dim-read'
 
 const MARK_CLASS = 'smk-mark'
+const READ_CLASS = 'smk-read-link'
 const HOST_CLASS = 'smk-host'
 const SEEN_ATTR = 'data-smk'
 const DEBOUNCE_MS = 300
@@ -55,22 +63,56 @@ function teardown() {
   observer = null
   clearTimeout(timer)
   clearMarks()
-  clearSizing()
+  clearStyling()
+}
+
+/**
+ * Mirrors clampSetting() in common.js. Empty values are checked before
+ * `Number()` sees them: it turns `null` and `''` into 0, which would clamp an
+ * unset setting to the smallest dot rather than leaving it at the default.
+ */
+function clampSetting(value, min, max, fallback) {
+  const empty = value === null || value === undefined || value === ''
+  const number = empty ? NaN : Number(value)
+  if (!Number.isFinite(number)) return fallback
+  return Math.min(max, Math.max(min, Math.round(number)))
 }
 
 /**
  * How big the dots are. Set as a custom property on the page root rather than on
  * each dot, so changing it resizes every one at once — no rescan, no touching
- * the DOM again.
+ * the DOM again. Same for the opacity below.
  */
 function setMarkerSize(value) {
-  // Mirrors clampMarkerSize() in common.js. Empty values are checked before
-  // `Number()` sees them: it turns `null` and `''` into 0, which would clamp an
-  // unset setting to the smallest dot rather than leaving it at the default.
-  const empty = value === null || value === undefined || value === ''
-  const number = empty ? NaN : Number(value)
-  const size = Number.isFinite(number) ? Math.min(28, Math.max(8, Math.round(number))) : 16
-  document.documentElement.style.setProperty(SIZE_VAR, `${size}px`)
+  document.documentElement.style.setProperty(SIZE_VAR, `${clampSetting(value, 8, 28, 16)}px`)
+}
+
+/** Stored as a whole percentage (see common.js); CSS wants the 0–1 fraction. */
+function setMarkerOpacity(value) {
+  const percent = clampSetting(value, 10, 100, 100)
+  document.documentElement.style.setProperty(OPACITY_VAR, String(percent / 100))
+}
+
+/**
+ * How faded links to pages already read are. Also a root custom property, so the
+ * links themselves are tagged once and never touched again when this changes.
+ */
+function setReadOpacity(value) {
+  const percent = clampSetting(value, 20, 100, 100)
+  const root = document.documentElement
+  root.style.setProperty(READ_OPACITY_VAR, String(percent / 100))
+  // The class is what arms the `!important` rule, so at 100% we match nothing
+  // and a site that fades its own read links keeps doing exactly that.
+  root.classList.toggle(DIM_CLASS, percent < 100)
+}
+
+/** The three appearance settings, read together and applied together. */
+const STYLE_KEYS = [MARKER_SIZE_KEY, MARKER_OPACITY_KEY, READ_OPACITY_KEY]
+
+function applyStyling(stored) {
+  setMarkerSize(stored[MARKER_SIZE_KEY])
+  setMarkerOpacity(stored[MARKER_OPACITY_KEY])
+  setReadOpacity(stored[READ_OPACITY_KEY])
 }
 
 function makeMark(state) {
@@ -89,6 +131,9 @@ function makeMark(state) {
  */
 function markLink(link, state) {
   if (getComputedStyle(link).position === 'static') link.classList.add(HOST_CLASS)
+  // Tagged even at full opacity — the root variable does the fading, so the
+  // setting can change without every link having to be visited again.
+  if (state.status === 'read') link.classList.add(READ_CLASS)
   link.append(makeMark(state))
 }
 
@@ -127,27 +172,29 @@ function schedule() {
 function clearMarks() {
   for (const mark of document.querySelectorAll(`.${MARK_CLASS}`)) mark.remove()
   for (const el of document.querySelectorAll(`.${HOST_CLASS}`)) el.classList.remove(HOST_CLASS)
+  for (const el of document.querySelectorAll(`.${READ_CLASS}`)) el.classList.remove(READ_CLASS)
   for (const link of document.querySelectorAll(`[${SEEN_ATTR}]`)) link.removeAttribute(SEEN_ATTR)
 }
 
 /**
- * The size is a setting, not a mark, so it survives the clear-and-rescan that
- * follows every change to the store. Removing it there meant marking any page
- * silently reset every dot on screen back to the default size.
+ * The sizes and opacities are settings, not marks, so they survive the
+ * clear-and-rescan that follows every change to the store. Removing them there
+ * meant marking any page silently reset every dot on screen to the defaults.
+ * Which links are faded is a mark, though, so that class goes with `clearMarks()`.
  */
-function clearSizing() {
+function clearStyling() {
   document.documentElement.style.removeProperty(SIZE_VAR)
+  document.documentElement.style.removeProperty(OPACITY_VAR)
+  document.documentElement.style.removeProperty(READ_OPACITY_VAR)
+  document.documentElement.classList.remove(DIM_CLASS)
 }
 
 function setEnabled(next) {
   if (orphaned || next === enabled) return
   enabled = next
   if (enabled) {
-    // Turning the marker on mid-session needs the current value too.
-    chrome.storage.local.get(MARKER_SIZE_KEY).then(
-      (stored) => setMarkerSize(stored[MARKER_SIZE_KEY]),
-      () => {}
-    )
+    // Turning the marker on mid-session needs the current values too.
+    chrome.storage.local.get(STYLE_KEYS).then(applyStyling, () => {})
     observer ??= new MutationObserver(schedule)
     observer.observe(document.documentElement, { childList: true, subtree: true })
     schedule()
@@ -155,7 +202,7 @@ function setEnabled(next) {
     observer?.disconnect()
     clearTimeout(timer)
     clearMarks()
-    clearSizing()
+    clearStyling()
   }
 }
 
@@ -170,15 +217,19 @@ chrome.runtime.onMessage.addListener((message) => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return
-  if (changes[MARKER_SIZE_KEY] && enabled) setMarkerSize(changes[MARKER_SIZE_KEY].newValue)
+  if (enabled) {
+    if (changes[MARKER_SIZE_KEY]) setMarkerSize(changes[MARKER_SIZE_KEY].newValue)
+    if (changes[MARKER_OPACITY_KEY]) setMarkerOpacity(changes[MARKER_OPACITY_KEY].newValue)
+    if (changes[READ_OPACITY_KEY]) setReadOpacity(changes[READ_OPACITY_KEY].newValue)
+  }
   if (changes[ANNOTATE_KEY]) setEnabled(!!changes[ANNOTATE_KEY].newValue)
 })
 
 // Same synchronous-throw hazard as `send()`: if this script was injected into a
 // tab that outlived an extension reload, `chrome.storage` is already gone.
 try {
-  chrome.storage.local.get([ANNOTATE_KEY, MARKER_SIZE_KEY]).then((stored) => {
-    if (stored[ANNOTATE_KEY]) setMarkerSize(stored[MARKER_SIZE_KEY])
+  chrome.storage.local.get([ANNOTATE_KEY, ...STYLE_KEYS]).then((stored) => {
+    if (stored[ANNOTATE_KEY]) applyStyling(stored)
     setEnabled(!!stored[ANNOTATE_KEY])
   }, teardown)
 } catch {
