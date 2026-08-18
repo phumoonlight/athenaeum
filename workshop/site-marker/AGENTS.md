@@ -171,7 +171,7 @@ interactive there is a way to rewrite a mark by accident. Marking is the popup's
 worker only answers `checkLinks`; it accepts no write messages at all, so nothing running
 in a page can change a status even if it tried.
 
-The comparison uses `urlKey()` from [`common.js`](common.js). Normalisation lives **only**
+The comparison uses `urlKey()` from [`common.js`](src/common.js). Normalisation lives **only**
 in the service worker — the content script sends hrefs and gets back state — so there is
 one definition of "the same page".
 
@@ -202,7 +202,7 @@ Two rules keep it from doing more than it looks like it will:
   the selected rows are in that position, it says how many and asks first.
 
 However many rows are selected, a bulk change is **one read and one write** (`updateEntries`
-in [`common.js`](common.js)), not one per row.
+in [`common.js`](src/common.js)), not one per row.
 
 ## Export format
 
@@ -252,16 +252,16 @@ stays case-sensitive.
 
 ## Tuning
 
-Most knobs are the `CONFIG` block at the top of [`common.js`](common.js):
+Most knobs are the `CONFIG` block at the top of [`common.js`](src/common.js):
 
 - `MATCH` (default `'domain'`) — `'domain'` treats `docs.example.com` and `example.com` as
   the same site; `'host'` requires an exact hostname match. A leading `www.` is ignored
   either way.
 - `SORT` (default `'oldest'`) — order the popup's list by when a page was first marked.
 
-The link dot's colours are in [`marker.css`](marker.css) — its size and both opacities are
+The link dot's colours are in [`marker.css`](styles/marker.css) — its size and both opacities are
 settings now — and the toolbar icon's are in the `ICON` block at the top of
-[`background.js`](background.js). Keep the two in step, since they are meant to read as the
+[`background.js`](src/background.js). Keep the two in step, since they are meant to read as the
 same language. The on-page marker's switch is per site (`app:annotate:<site>` in
 `chrome.storage.local`), not a `CONFIG` knob — though `MATCH` decides what counts as one
 site there too.
@@ -289,7 +289,7 @@ site there too.
 - **Link dots skip iframes** and any link whose href isn't `http(s)`.
 - **A corner dot can be clipped** by a link inside a container with `overflow: hidden`,
   and on a link that wraps across lines it lands on the first line's corner. Reduce the
-  overhang in [`marker.css`](marker.css) (the `transform: translate(...)`) if that bites.
+  overhang in [`marker.css`](styles/marker.css) (the `transform: translate(...)`) if that bites.
 - **Reloading the extension orphans the marker in tabs that are already open.** Chrome
   gives those content scripts no runtime to talk to, and `chrome.*` calls then throw
   synchronously (`Extension context invalidated`). `marker.js` detects this and tears
@@ -301,18 +301,27 @@ site there too.
 
 ```
 site-marker/
-  manifest.json   # MV3; popup, module service worker, content script
-  common.js       # CONFIG, URL normalisation, the entry store, export/import
-  background.js   # toolbar icon per page state, link lookups, which site a tab is on
-  marker.js       # read-only dots on links pointing at marked pages
-  marker.css      # the link dot and the read-link fade
-  popup.html      # popup markup
-  popup.js        # current-page controls, per-site tabs and list
-  manage.html     # two tabs — the all-sites list and filters, and the settings
-  manage.js       # tabs, grouping, filtering, file drop/pick
-  ui.css          # styling for both pages (light + dark)
-  package.json    # marks the source as ES modules for anything run under node
-  icons.js        # inline SVG icons for the buttons
-  README.md       # the short about
-  AGENTS.md       # this file
+  manifest.json     # MV3; the only file that names paths, so it points at all three folders
+  package.json      # marks the source as ES modules for anything run under node
+  src/
+    common.js       # CONFIG, URL normalisation, the entry store, export/import
+    background.js   # toolbar icon per page state, link lookups, which site a tab is on
+    marker.js       # read-only dots on links pointing at marked pages
+    popup.js        # current-page controls, per-site tabs and list
+    manage.js       # tabs, grouping, filtering, file drop/pick
+    icons.js        # inline SVG icons for the buttons
+  views/
+    popup.html      # popup markup
+    manage.html     # two tabs — the all-sites list and filters, and the settings
+  styles/
+    marker.css      # the link dot and the read-link fade, injected into every page
+    ui.css          # styling for both views (light + dark)
+  README.md         # the short about
+  AGENTS.md         # this file
 ```
+
+Paths cross a folder boundary in exactly four places, all of them declarations rather than
+logic: `manifest.json` (the popup, the worker, and the content script's pair of files), the
+`<link>` and `<script>` at the top of each view, and `getURL('views/manage.html')` in
+[`popup.js`](src/popup.js). Everything else is a sibling import — `src/` only ever imports
+from `src/`.

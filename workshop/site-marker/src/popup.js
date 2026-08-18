@@ -297,7 +297,7 @@ el.annotate.addEventListener('click', async () => {
 })
 
 el.manage.addEventListener('click', async () => {
-  await chrome.tabs.create({ url: chrome.runtime.getURL('manage.html') })
+  await chrome.tabs.create({ url: chrome.runtime.getURL('views/manage.html') })
   window.close()
 })
 

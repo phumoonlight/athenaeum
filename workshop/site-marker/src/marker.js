@@ -15,7 +15,7 @@ const MARKER_SIZE_KEY = 'app:markerSize'
 const MARKER_OPACITY_KEY = 'app:markerOpacity'
 const READ_OPACITY_KEY = 'app:readOpacity'
 
-/** Set on the page root; see `.smk-mark` and `.smk-dim-read` in marker.css. */
+/** Set on the page root; see `.smk-mark` and `.smk-dim-read` in ../styles/marker.css. */
 const SIZE_VAR = '--smk-mark-size'
 const OPACITY_VAR = '--smk-mark-opacity'
 const READ_OPACITY_VAR = '--smk-read-opacity'
