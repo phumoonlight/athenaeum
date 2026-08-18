@@ -608,17 +608,71 @@ body.popup {
   color: var(--fg);
 }
 
+/* The manage page's two halves: the pages themselves, and the settings that
+   aren't about any one page. Text tabs rather than the popup's icons — there is
+   room for words here, and only two of them. */
+.page-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-tab {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  padding: 8px 12px;
+  /* Over the tablist's own line, so the active tab's underline replaces it. */
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.page-tab:hover {
+  color: var(--fg);
+}
+
+.page-tab.is-active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
+.page-tab.is-active .count {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* One panel per tab; the hidden one is `hidden`, so it costs nothing to leave
+   built — the filters, the search and the selection are all still there when
+   you come back. */
+.tab-panel {
+  margin-top: 18px;
+}
+
 .toolbar {
   display: flex;
   gap: 12px;
   align-items: center;
   justify-content: space-between;
-  margin: 22px 0 10px;
+  margin: 0 0 10px;
 }
 
 .chips {
   display: flex;
   gap: 6px;
+}
+
+/* The sites the on-page marker is on for. There can be a lot of them, and they
+   sit inside a panel rather than on one toolbar row, so this set wraps. */
+.chips--wrap {
+  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
 .chip {

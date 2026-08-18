@@ -6,7 +6,7 @@
 // The content script routes every read and write through here on purpose, so
 // `urlKey()` in common.js stays the single definition of "the same page".
 
-import { ENTRY_PREFIX, getEntries, siteFromUrl, urlKey } from './common.js'
+import { ENTRY_PREFIX, annotateKey, getEntries, siteFromUrl, urlKey } from './common.js'
 
 // --- the toolbar icon --------------------------------------------------------
 //
@@ -138,6 +138,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true // keep the channel open for the async reply
 })
 
+/**
+ * The on-page marker is per site, and the content script can't work out which
+ * site it is on — `registrableDomain()` lives here, so that stays one
+ * definition. It sends its own location and gets back the key carrying that
+ * site's switch plus its current value; from then on it watches that one key
+ * itself, so a toggle needs no round trip.
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== 'siteAnnotate') return
+  const key = annotateKey(siteFromUrl(message.url || sender.tab?.url))
+  if (!key) {
+    sendResponse({ key: null, enabled: false })
+    return
+  }
+  chrome.storage.local.get(key).then(
+    (stored) => sendResponse({ key, enabled: !!stored[key] }),
+    () => sendResponse(null)
+  )
+  return true // keep the channel open for the async reply
+})
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // `changeInfo.url` also covers an SPA route change, where the document never
   // reloads but the icon is now describing a page you have left.
@@ -164,11 +185,23 @@ chrome.storage.onChanged.addListener((changes, area) => {
  * widget, also removed, and `app:readLinkOpacity` from the first read-link fade,
  * which held a 0–1 fraction. The fade is back as `app:readOpacity`, a
  * percentage, under a different name precisely so a stale `0.5` can't be read as
- * half a percent of one. Safe to delete this once every profile that ran those
+ * half a percent of one.
+ *
+ * `annotateLinks` and `app:annotateLinks` are the marker's old **global**
+ * switch. It isn't renamed into the per-site keys, because a global "on" says
+ * nothing about which sites you'd want it on for — every site starts off, and
+ * the popup turns one on. Safe to delete this once every profile that ran those
  * builds has updated.
  */
 function dropRemovedFeatureLeftovers() {
-  chrome.storage.local.remove(['syncDirty', 'syncMeta', 'showWidget', 'app:readLinkOpacity'])
+  chrome.storage.local.remove([
+    'syncDirty',
+    'syncMeta',
+    'showWidget',
+    'annotateLinks',
+    'app:annotateLinks',
+    'app:readLinkOpacity',
+  ])
   indexedDB.deleteDatabase('site-marker')
 }
 

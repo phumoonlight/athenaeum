@@ -18,51 +18,8 @@
         </div>
       </header>
 
-      <section class="panel">
-        <div class="panel-head">
-          <h2>On-page marker</h2>
-        </div>
-        <label class="switch">
-          <input id="annotate" type="checkbox" />
-          <span>Show the marker on saved links</span>
-        </label>
-        <p class="panel-lede">
-          Puts a dot on every link pointing at a page you've marked — blue for unread, grey for
-          read, gold for a favorite. The dots are display-only; marking is the popup's job. Applies
-          to tabs you already have open.
-        </p>
-
-        <div class="field">
-          <label class="field-label" for="marker-size">Dot size</label>
-          <input id="marker-size" type="range" min="8" max="28" step="1" />
-          <output id="marker-size-value" class="field-value" for="marker-size"></output>
-        </div>
-        <p class="panel-lede">
-          How big the dots are, in pixels. Bigger is easier to spot on a busy page; smaller keeps
-          them out of the way of dense text. Open tabs resize as you drag.
-        </p>
-
-        <div class="field">
-          <label class="field-label" for="marker-opacity">Dot opacity</label>
-          <input id="marker-opacity" type="range" min="10" max="100" step="5" />
-          <output id="marker-opacity-value" class="field-value" for="marker-opacity"></output>
-        </div>
-        <p class="panel-lede">
-          How solid the dots are. Turn it down to let a dot sit over a page without hiding what's
-          underneath it. Open tabs update as you drag.
-        </p>
-
-        <div class="field">
-          <label class="field-label" for="read-opacity">Read link opacity</label>
-          <input id="read-opacity" type="range" min="20" max="100" step="5" />
-          <output id="read-opacity-value" class="field-value" for="read-opacity"></output>
-        </div>
-        <p class="panel-lede">
-          Fades the link itself when it points at a page you've marked read, so what's left is what
-          you haven't got to. At 100% the page is left alone. A faded link fades its dot too.
-        </p>
-      </section>
-
+      <!-- The import panel sits above the tabs on purpose: it's opened from the header,
+           and it belongs to neither the pages nor the settings. -->
       <section id="import-panel" class="panel" hidden>
         <div class="panel-head">
           <h2>Import</h2>
@@ -89,32 +46,103 @@
         <p id="import-message" class="status" hidden></p>
       </section>
 
-      <div class="toolbar">
-        <div class="chips" id="chips">
-          <button class="chip is-active" data-filter="all" type="button">All</button>
-          <button class="chip" data-filter="unread" type="button">Unread</button>
-          <button class="chip" data-filter="read" type="button">Read</button>
-          <button class="chip" data-filter="favorite" type="button">★</button>
-        </div>
-        <input id="search" class="search" type="search" placeholder="Filter by title or URL" />
-      </div>
+      <nav class="page-tabs" id="page-tabs" role="tablist">
+        <button
+          class="page-tab is-active"
+          data-tab="pages"
+          type="button"
+          role="tab"
+          aria-selected="true"
+        >
+          Saved pages <span id="tab-count" class="count">0</span>
+        </button>
+        <button class="page-tab" data-tab="settings" type="button" role="tab" aria-selected="false">
+          Settings
+        </button>
+      </nav>
 
-      <div class="bulk">
-        <label class="switch bulk-all">
-          <input id="select-all" type="checkbox" />
-          <span id="bulk-count">Select all</span>
-        </label>
-        <div class="bulk-actions">
-          <button class="btn" type="button" data-bulk="unread" disabled>Unread</button>
-          <button class="btn" type="button" data-bulk="read" disabled>Read</button>
-          <button class="btn" type="button" data-bulk="favorite" disabled>★ Favorite</button>
-          <button class="btn" type="button" data-bulk="unfavorite" disabled>Unfavorite</button>
-          <button class="btn btn--danger" type="button" data-bulk="delete" disabled>Delete</button>
+      <section id="tab-pages" class="tab-panel" role="tabpanel">
+        <div class="toolbar">
+          <div class="chips" id="chips">
+            <button class="chip is-active" data-filter="all" type="button">All</button>
+            <button class="chip" data-filter="unread" type="button">Unread</button>
+            <button class="chip" data-filter="read" type="button">Read</button>
+            <button class="chip" data-filter="favorite" type="button">★</button>
+          </div>
+          <input id="search" class="search" type="search" placeholder="Filter by title or URL" />
         </div>
-      </div>
 
-      <div id="groups" class="groups"></div>
-      <p id="empty" class="empty" hidden></p>
+        <div class="bulk">
+          <label class="switch bulk-all">
+            <input id="select-all" type="checkbox" />
+            <span id="bulk-count">Select all</span>
+          </label>
+          <div class="bulk-actions">
+            <button class="btn" type="button" data-bulk="unread" disabled>Unread</button>
+            <button class="btn" type="button" data-bulk="read" disabled>Read</button>
+            <button class="btn" type="button" data-bulk="favorite" disabled>★ Favorite</button>
+            <button class="btn" type="button" data-bulk="unfavorite" disabled>Unfavorite</button>
+            <button class="btn btn--danger" type="button" data-bulk="delete" disabled>
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <div id="groups" class="groups"></div>
+        <p id="empty" class="empty" hidden></p>
+      </section>
+
+      <section id="tab-settings" class="tab-panel" role="tabpanel" hidden>
+        <section class="panel">
+          <div class="panel-head">
+            <h2>On-page marker</h2>
+          </div>
+          <p class="panel-lede">
+            Puts a dot on every link pointing at a page you've marked — blue for unread, grey for
+            read, gold for a favorite. The dots are display-only; marking is the popup's job. It's
+            <strong>per site</strong> and starts off everywhere: turn it on for the site you're on
+            from that site's popup. Tabs already open pick the change up without a reload.
+          </p>
+          <div id="annotated" class="chips chips--wrap"></div>
+          <p id="annotated-empty" class="panel-lede" hidden>Not on for any site yet.</p>
+
+          <p class="panel-lede">
+            The three settings below are how the dots look wherever they're on, not where they show
+            up.
+          </p>
+
+          <div class="field">
+            <label class="field-label" for="marker-size">Dot size</label>
+            <input id="marker-size" type="range" min="8" max="28" step="1" />
+            <output id="marker-size-value" class="field-value" for="marker-size"></output>
+          </div>
+          <p class="panel-lede">
+            How big the dots are, in pixels. Bigger is easier to spot on a busy page; smaller keeps
+            them out of the way of dense text. Open tabs resize as you drag.
+          </p>
+
+          <div class="field">
+            <label class="field-label" for="marker-opacity">Dot opacity</label>
+            <input id="marker-opacity" type="range" min="10" max="100" step="5" />
+            <output id="marker-opacity-value" class="field-value" for="marker-opacity"></output>
+          </div>
+          <p class="panel-lede">
+            How solid the dots are. Turn it down to let a dot sit over a page without hiding what's
+            underneath it. Open tabs update as you drag.
+          </p>
+
+          <div class="field">
+            <label class="field-label" for="read-opacity">Read link opacity</label>
+            <input id="read-opacity" type="range" min="20" max="100" step="5" />
+            <output id="read-opacity-value" class="field-value" for="read-opacity"></output>
+          </div>
+          <p class="panel-lede">
+            Fades the link itself when it points at a page you've marked read, so what's left is
+            what you haven't got to. At 100% the page is left alone. A faded link fades its dot
+            too.
+          </p>
+        </section>
+      </section>
     </div>
 
     <script type="module" src="manage.js"></script>

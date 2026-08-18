@@ -14,8 +14,10 @@ it before changing anything here.
 - **Formatting** comes from the repo root `.prettierrc`: no semicolons, single quotes,
   2-space indent, 100 columns.
 - **The content script can't import ES modules.** `marker.js` therefore mirrors a few
-  constants from `common.js` literally — the setting keys and the clamp ranges. Change one
-  and change the other; there is no import to keep them honest.
+  constants from `common.js` literally — the appearance setting keys and the clamp ranges.
+  Change one and change the other; there is no import to keep them honest. Its own site's
+  key is not mirrored: it asks the worker for it, since working it out needs
+  `registrableDomain()`.
 
 ## Behaviour
 
@@ -36,14 +38,23 @@ it before changing anything here.
 - **What a row in that list offers depends on the tab.** Under Unread and Read the two
   useful moves are flipping the read state and starring, so those rows carry both. Under ★
   the only one is unstarring — the read state is already whatever the other tabs show.
+- **The popup's header also carries the on-page marker's switch for the site you're on** —
+  the button left of Manage, lit while the link dots are on there. It's the one control
+  that is about the site rather than a page, which is why it sits by the site's name.
 - Nothing in the popup returns a page to **unmarked**. To drop a page entirely, use the
   manage page.
 - A page is recorded the moment you mark it, and **deleted once it has neither a read state
   nor a star** — so the store is exactly the set of pages you cared about. Visiting a site
   records nothing; there is no history tracking.
-- **Manage** (the header button) opens a page listing **every marked page across every
-  site**, grouped by site, with filters, search, export/import, and **bulk actions** —
-  tick rows (or a whole site) and mark them unread, read, favorite, unfavorite, or delete.
+- **Manage** (the header button) opens a page split into two tabs: **Saved pages** —
+  every marked page across every site, grouped by site, with filters, search and **bulk
+  actions** (tick rows, or a whole site, and mark them unread, read, favorite, unfavorite,
+  or delete) — and **Settings**, the knobs that aren't about any one page. They were one
+  scroll before, which put a wall of settings between the header and the list every time
+  you opened it to find something. Export and Import stay in the header, above both:
+  they're the whole store, not either half, and the import panel opens above the tabs.
+  Switching tabs leaves the hidden half's DOM alone, so a filter, a search and a selection
+  survive a trip to the settings and back.
 - **The current-page row can also forget the page**, with a third button that appears once
   it's marked. One click, no confirmation: it only ever touches the page in front of you,
   and re-marking is two clicks away.
@@ -58,9 +69,9 @@ it before changing anything here.
 
 Everything in `chrome.storage.local` carries a prefix saying what it is: **`e:` for a
 marked page**, keyed by its normalised URL, and **`app:` for a setting**
-(`app:annotateLinks`, `app:markerSize`, `app:markerOpacity` and `app:readOpacity`).
-Anything without a prefix is left over from a build that has moved on,
-and gets migrated or removed on first read.
+(`app:markerSize`, `app:markerOpacity`, `app:readOpacity`, and one
+`app:annotate:<site>` per site the on-page marker is on for). Anything without a prefix is
+left over from a build that has moved on, and gets migrated or removed on first read.
 
 **Each entry having its own key** is the part that matters most: marking a page writes ~200
 bytes, instead of rewriting the whole store the way a single `entries` blob would. The cost
@@ -72,9 +83,11 @@ total, 8 KB per item and 512 items, so it could never hold this; export/import i
 cross-device path instead.
 
 Older stores are brought up to date on first read, and the migration is idempotent, so a
-current store is left untouched: one `entries` blob is split into per-entry keys; entries
-written while favourite was briefly a status of its own become starred-with-no-read-state;
-and a setting still under its old bare name moves under `app:`, keeping its value.
+current store is left untouched: one `entries` blob is split into per-entry keys, and
+entries written while favourite was briefly a status of its own become
+starred-with-no-read-state. Settings from removed features are dropped instead, in
+`dropRemovedFeatureLeftovers()` — including the marker's old global switch, which no
+per-site value could honestly be derived from.
 
 ### How much will it hold?
 
@@ -98,20 +111,35 @@ appears to have done nothing. Deletes never need space, so there is always a way
 
 ## The marker on saved links
 
-`marker.js` runs on every `http(s)` page but is **inert until you turn it on** — the toggle
-lives on the manage page under **On-page marker**, is off by default, and while off the
-script only listens for the flag and touches nothing.
+`marker.js` runs on every `http(s)` page but is **inert until you turn it on for that
+site** — the toggle is the leftmost button in the popup's header, next to the site's name,
+and while off the script only listens for that site's flag and touches nothing.
+
+**The switch is per site, and every site starts off.** The dots answer "have I been here
+before" on the sites where you actually collect pages; on everything else they are noise
+sitting inside someone else's links, and a global switch made the second group pay for the
+first. A site is on while `app:annotate:<site>` exists, and turning it off deletes the key —
+so the store holds exactly the sites you said yes to. The site is the same identity the
+popup groups by (`siteKey()`), so under the default `MATCH: 'domain'` turning it on for
+`docs.example.com` turns it on for `example.com` and every other subdomain.
+
+**The popup is the only place that turns a site on**, because it is the only place that
+knows which site you mean. The manage page's **Settings** tab, under **On-page marker**,
+lists the sites it is on for as chips, and clicking one turns that site off — review and
+undo from anywhere, without a text box for typing a domain in slightly wrong.
 
 When on, it puts a dot on every link pointing at a page you have marked: **blue for unread,
 grey for read**, with a **gold ring** when it's a favourite — the same language the toolbar
 icon uses. A debounced `MutationObserver` catches links added later (infinite scroll, SPA
 navigation), and any change re-marks open pages immediately.
 
-**Dot size** sits next to the toggle: 8–28 pixels, default 16. Bigger is easier to spot on a
-busy page, smaller keeps the dots out of dense text. The white ring scales with them.
+The three appearance settings stay on the manage page's **Settings** tab and stay **global**
+— they are how the dots look wherever they are on, not where they show up. **Dot size**:
+8–28 pixels, default 16. Bigger is easier to spot on a busy page, smaller keeps the dots out
+of dense text. The white ring scales with them.
 **Dot opacity** is beside it: 10–100%, default 100 — turn it down to let a dot sit over a
 page without hiding what is underneath. The floor is 10 rather than 0 because a dot you
-cannot see is just the marker being off, and the toggle already does that. It is stored as a
+cannot see is just the marker being off, and the site's toggle already does that. It is stored as a
 whole percentage rather than a 0–1 fraction, which keeps both sliders and both clamps on
 integers.
 
@@ -234,8 +262,9 @@ Most knobs are the `CONFIG` block at the top of [`common.js`](common.js):
 The link dot's colours are in [`marker.css`](marker.css) — its size and both opacities are
 settings now — and the toolbar icon's are in the `ICON` block at the top of
 [`background.js`](background.js). Keep the two in step, since they are meant to read as the
-same language. The on-page toggle is a per-profile setting (`app:annotateLinks` in
-`chrome.storage.local`), not a `CONFIG` knob.
+same language. The on-page marker's switch is per site (`app:annotate:<site>` in
+`chrome.storage.local`), not a `CONFIG` knob — though `MATCH` decides what counts as one
+site there too.
 
 ## Limitations
 
@@ -274,13 +303,13 @@ same language. The on-page toggle is a per-profile setting (`app:annotateLinks` 
 site-marker/
   manifest.json   # MV3; popup, module service worker, content script
   common.js       # CONFIG, URL normalisation, the entry store, export/import
-  background.js   # toolbar icon per page state, link lookups, change broadcasts
+  background.js   # toolbar icon per page state, link lookups, which site a tab is on
   marker.js       # read-only dots on links pointing at marked pages
   marker.css      # the link dot and the read-link fade
   popup.html      # popup markup
   popup.js        # current-page controls, per-site tabs and list
-  manage.html     # all-sites list, filters, settings, import/export
-  manage.js       # grouping, filtering, file drop/pick
+  manage.html     # two tabs — the all-sites list and filters, and the settings
+  manage.js       # tabs, grouping, filtering, file drop/pick
   ui.css          # styling for both pages (light + dark)
   package.json    # marks the source as ES modules for anything run under node
   icons.js        # inline SVG icons for the buttons

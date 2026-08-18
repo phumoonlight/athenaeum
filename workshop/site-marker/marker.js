@@ -1,15 +1,16 @@
 // The on-page half of Site Marker: a dot on every link pointing at a page you
 // have marked. Read-only and `pointer-events: none` — it can never change a
 // status, so a mistimed click on a busy page can't quietly rewrite your marks.
-// Marking is the popup's job. Off until the manage page's toggle is on — while
-// off this script only watches the flag and touches nothing.
+// Marking is the popup's job. The marker is **per site** and off until this
+// site's toggle in the popup is on — while off this script only watches that
+// site's flag and touches nothing.
 //
 // Everything goes through the service worker: this script sends URLs and gets
 // back state, so `urlKey()` in common.js stays the only definition of "the same
-// page". Content scripts can't import ES modules, so the constant below is
+// page" — and the same for which site this is, which decides the storage key
+// below. Content scripts can't import ES modules, so the appearance keys are
 // mirrored literally from common.js.
 
-const ANNOTATE_KEY = 'app:annotateLinks'
 const MARKER_SIZE_KEY = 'app:markerSize'
 const MARKER_OPACITY_KEY = 'app:markerOpacity'
 const READ_OPACITY_KEY = 'app:readOpacity'
@@ -30,6 +31,8 @@ const DEBOUNCE_MS = 300
 const CHUNK = 400
 
 let enabled = false
+/** This site's switch, named by the worker on startup — see the bottom of the file. */
+let annotateKey = null
 let observer = null
 let timer = null
 let orphaned = false // the extension was reloaded out from under this script
@@ -222,16 +225,25 @@ chrome.storage.onChanged.addListener((changes, area) => {
     if (changes[MARKER_OPACITY_KEY]) setMarkerOpacity(changes[MARKER_OPACITY_KEY].newValue)
     if (changes[READ_OPACITY_KEY]) setReadOpacity(changes[READ_OPACITY_KEY].newValue)
   }
-  if (changes[ANNOTATE_KEY]) setEnabled(!!changes[ANNOTATE_KEY].newValue)
+  // One key, this site's — a toggle on some other site changes a key we never
+  // look at, so nothing here reacts to it.
+  if (annotateKey && changes[annotateKey]) setEnabled(!!changes[annotateKey].newValue)
 })
 
-// Same synchronous-throw hazard as `send()`: if this script was injected into a
-// tab that outlived an extension reload, `chrome.storage` is already gone.
+// Ask the worker which site this is: it replies with the key holding this site's
+// switch and whether it's on. A page with no site to speak of (there is none
+// here, since the script only runs on http(s)) gets a null key, and then nothing
+// can ever turn the marker on — which is the right answer for a page that can't
+// be marked either. `setEnabled()` reads the appearance settings itself.
+//
+// `send()` already survives the synchronous throw of an orphaned context; the
+// catch covers a `chrome.*` that is gone entirely.
 try {
-  chrome.storage.local.get([ANNOTATE_KEY, ...STYLE_KEYS]).then((stored) => {
-    if (stored[ANNOTATE_KEY]) applyStyling(stored)
-    setEnabled(!!stored[ANNOTATE_KEY])
-  }, teardown)
+  send({ type: 'siteAnnotate', url: location.href }).then((reply) => {
+    if (!reply) return
+    annotateKey = reply.key
+    setEnabled(!!reply.enabled)
+  })
 } catch {
   teardown()
 }

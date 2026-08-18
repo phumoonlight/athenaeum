@@ -35,8 +35,20 @@ const STATUSES = ['unread', 'read']
  */
 const SETTING_PREFIX = 'app:'
 
-/** The content script's settings. Mirrored literally in marker.js — it can't import. */
-export const ANNOTATE_KEY = `${SETTING_PREFIX}annotateLinks`
+/**
+ * The on-page marker is a **per-site** setting: one key per site it is on for,
+ * `app:annotate:<site>`, where the site is the same identity the popup groups
+ * by. A key exists only while the marker is on there, so "off on every site" —
+ * the default — is simply the absence of any of them, and turning a site off
+ * again leaves nothing behind rather than a store of `false`s.
+ *
+ * The content script can't work this key out for itself (it can't import, and
+ * `registrableDomain()` is deliberately defined once), so it asks the worker
+ * which key is its own and then watches that one.
+ */
+export const SITE_ANNOTATE_PREFIX = `${SETTING_PREFIX}annotate:`
+
+/** How the dots look, on the other hand, is one setting for every site. */
 export const MARKER_SIZE_KEY = `${SETTING_PREFIX}markerSize`
 export const MARKER_OPACITY_KEY = `${SETTING_PREFIX}markerOpacity`
 /**
@@ -102,9 +114,6 @@ function clampSetting(value, min, max, fallback) {
 
 /** The pre-`e:` layout, split out on first load and then deleted. */
 const LEGACY_ENTRIES_KEY = 'entries'
-
-/** Old name → new, for keys that were renamed rather than dropped. */
-const RENAMED_KEYS = { annotateLinks: ANNOTATE_KEY }
 
 // Hostnames whose "domain" is really the whole host — a two-label suffix list is
 // enough for personal use; anything not listed falls back to the last two labels.
@@ -179,10 +188,54 @@ export function urlKey(url) {
   }
 }
 
+/**
+ * What a site is called in the places that key by site — the marker's per-site
+ * setting, and the popup's header. The same thing `matchesSite()` compares.
+ */
+export function siteKey(site) {
+  return CONFIG.MATCH === 'host' ? site.host : site.domain
+}
+
 /** Does an entry belong to `site`, under the configured MATCH mode? */
 function matchesSite(entry, site) {
   if (!entry || !site) return false
   return CONFIG.MATCH === 'host' ? entry.host === site.host : entry.domain === site.domain
+}
+
+// --- the on-page marker's per-site switch --------------------------------------
+
+/**
+ * The key carrying the marker's state for `site`, or null for a non-site page.
+ * Takes either a site object or a site's name — the manage page lists sites it
+ * only ever knew as names, and both mean the same key.
+ */
+export function annotateKey(site) {
+  if (!site) return null
+  return SITE_ANNOTATE_PREFIX + (typeof site === 'string' ? site : siteKey(site))
+}
+
+/** Is the on-page marker on here? An absent key means no — the default. */
+export async function isSiteAnnotated(site) {
+  const key = annotateKey(site)
+  if (!key) return false
+  return !!(await chrome.storage.local.get(key))[key]
+}
+
+/** Off removes the key: the store then holds exactly the sites it is on for. */
+export async function setSiteAnnotated(site, on) {
+  const key = annotateKey(site)
+  if (!key) return
+  if (on) await save({ [key]: true })
+  else await chrome.storage.local.remove(key)
+}
+
+/** Every site the marker is on for, by name, for the manage page's list. */
+export async function annotatedSites() {
+  const all = await chrome.storage.local.get(null)
+  return Object.entries(all)
+    .filter(([key, value]) => key.startsWith(SITE_ANNOTATE_PREFIX) && value)
+    .map(([key]) => key.slice(SITE_ANNOTATE_PREFIX.length))
+    .sort()
 }
 
 // --- the store ---------------------------------------------------------------
@@ -274,13 +327,8 @@ function ensureMigrated() {
       patch[key] = normalise(entry)
     }
 
-    // Settings that only changed name carry their value across.
-    const renamed = Object.keys(RENAMED_KEYS).filter((old) => old in all)
-    for (const old of renamed) patch[RENAMED_KEYS[old]] = all[old]
-
     if (Object.keys(patch).length) await save(patch)
-    const stale = [...renamed, ...(legacy ? [LEGACY_ENTRIES_KEY] : [])]
-    if (stale.length) await chrome.storage.local.remove(stale)
+    if (legacy) await chrome.storage.local.remove(LEGACY_ENTRIES_KEY)
   })()
   return migration
 }

@@ -1,8 +1,8 @@
 # Site Marker
 
 A small, personal-use Brave/Chrome extension. Mark **any page** as **unread**, **read**
-or **★ favorite** — see that state on the toolbar icon and on every link pointing at it, and
-find it again later. Marking is one click and always reversible.
+or **★ favorite** — see that state on the toolbar icon, and on every link pointing at it on
+the sites you switch that on for. Marking is one click and always reversible.
 
 **Site Marker owns its own store.** Nothing needs to be bookmarked first, and the extension
 never reads or writes your browser bookmarks — it doesn't even ask for the permission.

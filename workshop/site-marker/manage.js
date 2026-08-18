@@ -2,10 +2,10 @@
 // export and import files.
 
 import {
-  ANNOTATE_KEY,
   MARKER_OPACITY_KEY,
   MARKER_SIZE_KEY,
   READ_OPACITY_KEY,
+  annotatedSites,
   applyEntries,
   clampMarkerOpacity,
   clampMarkerSize,
@@ -15,6 +15,7 @@ import {
   getEntries,
   parseExport,
   removeEntries,
+  setSiteAnnotated,
   sortedEntries,
   updateEntries,
   urlKey,
@@ -22,9 +23,12 @@ import {
 
 const el = {
   summary: document.getElementById('summary'),
+  pageTabs: document.getElementById('page-tabs'),
+  tabCount: document.getElementById('tab-count'),
   export: document.getElementById('export'),
   import: document.getElementById('import'),
-  annotate: document.getElementById('annotate'),
+  annotated: document.getElementById('annotated'),
+  annotatedEmpty: document.getElementById('annotated-empty'),
   markerSize: document.getElementById('marker-size'),
   markerSizeValue: document.getElementById('marker-size-value'),
   markerOpacity: document.getElementById('marker-opacity'),
@@ -48,6 +52,11 @@ const el = {
 const state = {
   entries: {},
   bytes: 0,
+  // Which half of the page is showing: the saved pages, or the settings.
+  tab: 'pages',
+  // The sites the on-page marker is on for. Turning one on happens in that
+  // site's popup; here they can be reviewed and turned off from anywhere.
+  annotated: [],
   filter: 'all',
   query: '',
   // Which sites are open. Tracking the exceptions rather than the rule is what
@@ -59,6 +68,7 @@ const state = {
 
 async function reload() {
   state.entries = await getEntries()
+  state.annotated = await annotatedSites()
   // Shown in the summary so the store's growth is visible rather than a mystery.
   state.bytes = await chrome.storage.local.getBytesInUse(null).catch(() => 0)
   render()
@@ -195,9 +205,52 @@ function groupNode(domain, list) {
   return section
 }
 
+/**
+ * The two halves are one page, not two: the hidden panel keeps its DOM, so the
+ * filters, the search and the selection are exactly where you left them when you
+ * come back from the settings.
+ */
+function renderTabs() {
+  for (const tab of el.pageTabs.querySelectorAll('.page-tab')) {
+    const showing = tab.dataset.tab === state.tab
+    tab.classList.toggle('is-active', showing)
+    tab.setAttribute('aria-selected', String(showing))
+    document.getElementById(`tab-${tab.dataset.tab}`).hidden = !showing
+  }
+}
+
+/**
+ * One chip per site the marker is on for, and clicking it turns that site off.
+ * There is deliberately no way to turn a site *on* from here: the popup already
+ * asks the question where the answer is obvious, and a text box for typing a
+ * domain would be a second, quieter way to get it wrong.
+ */
+function renderAnnotated() {
+  el.annotated.replaceChildren(
+    ...state.annotated.map((site) => {
+      const chip = document.createElement('button')
+      chip.className = 'chip is-active'
+      chip.type = 'button'
+      chip.textContent = `${site} ✕`
+      chip.title = `Stop showing link dots on ${site}`
+      chip.addEventListener('click', async () => {
+        await setSiteAnnotated(site, false)
+        await reload()
+      })
+      return chip
+    })
+  )
+  el.annotatedEmpty.hidden = state.annotated.length > 0
+}
+
 function render() {
+  renderTabs()
+  renderAnnotated()
   const all = sortedEntries(state.entries)
   const total = counts(all)
+  // The count belongs on the tab as well as in the summary: it says what is
+  // behind the tab you aren't looking at.
+  el.tabCount.textContent = String(all.length)
   el.summary.textContent = all.length
     ? `${total.total} pages across ${total.sites} sites — ${total.unread} unread, ${total.read} read, ` +
       `${total.favorite} favorite · ${formatBytes(state.bytes)} stored`
@@ -387,11 +440,6 @@ el.drop.addEventListener('drop', async (event) => {
 
 // --- wiring ------------------------------------------------------------------
 
-// Off by default; content scripts pick the change up live, on pages already open.
-el.annotate.addEventListener('change', () => {
-  chrome.storage.local.set({ [ANNOTATE_KEY]: el.annotate.checked })
-})
-
 /**
  * The appearance sliders, which differ only in the key they write, the clamp
  * that guards it and the unit in the readout. The clamps already answer an
@@ -434,6 +482,13 @@ for (const slider of sliders) {
   })
 }
 
+el.pageTabs.addEventListener('click', (event) => {
+  const tab = event.target.closest('.page-tab')
+  if (!tab) return
+  state.tab = tab.dataset.tab
+  renderTabs()
+})
+
 el.chips.addEventListener('click', (event) => {
   const chip = event.target.closest('.chip')
   if (!chip) return
@@ -448,12 +503,10 @@ el.search.addEventListener('input', () => {
   render()
 })
 
-// Reading the toggle only after `reload()` matters on the first run of a build
-// that renamed a key: the store's migration happens inside it, so a read before
-// it would find the old name still in place and the new one empty.
+// The sliders are read after `reload()` so that the store's migration — which
+// runs inside it — has finished before anything reads a key by name.
 reload().then(async () => {
-  const stored = await chrome.storage.local.get([ANNOTATE_KEY, ...sliders.map((s) => s.key)])
-  el.annotate.checked = !!stored[ANNOTATE_KEY]
+  const stored = await chrome.storage.local.get(sliders.map((s) => s.key))
   for (const slider of sliders) {
     slider.input.value = String(slider.clamp(stored[slider.key]))
     showSlider(slider)

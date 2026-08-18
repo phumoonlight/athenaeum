@@ -13,6 +13,8 @@ const PATHS = {
   ],
   star: ['m12 3.5 2.6 5.4 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L4.5 9.8l5.9-.9z'],
   list: ['M8 6h12', 'M8 12h12', 'M8 18h12', 'M4 6h.01', 'M4 12h.01', 'M4 18h.01'],
+  // The on-page marker, drawn as what it does: links, with a dot on one.
+  marker: ['M4 8h9', 'M4 14h13', 'M18.5 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z'],
   trash: ['M4 7h16', 'M9 7V5h6v2', 'm6 7 1 13h10l1-13', 'M10 11v6', 'M14 11v6'],
 }
 

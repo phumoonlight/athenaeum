@@ -3,11 +3,14 @@ import {
   entriesForSite,
   faviconUrl,
   getEntries,
+  isSiteAnnotated,
   partition,
   removeEntries,
   setFavorite,
+  setSiteAnnotated,
   setStatus,
   siteFromUrl,
+  siteKey,
   urlKey,
 } from './common.js'
 import { icon, setIcon } from './icons.js'
@@ -16,6 +19,7 @@ const el = {
   favicon: document.getElementById('favicon'),
   site: document.getElementById('site'),
   scope: document.getElementById('scope'),
+  annotate: document.getElementById('annotate'),
   manage: document.getElementById('manage'),
   tabs: document.getElementById('tabs'),
   countUnread: document.getElementById('count-unread'),
@@ -38,6 +42,7 @@ const state = {
   entries: {},
   items: [],
   page: null, // { url, title, key } for the tab the popup was opened on
+  annotate: false, // is the on-page marker on for this site?
 }
 
 const currentEntry = () => (state.page ? state.entries[state.page.key] || null : null)
@@ -214,8 +219,28 @@ function renderCurrent() {
   setIcon(el.markRemove, 'trash', 'Forget this page')
 }
 
+/**
+ * The link-dot switch, which is **this site's** — the popup is the only place
+ * that knows which site you're on, so it's the only place that can ask the
+ * question. Lit means the dots are on here; every other site is unaffected.
+ */
+function renderAnnotate() {
+  el.annotate.disabled = !state.site
+  el.annotate.classList.toggle('is-on', state.annotate)
+  setIcon(
+    el.annotate,
+    'marker',
+    !state.site
+      ? 'No site to show link dots on'
+      : state.annotate
+        ? `Stop showing link dots on ${siteKey(state.site)}`
+        : `Show link dots on ${siteKey(state.site)}`
+  )
+}
+
 function render() {
   renderCurrent()
+  renderAnnotate()
 
   const groups = partition(state.items)
   el.countUnread.textContent = String(groups.unread.length)
@@ -254,6 +279,23 @@ el.tabs.addEventListener('click', (event) => {
   render()
 })
 
+/**
+ * Writes can fail the same way a mark can, so put the switch back rather than
+ * leaving a button that says the dots are on when nothing was saved.
+ */
+el.annotate.addEventListener('click', async () => {
+  if (!state.site) return
+  state.annotate = !state.annotate
+  renderAnnotate()
+  try {
+    await setSiteAnnotated(state.site, state.annotate)
+  } catch (error) {
+    state.annotate = !state.annotate
+    renderAnnotate()
+    el.currentState.textContent = error.message || 'Could not save.'
+  }
+})
+
 el.manage.addEventListener('click', async () => {
   await chrome.tabs.create({ url: chrome.runtime.getURL('manage.html') })
   window.close()
@@ -269,6 +311,8 @@ async function init() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   state.site = siteFromUrl(tab?.url)
   state.page = state.site ? { url: tab.url, title: tab.title, key: urlKey(tab.url) } : null
+
+  state.annotate = await isSiteAnnotated(state.site)
 
   el.site.textContent = state.site ? state.site.host : 'No site'
   if (state.site) {
