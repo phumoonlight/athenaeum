@@ -2,7 +2,7 @@ import {
   CONFIG,
   entriesForSite,
   faviconUrl,
-  getEntries,
+  getSiteEntries,
   isSiteAnnotated,
   partition,
   removeEntries,
@@ -48,7 +48,9 @@ const state = {
 const currentEntry = () => (state.page ? state.entries[state.page.key] || null : null)
 
 async function reload() {
-  state.entries = await getEntries()
+  // Only this site's entries — the popup never shows anything else, and the
+  // current page always belongs to its own site, so this covers both uses.
+  state.entries = await getSiteEntries(state.site)
   state.items = state.site ? entriesForSite(state.entries, state.site) : []
   render()
 }

@@ -118,10 +118,11 @@ even a decade of heavy marking is megabytes, not gigabytes.
 
 The manage page shows an approximate size next to the totals (marked **≈** — it comes
 from `navigator.storage.estimate()`, which is origin-wide and approximate, the only size
-IndexedDB will admit to), so growth is visible rather than a mystery. If the store ever
-does become large, the thing that bites first is `getEntries()` deserialising every entry
-each time the popup opens — and the fix is now natural: read per-site through the
-`domain`/`host` indexes rather than everything, not delete data.
+IndexedDB will admit to), so growth is visible rather than a mystery. Growth doesn't slow
+the popup down either: it reads only the current site's entries through the
+`domain`/`host` index (`getSiteEntries()`), so opening it costs what that site holds, not
+what the store does. Only the manage page loads everything — listing everything is its
+job.
 
 A write that fails — quota exceeded, or a full disk — **rejects rather than silently
 dropping data**: the transaction aborts whole, and the popup and import both say so

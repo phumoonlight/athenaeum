@@ -6,7 +6,7 @@
 // the manage page and the service worker; the content script talks to the worker
 // instead, so `urlKey()` keeps exactly one definition.
 
-import { StorageFullError, idbGet, idbGetAll, idbGetMany, idbWrite } from './db.js'
+import { StorageFullError, idbGet, idbGetAll, idbGetByIndex, idbGetMany, idbWrite } from './db.js'
 
 export const CONFIG = {
   // 'domain' → pages on sub.example.com count as the same site as example.com
@@ -354,6 +354,20 @@ export async function getEntry(url) {
 export async function getEntriesByUrls(urls) {
   await ensureMigrated()
   return idbGetMany(urls.map(urlKey))
+}
+
+/**
+ * `{ [urlKey]: entry }` for one site, straight off the `domain`/`host` index —
+ * whichever CONFIG.MATCH keys sites by — so the popup reads the site it is on
+ * rather than deserialising the whole store every time it opens.
+ */
+export async function getSiteEntries(site) {
+  await ensureMigrated()
+  if (!site) return {}
+  const list = await idbGetByIndex(CONFIG.MATCH === 'host' ? 'host' : 'domain', siteKey(site))
+  const out = {}
+  for (const entry of list) out[urlKey(entry.url)] = entry
+  return out
 }
 
 function newEntry(url, now) {
