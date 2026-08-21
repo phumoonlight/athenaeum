@@ -1,9 +1,12 @@
 // The store, plus the URL normalisation everything else agrees on.
 //
 // One entry per normalised page URL — Site Marker owns its data outright and
-// never reads or writes browser bookmarks. Loaded as an ES module by the popup,
+// never reads or writes browser bookmarks. Entries live in IndexedDB (db.js);
+// settings stay in `chrome.storage.local`. Loaded as an ES module by the popup,
 // the manage page and the service worker; the content script talks to the worker
 // instead, so `urlKey()` keeps exactly one definition.
+
+import { StorageFullError, idbGet, idbGetAll, idbGetMany, idbWrite } from './db.js'
 
 export const CONFIG = {
   // 'domain' → pages on sub.example.com count as the same site as example.com
@@ -12,13 +15,6 @@ export const CONFIG = {
   // List order by the date a page was first marked: 'oldest' first or 'newest' first
   SORT: 'oldest',
 }
-
-/**
- * Each entry is its own storage key, `e:<urlKey>`. One key per page rather than
- * one big map: marking a page then writes ~200 bytes instead of rewriting the
- * entire store, which is what matters once there are thousands of them.
- */
-export const ENTRY_PREFIX = 'e:'
 
 /**
  * The read state, which a page has one of or neither. A **favourite** is a
@@ -30,8 +26,9 @@ const STATUSES = ['unread', 'read']
 
 /**
  * Settings go under `app:`, so every key in the storage inspector announces
- * what it is: `app:` is a knob, `e:` is a marked page, and anything else is
- * left over from a build that has moved on.
+ * what it is: `app:` is a knob, and anything else is left over from a build
+ * that has moved on. (Marked pages used to sit alongside them as `e:` keys;
+ * they live in IndexedDB now.)
  */
 const SETTING_PREFIX = 'app:'
 
@@ -112,8 +109,13 @@ function clampSetting(value, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.round(number)))
 }
 
-/** The pre-`e:` layout, split out on first load and then deleted. */
+/**
+ * The two layouts entries lived in before IndexedDB, both in
+ * `chrome.storage.local`: one `entries` blob holding everything, then one
+ * `e:<urlKey>` key per page. `ensureMigrated()` moves both.
+ */
 const LEGACY_ENTRIES_KEY = 'entries'
+const LEGACY_ENTRY_PREFIX = 'e:'
 
 // Hostnames whose "domain" is really the whole host — a two-label suffix list is
 // enough for personal use; anything not listed falls back to the last two labels.
@@ -240,25 +242,14 @@ export async function annotatedSites() {
 
 // --- the store ---------------------------------------------------------------
 //
-// Quota: `chrome.storage.local` allows 10 MB by default (5 MB on Chrome 113 and
-// earlier), counted as the JSON of every value plus the length of every key. An
-// entry runs around 350 bytes, so the default would hold roughly 29,000 marked
-// pages — but the store only ever grows, so the manifest asks for
-// `unlimitedStorage` and lifts the cap entirely. What remains is the disk.
+// Entries live in IndexedDB (db.js), keyed by `urlKey(url)` — one record per
+// marked page, so marking a page writes one record instead of rewriting the
+// whole store. The `unlimitedStorage` permission covers IndexedDB's quota the
+// same way it covered `chrome.storage.local`'s; what remains is the disk.
 //
-// A write past the quota **fails**: `set()` rejects rather than silently
-// dropping data. `save()` exists so that failure arrives as one recognisable
-// error instead of a bare rejection from wherever it happened.
-
-const storageKey = (url) => ENTRY_PREFIX + urlKey(url)
-
-class StorageFullError extends Error {
-  constructor(cause) {
-    super('Out of storage space — nothing was saved.')
-    this.name = 'StorageFullError'
-    this.cause = cause
-  }
-}
+// A write past the quota **fails**: the transaction aborts rather than silently
+// dropping data, and every rejection arrives as the same StorageFullError the
+// settings path throws, so the popup and import can just show its message.
 
 async function save(patch) {
   try {
@@ -267,6 +258,22 @@ async function save(patch) {
     // The only documented failure is exceeding the quota; treat anything else
     // the same way, since the outcome for the caller is identical.
     throw new StorageFullError(error)
+  }
+}
+
+/**
+ * Announce an entry write to the worker, which repaints every tab's icon and
+ * tells content scripts to re-check their links. `chrome.storage.onChanged`
+ * used to carry this while entries lived there; IndexedDB fires no events, so
+ * the writer says so itself. `sendMessage` wakes a stopped service worker —
+ * the reason this is runtime messaging and not a BroadcastChannel, which
+ * wouldn't. Fire and forget: a missing listener must never fail a save.
+ */
+function notifyEntriesChanged() {
+  try {
+    chrome.runtime.sendMessage({ type: 'entriesChanged' }).catch(() => {})
+  } catch {
+    // No runtime to tell — an orphaned page, or common.js loaded under node.
   }
 }
 
@@ -293,42 +300,40 @@ function normalise(entry) {
   }
 }
 
-/** Whether an entry is already in the shape `normalise()` would produce. */
-function isCurrentShape(entry) {
-  return (
-    typeof entry.favorite === 'boolean' &&
-    entry.status !== 'favorite' &&
-    !('readAt' in entry) &&
-    !('favoritedAt' in entry)
-  )
-}
-
 /**
- * Bring an older store up to date, once. Both the worker and each page run their
- * own copy of this module, so two may race — every step is idempotent, so the
- * loser simply finds nothing left to do.
+ * Move entries out of `chrome.storage.local` into IndexedDB, once — folding in
+ * the older shape migrations on the way (`normalise()` handles every layout
+ * ever written). Both the worker and each page run their own copy of this
+ * module, so two may race: `put` is last-writer-wins and both write the same
+ * data, so the loser overwrites harmlessly.
+ *
+ * The old keys are removed **only after the IndexedDB transaction commits** —
+ * a crash in between re-runs the migration next time and converges. Entries
+ * can briefly exist in both stores, never in neither.
  */
 let migration = null
 function ensureMigrated() {
   migration ??= (async () => {
     const all = await chrome.storage.local.get(null)
 
-    // The oldest layout kept every entry in one `entries` blob.
+    const flat = {}
+    const stale = []
     const legacy = all[LEGACY_ENTRIES_KEY]
-    const flat = { ...all }
-    if (legacy && typeof legacy === 'object') {
-      for (const [key, entry] of Object.entries(legacy)) flat[ENTRY_PREFIX + key] = entry
+    if (legacy && typeof legacy === 'object') Object.assign(flat, legacy)
+    if (legacy) stale.push(LEGACY_ENTRIES_KEY)
+    // `e:` keys are the newer layout, so they win over the blob's copy.
+    for (const [key, entry] of Object.entries(all)) {
+      if (!key.startsWith(LEGACY_ENTRY_PREFIX)) continue
+      stale.push(key)
+      if (entry && typeof entry === 'object') flat[key.slice(LEGACY_ENTRY_PREFIX.length)] = entry
     }
+    if (!stale.length) return
 
-    const patch = {}
-    for (const [key, entry] of Object.entries(flat)) {
-      if (!key.startsWith(ENTRY_PREFIX) || !entry || typeof entry !== 'object') continue
-      if (isCurrentShape(entry)) continue
-      patch[key] = normalise(entry)
-    }
+    const put = {}
+    for (const [key, entry] of Object.entries(flat)) put[key] = normalise(entry)
 
-    if (Object.keys(patch).length) await save(patch)
-    if (legacy) await chrome.storage.local.remove(LEGACY_ENTRIES_KEY)
+    await idbWrite({ put })
+    await chrome.storage.local.remove(stale)
   })()
   return migration
 }
@@ -336,12 +341,19 @@ function ensureMigrated() {
 /** `{ [urlKey]: entry }` — an absent key means the page was never marked. */
 export async function getEntries() {
   await ensureMigrated()
-  const all = await chrome.storage.local.get(null)
-  const out = {}
-  for (const [key, value] of Object.entries(all)) {
-    if (key.startsWith(ENTRY_PREFIX)) out[key.slice(ENTRY_PREFIX.length)] = value
-  }
-  return out
+  return idbGetAll()
+}
+
+/** One page's entry by URL, or null — one keyed read, whatever the store's size. */
+export async function getEntry(url) {
+  await ensureMigrated()
+  return (await idbGet(urlKey(url))) ?? null
+}
+
+/** `{ [urlKey]: entry }` for just these URLs; unmarked ones are simply absent. */
+export async function getEntriesByUrls(urls) {
+  await ensureMigrated()
+  return idbGetMany(urls.map(urlKey))
 }
 
 function newEntry(url, now) {
@@ -366,8 +378,8 @@ function newEntry(url, now) {
  */
 async function mutate(url, meta, apply) {
   await ensureMigrated()
-  const key = storageKey(url)
-  const stored = (await chrome.storage.local.get(key))[key]
+  const key = urlKey(url)
+  const stored = await idbGet(key)
   const now = Date.now()
   const entry = stored ? { ...stored } : newEntry(meta?.url || url, now)
   if (meta?.title) entry.title = meta.title
@@ -376,10 +388,14 @@ async function mutate(url, meta, apply) {
   entry.updatedAt = now
 
   if (!entry.status && !entry.favorite) {
-    if (stored) await chrome.storage.local.remove(key)
+    if (stored) {
+      await idbWrite({ del: [key] })
+      notifyEntriesChanged()
+    }
     return null
   }
-  await save({ [key]: entry })
+  await idbWrite({ put: { [key]: entry } })
+  notifyEntriesChanged()
   return entry
 }
 
@@ -400,10 +416,11 @@ export function setFavorite(url, on, meta) {
   })
 }
 
-/** Drop many at once — one storage call for the batch. */
+/** Drop many at once — one transaction for the batch. */
 export async function removeEntries(keys) {
   await ensureMigrated()
-  await chrome.storage.local.remove(keys.map((key) => ENTRY_PREFIX + key))
+  await idbWrite({ del: keys })
+  notifyEntriesChanged()
 }
 
 /**
@@ -416,21 +433,23 @@ export async function removeEntries(keys) {
  */
 export async function updateEntries(keys, changes) {
   await ensureMigrated()
-  const found = await chrome.storage.local.get(keys.map((key) => ENTRY_PREFIX + key))
+  const found = await idbGetMany(keys)
   const now = Date.now()
   const patch = {}
   const gone = []
 
-  for (const [storageKey, stored] of Object.entries(found)) {
+  for (const [key, stored] of Object.entries(found)) {
     const entry = { ...stored, updatedAt: now }
     if (changes.status !== undefined) entry.status = changes.status
     if (changes.favorite !== undefined) entry.favorite = changes.favorite
-    if (!entry.status && !entry.favorite) gone.push(storageKey)
-    else patch[storageKey] = entry
+    if (!entry.status && !entry.favorite) gone.push(key)
+    else patch[key] = entry
   }
 
-  if (gone.length) await chrome.storage.local.remove(gone)
-  if (Object.keys(patch).length) await save(patch)
+  if (gone.length || Object.keys(patch).length) {
+    await idbWrite({ put: patch, del: gone })
+    notifyEntriesChanged()
+  }
   return { changed: Object.keys(patch).length, removed: gone.length }
 }
 
@@ -625,7 +644,9 @@ function checkHeader(header) {
 
 /**
  * Merge incoming entries into the store, newest `updatedAt` winning per URL.
- * `replace` wipes the store first. One storage write for the whole batch.
+ * `replace` wipes the store first — the clear and the puts are one
+ * transaction, so a replace commits whole or not at all rather than being
+ * caught between the remove and the write.
  */
 export async function applyEntries(incoming, { replace = false } = {}) {
   await ensureMigrated()
@@ -633,27 +654,26 @@ export async function applyEntries(incoming, { replace = false } = {}) {
   const result = { added: 0, updated: 0, unchanged: 0, removed: 0 }
   const patch = {}
 
-  if (replace) {
-    const stale = Object.keys(current).map((key) => ENTRY_PREFIX + key)
-    if (stale.length) await chrome.storage.local.remove(stale)
-    result.removed = stale.length
-  }
+  if (replace) result.removed = Object.keys(current).length
 
   for (const entry of incoming) {
     const key = urlKey(entry.url)
     const existing = replace ? undefined : current[key]
     if (!existing) {
-      patch[ENTRY_PREFIX + key] = entry
+      patch[key] = entry
       result.added++
     } else if ((entry.updatedAt || 0) > (existing.updatedAt || 0)) {
-      patch[ENTRY_PREFIX + key] = { ...entry, addedAt: Math.min(existing.addedAt, entry.addedAt) }
+      patch[key] = { ...entry, addedAt: Math.min(existing.addedAt, entry.addedAt) }
       result.updated++
     } else {
       result.unchanged++
     }
   }
 
-  if (Object.keys(patch).length) await save(patch)
+  if (replace || Object.keys(patch).length) {
+    await idbWrite({ clear: replace, put: patch })
+    notifyEntriesChanged()
+  }
   return result
 }
 

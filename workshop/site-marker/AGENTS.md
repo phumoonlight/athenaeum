@@ -61,53 +61,72 @@ it before changing anything here.
 - **The rows below can't delete.** A crowded list is the wrong place for it; use the row's
   buttons to change state, or the manage page to remove in bulk.
 - The background service worker keeps the icon in sync and answers the content script's
-  lookups. It's fully event-driven (tab and storage events) — no polling, no alarms. The
+  lookups. It's fully event-driven — tab events, storage events for the settings, and an
+  `entriesChanged` runtime message from whoever wrote an entry — no polling, no alarms. The
   icons are **drawn at runtime** with `OffscreenCanvas` rather than shipped as PNGs: there
   are only six combinations, and generating them keeps the colours defined once.
 
 ## Where it's kept
 
-Everything in `chrome.storage.local` carries a prefix saying what it is: **`e:` for a
-marked page**, keyed by its normalised URL, and **`app:` for a setting**
-(`app:markerSize`, `app:markerOpacity`, `app:readOpacity`, and one
-`app:annotate:<site>` per site the on-page marker is on for). Anything without a prefix is
-left over from a build that has moved on, and gets migrated or removed on first read.
+The state lives in two places, split by what watches it:
 
-**Each entry having its own key** is the part that matters most: marking a page writes ~200
-bytes, instead of rewriting the whole store the way a single `entries` blob would. The cost
-is that listing everything reads all keys at once, which is fine — reads are cheap and the
-popup needs the whole site anyway.
+- **Marked pages live in IndexedDB** — database `site-marker`, one `entries` object
+  store, keyed by the page's normalised URL (`urlKey()`), with indexes on `domain`,
+  `host` and `addedAt`. One record per page, so marking a page writes one record instead
+  of rewriting the whole store. All the plumbing is in [`db.js`](src/db.js); everything
+  else goes through the store functions in [`common.js`](src/common.js).
+- **Settings stay in `chrome.storage.local`**, every key prefixed **`app:`**
+  (`app:markerSize`, `app:markerOpacity`, `app:readOpacity`, and one
+  `app:annotate:<site>` per site the on-page marker is on for). They stay because they
+  are exactly the keys live things _watch_ via `chrome.storage.onChanged` — the content
+  script restyles dots when a slider moves and watches its own site's annotate key.
+  IndexedDB has no change events, so moving a handful of tiny values there would have
+  meant rebuilding that plumbing for nothing. Anything unprefixed is left over from a
+  build that has moved on, and is migrated or removed on first read.
+
+IndexedDB's silence about writes is covered the other way round: after every successful
+entry write, the writer (popup or manage page, inside common.js's store functions) sends
+an **`entriesChanged`** runtime message, and the worker repaints every tab's icon and
+tells content scripts to re-check their links. Sending the message wakes a stopped
+service worker — which the storage event used to do for free, and which a
+`BroadcastChannel` would not. Batch writes are **one transaction**: an import with
+Replace commits whole or not at all.
 
 State is local (not `chrome.storage.sync`) and survives restarts — sync caps out at 100 KB
 total, 8 KB per item and 512 items, so it could never hold this; export/import is the
 cross-device path instead.
 
 Older stores are brought up to date on first read, and the migration is idempotent, so a
-current store is left untouched: one `entries` blob is split into per-entry keys, and
-entries written while favourite was briefly a status of its own become
-starred-with-no-read-state. Settings from removed features are dropped instead, in
-`dropRemovedFeatureLeftovers()` — including the marker's old global switch, which no
-per-site value could honestly be derived from.
+current store is left untouched: entries found in `chrome.storage.local` — one `e:` key
+per page, or the still-older single `entries` blob — are normalised and moved into
+IndexedDB in one transaction, and the old keys are removed **only after it commits**, so
+a crash midway re-runs the migration next time and converges (entries can briefly exist
+in both stores, never in neither). Entries written while favourite was briefly a status
+of its own become starred-with-no-read-state on the way through. Settings from removed
+features are dropped instead, in `dropRemovedFeatureLeftovers()` — including the marker's
+old global switch, which no per-site value could honestly be derived from. The database
+name itself is inherited: folder-sync once kept a directory handle in a database also
+called `site-marker`, so db.js clears whatever stores it finds when it first upgrades the
+database to its own schema.
 
 ### How much will it hold?
 
-`chrome.storage.local` allows **10 MB** by default (5 MB on Chrome 113 and earlier), counted
-as the JSON of every value plus the length of every key. Measured against real entries —
-including long non-ASCII titles, which cost 3 bytes a character in UTF-8 — an entry averages
-**around 350 bytes**, with the longest seen at ~600.
+The manifest asks for **`unlimitedStorage`**, which lifts IndexedDB's quota the same way
+it lifted `chrome.storage.local`'s — what's left is the disk. Measured against real
+entries — including long non-ASCII titles — an entry averages **around 350 bytes**, so
+even a decade of heavy marking is megabytes, not gigabytes.
 
-That is roughly **29,000 marked pages** on the default quota: about eight years at ten marks
-a day. Even so, the store only ever grows, so the manifest asks for **`unlimitedStorage`**,
-which removes the cap entirely. What's left is the disk.
-
-The manage page shows the current size next to the totals, so growth is visible rather than
-a mystery. If it ever does become large, the thing that bites first is not the quota but
-`getEntries()` deserialising every entry each time the popup opens — at which point the fix
-is to read per-site rather than everything, not to delete data.
+The manage page shows an approximate size next to the totals (marked **≈** — it comes
+from `navigator.storage.estimate()`, which is origin-wide and approximate, the only size
+IndexedDB will admit to), so growth is visible rather than a mystery. If the store ever
+does become large, the thing that bites first is `getEntries()` deserialising every entry
+each time the popup opens — and the fix is now natural: read per-site through the
+`domain`/`host` indexes rather than everything, not delete data.
 
 A write that fails — quota exceeded, or a full disk — **rejects rather than silently
-dropping data**, and the popup and import both say so instead of leaving a click that
-appears to have done nothing. Deletes never need space, so there is always a way back.
+dropping data**: the transaction aborts whole, and the popup and import both say so
+instead of leaving a click that appears to have done nothing. Deletes never need space,
+so there is always a way back.
 
 ## The marker on saved links
 
@@ -305,6 +324,7 @@ site-marker/
   package.json      # marks the source as ES modules for anything run under node
   src/
     common.js       # CONFIG, URL normalisation, the entry store, export/import
+    db.js           # the entry store's IndexedDB plumbing — the only file touching the API
     background.js   # toolbar icon per page state, link lookups, which site a tab is on
     marker.js       # read-only dots on links pointing at marked pages
     popup.js        # current-page controls, per-site tabs and list

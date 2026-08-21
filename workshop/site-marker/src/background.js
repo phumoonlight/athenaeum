@@ -6,7 +6,14 @@
 // The content script routes every read and write through here on purpose, so
 // `urlKey()` in common.js stays the single definition of "the same page".
 
-import { ENTRY_PREFIX, annotateKey, getEntries, siteFromUrl, urlKey } from './common.js'
+import {
+  annotateKey,
+  getEntries,
+  getEntriesByUrls,
+  getEntry,
+  siteFromUrl,
+  urlKey,
+} from './common.js'
 
 // --- the toolbar icon --------------------------------------------------------
 //
@@ -80,8 +87,7 @@ function iconFor(status, favorite) {
  * deliberately no badge — a count of the site's unread pages answered a question
  * nobody was asking while sitting permanently in the corner of the eye.
  */
-async function paint(tabId, url, entries) {
-  const entry = siteFromUrl(url) ? entries[urlKey(url)] : null
+async function paint(tabId, url, entry) {
   try {
     await chrome.action.setIcon({
       tabId,
@@ -101,7 +107,8 @@ async function paint(tabId, url, entries) {
 }
 
 async function refreshTab(tabId, url) {
-  await paint(tabId, url, await getEntries())
+  // One keyed read, not the whole store — a tab only ever shows one page.
+  await paint(tabId, url, siteFromUrl(url) ? await getEntry(url) : null)
 }
 
 /** The store changed — every open tab may now be stale. */
@@ -111,7 +118,11 @@ async function refreshAllTabs() {
   // than leaving Chrome's grey puzzle piece.
   chrome.action.setIcon({ imageData: iconFor('none', false) }).catch(() => {})
   const [tabs, entries] = await Promise.all([chrome.tabs.query({}), getEntries()])
-  await Promise.all(tabs.map((tab) => paint(tab.id, tab.url, entries)))
+  await Promise.all(
+    tabs.map((tab) =>
+      paint(tab.id, tab.url, siteFromUrl(tab.url) ? entries[urlKey(tab.url)] : null)
+    )
+  )
 }
 
 /** Tell content scripts to re-evaluate. Tabs without one just reject. */
@@ -131,7 +142,7 @@ function linkState(entry) {
 // a page can change a status — least of all a stray click.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== 'checkLinks' || !Array.isArray(message.urls)) return
-  getEntries().then(
+  getEntriesByUrls(message.urls).then(
     (entries) => sendResponse(message.urls.map((url) => linkState(entries[urlKey(url)]))),
     () => sendResponse(null)
   )
@@ -170,18 +181,21 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   if (tab) refreshTab(tabId, tab.url)
 })
 
-chrome.storage.onChanged.addListener((changes, area) => {
-  // Entries are one key each, so watch the prefix rather than a single key.
-  if (area !== 'local') return
-  if (!Object.keys(changes).some((key) => key.startsWith(ENTRY_PREFIX))) return
+// Entries live in IndexedDB, which fires no change events, so every writer
+// (the popup or the manage page, through common.js) announces a successful
+// write with this message instead — and sending it wakes the worker if it was
+// asleep, which `chrome.storage.onChanged` used to do for free.
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== 'entriesChanged') return
   refreshAllTabs()
   notifyTabs({ type: 'refreshMarks' }) // link dots update without a reload
 })
 
 /**
- * Folder sync used to keep a directory handle in IndexedDB and two keys in
- * storage. The handle is a live reference to a folder on disk, so it is worth
- * dropping rather than leaving orphaned. `showWidget` is from the on-page marker
+ * Folder sync used to keep two keys in storage, plus a directory handle in
+ * IndexedDB — but the entry store owns that database name now, and db.js
+ * clears the old handle store when it first upgrades the database, so nothing
+ * is deleted here any more. `showWidget` is from the on-page marker
  * widget, also removed, and `app:readLinkOpacity` from the first read-link fade,
  * which held a 0–1 fraction. The fade is back as `app:readOpacity`, a
  * percentage, under a different name precisely so a stale `0.5` can't be read as
@@ -202,7 +216,6 @@ function dropRemovedFeatureLeftovers() {
     'app:annotateLinks',
     'app:readLinkOpacity',
   ])
-  indexedDB.deleteDatabase('site-marker')
 }
 
 // The service worker is torn down when idle; re-sync whenever it wakes back up.

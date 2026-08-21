@@ -69,8 +69,11 @@ const state = {
 async function reload() {
   state.entries = await getEntries()
   state.annotated = await annotatedSites()
-  // Shown in the summary so the store's growth is visible rather than a mystery.
-  state.bytes = await chrome.storage.local.getBytesInUse(null).catch(() => 0)
+  // Shown in the summary so the store's growth is visible rather than a
+  // mystery. `estimate()` is origin-wide and approximate — the summary says
+  // "≈" — but it is the only size IndexedDB will admit to, and close enough
+  // for "is it growing".
+  state.bytes = (await navigator.storage.estimate().catch(() => null))?.usage || 0
   render()
 }
 
@@ -253,7 +256,7 @@ function render() {
   el.tabCount.textContent = String(all.length)
   el.summary.textContent = all.length
     ? `${total.total} pages across ${total.sites} sites — ${total.unread} unread, ${total.read} read, ` +
-      `${total.favorite} favorite · ${formatBytes(state.bytes)} stored`
+      `${total.favorite} favorite · ≈${formatBytes(state.bytes)} stored`
     : 'Nothing marked yet.'
   el.export.disabled = !all.length
 
