@@ -260,13 +260,9 @@ function render() {
     tab.classList.toggle('is-active', tab.dataset.view === state.view)
   }
 
-  // Read is the one tab ordered by last update, newest first: what you just
-  // finished is what you're most likely to want back. The others keep
-  // CONFIG.SORT order by date added.
-  const showing =
-    state.view === 'read'
-      ? [...groups.read].sort((a, b) => b.updatedAt - a.updatedAt)
-      : groups[state.view]
+  // Every tab is ordered by last update, newest first: what you just touched is
+  // what you're most likely to want back.
+  const showing = [...groups[state.view]].sort((a, b) => b.updatedAt - a.updatedAt)
   el.list.replaceChildren(...showing.map(itemNode))
 
   const nothingHere = {
