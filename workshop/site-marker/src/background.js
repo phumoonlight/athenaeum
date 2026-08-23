@@ -191,37 +191,7 @@ chrome.runtime.onMessage.addListener((message) => {
   notifyTabs({ type: 'refreshMarks' }) // link dots update without a reload
 })
 
-/**
- * Folder sync used to keep two keys in storage, plus a directory handle in
- * IndexedDB — but the entry store owns that database name now, and db.js
- * clears the old handle store when it first upgrades the database, so nothing
- * is deleted here any more. `showWidget` is from the on-page marker
- * widget, also removed, and `app:readLinkOpacity` from the first read-link fade,
- * which held a 0–1 fraction. The fade is back as `app:readOpacity`, a
- * percentage, under a different name precisely so a stale `0.5` can't be read as
- * half a percent of one.
- *
- * `annotateLinks` and `app:annotateLinks` are the marker's old **global**
- * switch. It isn't renamed into the per-site keys, because a global "on" says
- * nothing about which sites you'd want it on for — every site starts off, and
- * the popup turns one on. Safe to delete this once every profile that ran those
- * builds has updated.
- */
-function dropRemovedFeatureLeftovers() {
-  chrome.storage.local.remove([
-    'syncDirty',
-    'syncMeta',
-    'showWidget',
-    'annotateLinks',
-    'app:annotateLinks',
-    'app:readLinkOpacity',
-  ])
-}
-
 // The service worker is torn down when idle; re-sync whenever it wakes back up.
 chrome.runtime.onStartup.addListener(refreshAllTabs)
-chrome.runtime.onInstalled.addListener(() => {
-  dropRemovedFeatureLeftovers()
-  refreshAllTabs()
-})
+chrome.runtime.onInstalled.addListener(refreshAllTabs)
 refreshAllTabs()

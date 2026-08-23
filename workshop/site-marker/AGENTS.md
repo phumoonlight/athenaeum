@@ -84,8 +84,7 @@ The state lives in two places, split by what watches it:
   are exactly the keys live things _watch_ via `chrome.storage.onChanged` — the content
   script restyles dots when a slider moves and watches its own site's annotate key.
   IndexedDB has no change events, so moving a handful of tiny values there would have
-  meant rebuilding that plumbing for nothing. Anything unprefixed is left over from a
-  build that has moved on, and is migrated or removed on first read.
+  meant rebuilding that plumbing for nothing.
 
 IndexedDB's silence about writes is covered the other way round: after every successful
 entry write, the writer (popup or manage page, inside common.js's store functions) sends
@@ -99,18 +98,11 @@ State is local (not `chrome.storage.sync`) and survives restarts — sync caps o
 total, 8 KB per item and 512 items, so it could never hold this; export/import is the
 cross-device path instead.
 
-Older stores are brought up to date on first read, and the migration is idempotent, so a
-current store is left untouched: entries found in `chrome.storage.local` — one `e:` key
-per page, or the still-older single `entries` blob — are normalised and moved into
-IndexedDB in one transaction, and the old keys are removed **only after it commits**, so
-a crash midway re-runs the migration next time and converges (entries can briefly exist
-in both stores, never in neither). Entries written while favourite was briefly a status
-of its own become starred-with-no-read-state on the way through. Settings from removed
-features are dropped instead, in `dropRemovedFeatureLeftovers()` — including the marker's
-old global switch, which no per-site value could honestly be derived from. The database
-name itself is inherited: folder-sync once kept a directory handle in a database also
-called `site-marker`, so db.js clears whatever stores it finds when it first upgrades the
-database to its own schema.
+The database name itself is inherited: folder-sync once kept a directory handle in a
+database also called `site-marker`, so db.js clears whatever stores it finds when it first
+upgrades the database to its own schema. The migration that once moved entries out of
+`chrome.storage.local` into IndexedDB has been removed; a profile that never ran a build
+with it simply starts empty.
 
 ### How much will it hold?
 
@@ -184,9 +176,9 @@ links beats ours just as easily. The fade is additionally gated behind a `.smk-d
 class on the root, added only below 100%, so at the default the rule matches nothing at all
 and a site that fades its own visited links keeps doing exactly that.
 
-An earlier build had this fade under `app:readLinkOpacity`, holding a 0–1 fraction. That key
-is deleted as a leftover on update, and the setting is back under a different name
-(`app:readOpacity`), so a stale `0.5` can never be read as half a percent of one.
+An earlier build had this fade under `app:readLinkOpacity`, holding a 0–1 fraction. The
+setting is back under a different name (`app:readOpacity`), so a stale `0.5` can never be
+read as half a percent of one.
 
 The dots are **read-only** — `pointer-events: none`, and the content script has no way to
 write. A dot sits _inside_ its link on pages you are clicking through quickly, so anything

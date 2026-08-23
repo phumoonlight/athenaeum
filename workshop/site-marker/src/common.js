@@ -51,8 +51,8 @@ export const MARKER_OPACITY_KEY = `${SETTING_PREFIX}markerOpacity`
 /**
  * Deliberately not `app:readLinkOpacity`: an earlier build of this same fade
  * used that name for a 0–1 fraction, and a leftover `0.5` read as a percentage
- * would clamp to the faintest links rather than to half. The old key is still
- * dropped as a leftover in background.js, so the two never meet.
+ * would clamp to the faintest links rather than to half. A different name means
+ * the two never meet.
  */
 export const READ_OPACITY_KEY = `${SETTING_PREFIX}readOpacity`
 
@@ -108,14 +108,6 @@ function clampSetting(value, min, max, fallback) {
   if (!Number.isFinite(number)) return fallback
   return Math.min(max, Math.max(min, Math.round(number)))
 }
-
-/**
- * The two layouts entries lived in before IndexedDB, both in
- * `chrome.storage.local`: one `entries` blob holding everything, then one
- * `e:<urlKey>` key per page. `ensureMigrated()` moves both.
- */
-const LEGACY_ENTRIES_KEY = 'entries'
-const LEGACY_ENTRY_PREFIX = 'e:'
 
 // Hostnames whose "domain" is really the whole host — a two-label suffix list is
 // enough for personal use; anything not listed falls back to the last two labels.
@@ -277,82 +269,18 @@ function notifyEntriesChanged() {
   }
 }
 
-/**
- * The canonical entry shape, from whatever an older build wrote:
- *
- *   - `status: 'favorite'` — from the build where the three states were
- *     exclusive. It becomes the flag again, with no read state, which is what a
- *     star with nothing else said always meant.
- *   - `readAt` / `favoritedAt` — per-status timestamps that nothing used;
- *     `addedAt` and `updatedAt` carry everything the UI actually reads.
- */
-function normalise(entry) {
-  const wasStatus = entry.status === 'favorite'
-  return {
-    url: entry.url,
-    title: entry.title,
-    host: entry.host,
-    domain: entry.domain,
-    status: wasStatus ? null : STATUSES.includes(entry.status) ? entry.status : null,
-    favorite: wasStatus || !!entry.favorite,
-    addedAt: entry.addedAt,
-    updatedAt: entry.updatedAt || entry.addedAt,
-  }
-}
-
-/**
- * Move entries out of `chrome.storage.local` into IndexedDB, once — folding in
- * the older shape migrations on the way (`normalise()` handles every layout
- * ever written). Both the worker and each page run their own copy of this
- * module, so two may race: `put` is last-writer-wins and both write the same
- * data, so the loser overwrites harmlessly.
- *
- * The old keys are removed **only after the IndexedDB transaction commits** —
- * a crash in between re-runs the migration next time and converges. Entries
- * can briefly exist in both stores, never in neither.
- */
-let migration = null
-function ensureMigrated() {
-  migration ??= (async () => {
-    const all = await chrome.storage.local.get(null)
-
-    const flat = {}
-    const stale = []
-    const legacy = all[LEGACY_ENTRIES_KEY]
-    if (legacy && typeof legacy === 'object') Object.assign(flat, legacy)
-    if (legacy) stale.push(LEGACY_ENTRIES_KEY)
-    // `e:` keys are the newer layout, so they win over the blob's copy.
-    for (const [key, entry] of Object.entries(all)) {
-      if (!key.startsWith(LEGACY_ENTRY_PREFIX)) continue
-      stale.push(key)
-      if (entry && typeof entry === 'object') flat[key.slice(LEGACY_ENTRY_PREFIX.length)] = entry
-    }
-    if (!stale.length) return
-
-    const put = {}
-    for (const [key, entry] of Object.entries(flat)) put[key] = normalise(entry)
-
-    await idbWrite({ put })
-    await chrome.storage.local.remove(stale)
-  })()
-  return migration
-}
-
 /** `{ [urlKey]: entry }` — an absent key means the page was never marked. */
 export async function getEntries() {
-  await ensureMigrated()
   return idbGetAll()
 }
 
 /** One page's entry by URL, or null — one keyed read, whatever the store's size. */
 export async function getEntry(url) {
-  await ensureMigrated()
   return (await idbGet(urlKey(url))) ?? null
 }
 
 /** `{ [urlKey]: entry }` for just these URLs; unmarked ones are simply absent. */
 export async function getEntriesByUrls(urls) {
-  await ensureMigrated()
   return idbGetMany(urls.map(urlKey))
 }
 
@@ -362,7 +290,6 @@ export async function getEntriesByUrls(urls) {
  * rather than deserialising the whole store every time it opens.
  */
 export async function getSiteEntries(site) {
-  await ensureMigrated()
   if (!site) return {}
   const list = await idbGetByIndex(CONFIG.MATCH === 'host' ? 'host' : 'domain', siteKey(site))
   const out = {}
@@ -391,7 +318,6 @@ function newEntry(url, now) {
  * Returns the entry, or null once it's gone.
  */
 async function mutate(url, meta, apply) {
-  await ensureMigrated()
   const key = urlKey(url)
   const stored = await idbGet(key)
   const now = Date.now()
@@ -432,7 +358,6 @@ export function setFavorite(url, on, meta) {
 
 /** Drop many at once — one transaction for the batch. */
 export async function removeEntries(keys) {
-  await ensureMigrated()
   await idbWrite({ del: keys })
   notifyEntriesChanged()
 }
@@ -446,7 +371,6 @@ export async function removeEntries(keys) {
  * selection can't recreate something deleted in another tab.
  */
 export async function updateEntries(keys, changes) {
-  await ensureMigrated()
   const found = await idbGetMany(keys)
   const now = Date.now()
   const patch = {}
@@ -663,7 +587,6 @@ function checkHeader(header) {
  * caught between the remove and the write.
  */
 export async function applyEntries(incoming, { replace = false } = {}) {
-  await ensureMigrated()
   const current = await getEntries()
   const result = { added: 0, updated: 0, unchanged: 0, removed: 0 }
   const patch = {}
