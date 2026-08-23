@@ -260,9 +260,13 @@ function render() {
     tab.classList.toggle('is-active', tab.dataset.view === state.view)
   }
 
-  // Every tab is ordered by last update, newest first: what you just touched is
-  // what you're most likely to want back.
-  const showing = [...groups[state.view]].sort((a, b) => b.updatedAt - a.updatedAt)
+  // Every tab is ordered by last update. Unread runs oldest first — a queue you
+  // work through from the top — while Read and ★ run newest first, since what
+  // you just touched is what you're most likely to want back.
+  const direction = state.view === 'unread' ? 1 : -1
+  const showing = [...groups[state.view]].sort(
+    (a, b) => direction * (a.updatedAt - b.updatedAt)
+  )
   el.list.replaceChildren(...showing.map(itemNode))
 
   const nothingHere = {
