@@ -32,6 +32,7 @@ const el = {
   currentTitle: document.getElementById('current-title'),
   currentState: document.getElementById('current-state'),
   markToggle: document.getElementById('mark-toggle'),
+  markRead: document.getElementById('mark-read'),
   markFav: document.getElementById('mark-fav'),
   markRemove: document.getElementById('mark-remove'),
 }
@@ -213,6 +214,12 @@ function renderCurrent() {
     !status ? 'Add as unread' : next === 'read' ? 'Mark as read' : 'Move back to unread'
   )
 
+  // A straight-to-read shortcut for a page that isn't marked yet — without it,
+  // "I've already read this" costs two clicks through unread. Once the page is
+  // marked the toggle covers both directions, so the shortcut leaves.
+  el.markRead.hidden = !!status
+  setIcon(el.markRead, 'eye', 'Mark as read')
+
   el.markFav.classList.toggle('is-on', favorite)
   setIcon(el.markFav, 'star', favorite ? 'Remove from Favorites' : 'Add to Favorites')
 
@@ -330,6 +337,9 @@ async function init() {
   el.markToggle.addEventListener('click', () => {
     if (state.page)
       markStatus(state.page.url, nextCurrent(currentEntry()?.status), state.page.title)
+  })
+  el.markRead.addEventListener('click', () => {
+    if (state.page) markStatus(state.page.url, 'read', state.page.title)
   })
   el.markFav.addEventListener('click', () => {
     if (state.page) markFavorite(state.page.url, !currentEntry()?.favorite, state.page.title)

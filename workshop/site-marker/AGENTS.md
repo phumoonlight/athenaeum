@@ -32,7 +32,10 @@ it before changing anything here.
   marked. No badge, no count — the icon is the whole signal.
 - The popup's top row is **the page you're actually on**: its title, a state dot, and two
   buttons. The first is **one toggle carrying the read state** — an unmarked page starts at
-  _unread_, and after that each click flips unread ↔ read. The second is `★`, a separate
+  _unread_, and after that each click flips unread ↔ read. While the page is unmarked a
+  second button marks it **read in one click** — "I've already read this" shouldn't cost a
+  trip through unread — and disappears once the page is marked, when the toggle covers both
+  directions. The last is `★`, a separate
   question with its own button, so a page can be `read · favorite`. Below them,
   `Unread` / `Read` / `★` tabs list everything marked on the current site, oldest first.
 - **What a row in that list offers depends on the tab.** Under Unread and Read the two
