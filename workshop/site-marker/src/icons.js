@@ -13,8 +13,9 @@ const PATHS = {
   ],
   star: ['m12 3.5 2.6 5.4 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L4.5 9.8l5.9-.9z'],
   list: ['M8 6h12', 'M8 12h12', 'M8 18h12', 'M4 6h.01', 'M4 12h.01', 'M4 18h.01'],
-  // The on-page marker, drawn as what it does: links, with a dot on one.
-  marker: ['M4 8h9', 'M4 14h13', 'M18.5 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z'],
+  // The on-page marker, drawn as what it does: links, the last one dimmed to
+  // broken strokes because it points at a page already read.
+  marker: ['M4 7h16', 'M4 12h16', 'M4 17h3', 'M10.5 17h3', 'M17 17h3'],
   trash: ['M4 7h16', 'M9 7V5h6v2', 'm6 7 1 13h10l1-13', 'M10 11v6', 'M14 11v6'],
 }
 

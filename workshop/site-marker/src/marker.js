@@ -1,31 +1,26 @@
-// The on-page half of Site Marker: a dot on every link pointing at a page you
-// have marked. Read-only and `pointer-events: none` — it can never change a
-// status, so a mistimed click on a busy page can't quietly rewrite your marks.
-// Marking is the popup's job. The marker is **per site** and off until this
-// site's toggle in the popup is on — while off this script only watches that
-// site's flag and touches nothing.
+// The on-page half of Site Marker: links pointing at a page you have already
+// read are faded, so what's left standing on a page is what you haven't got to
+// yet. Nothing is added to the page — no dot, no badge — and the script is
+// read-only besides: it can never change a status, so a mistimed click on a busy
+// page can't quietly rewrite your marks. Marking is the popup's job. The marker
+// is **per site** and off until this site's toggle in the popup is on — while
+// off this script only watches that site's flag and touches nothing.
 //
 // Everything goes through the service worker: this script sends URLs and gets
 // back state, so `urlKey()` in common.js stays the only definition of "the same
 // page" — and the same for which site this is, which decides the storage key
-// below. Content scripts can't import ES modules, so the appearance keys are
+// below. Content scripts can't import ES modules, so the appearance key is
 // mirrored literally from common.js.
 
-const MARKER_SIZE_KEY = 'app:markerSize'
-const MARKER_OPACITY_KEY = 'app:markerOpacity'
 const READ_OPACITY_KEY = 'app:readOpacity'
 
-/** Set on the page root; see `.smk-mark` and `.smk-dim-read` in ../styles/marker.css. */
-const SIZE_VAR = '--smk-mark-size'
-const OPACITY_VAR = '--smk-mark-opacity'
+/** Set on the page root; see `.smk-dim-read` in ../styles/marker.css. */
 const READ_OPACITY_VAR = '--smk-read-opacity'
 
 /** On the page root, and only below 100% — see `setReadOpacity()`. */
 const DIM_CLASS = 'smk-dim-read'
 
-const MARK_CLASS = 'smk-mark'
 const READ_CLASS = 'smk-read-link'
-const HOST_CLASS = 'smk-host'
 const SEEN_ATTR = 'data-smk'
 const DEBOUNCE_MS = 300
 const CHUNK = 400
@@ -58,7 +53,7 @@ function send(message) {
   }
 }
 
-/** Give up: stop watching, and remove everything we added to the page. */
+/** Give up: stop watching, and undo everything we did to the page. */
 function teardown() {
   orphaned = true
   enabled = false
@@ -72,7 +67,7 @@ function teardown() {
 /**
  * Mirrors clampSetting() in common.js. Empty values are checked before
  * `Number()` sees them: it turns `null` and `''` into 0, which would clamp an
- * unset setting to the smallest dot rather than leaving it at the default.
+ * unset setting to the faintest links rather than leaving it at the default.
  */
 function clampSetting(value, min, max, fallback) {
   const empty = value === null || value === undefined || value === ''
@@ -82,23 +77,11 @@ function clampSetting(value, min, max, fallback) {
 }
 
 /**
- * How big the dots are. Set as a custom property on the page root rather than on
- * each dot, so changing it resizes every one at once — no rescan, no touching
- * the DOM again. Same for the opacity below.
- */
-function setMarkerSize(value) {
-  document.documentElement.style.setProperty(SIZE_VAR, `${clampSetting(value, 8, 28, 16)}px`)
-}
-
-/** Stored as a whole percentage (see common.js); CSS wants the 0–1 fraction. */
-function setMarkerOpacity(value) {
-  const percent = clampSetting(value, 10, 100, 100)
-  document.documentElement.style.setProperty(OPACITY_VAR, String(percent / 100))
-}
-
-/**
- * How faded links to pages already read are. Also a root custom property, so the
- * links themselves are tagged once and never touched again when this changes.
+ * How faded a link to a page already read is. Stored as a whole percentage (see
+ * common.js); CSS wants the 0–1 fraction. It's set as a custom property on the
+ * page root rather than on each link, so the links themselves are tagged once
+ * and never touched again when the setting changes — no rescan, nothing in the
+ * DOM to revisit.
  */
 function setReadOpacity(value) {
   const percent = clampSetting(value, 20, 100, 100)
@@ -109,35 +92,23 @@ function setReadOpacity(value) {
   root.classList.toggle(DIM_CLASS, percent < 100)
 }
 
-/** The three appearance settings, read together and applied together. */
-const STYLE_KEYS = [MARKER_SIZE_KEY, MARKER_OPACITY_KEY, READ_OPACITY_KEY]
+/** The appearance settings, read together and applied together. */
+const STYLE_KEYS = [READ_OPACITY_KEY]
 
 function applyStyling(stored) {
-  setMarkerSize(stored[MARKER_SIZE_KEY])
-  setMarkerOpacity(stored[MARKER_OPACITY_KEY])
   setReadOpacity(stored[READ_OPACITY_KEY])
 }
 
-function makeMark(state) {
-  const status = state.status || 'marked'
-  const span = document.createElement('span')
-  span.className = `${MARK_CLASS} ${MARK_CLASS}--${status}${state.favorite ? ` ${MARK_CLASS}--fav` : ''}`
-  span.title = `${status[0].toUpperCase()}${status.slice(1)}${state.favorite ? ' · favorite' : ''}`
-  span.setAttribute('aria-hidden', 'true')
-  return span
-}
-
 /**
- * The dot sits at the link's top-left corner, which needs the link itself to be
- * a positioning context. Only statically-positioned links are touched — anything
- * the page already positions is left exactly as the page set it.
+ * A link is only touched when it points at a page already read — anything else a
+ * mark could say is the popup's to say, and saying nothing leaves the page
+ * exactly as its own site styled it.
+ *
+ * Tagged even at full opacity: the root variable does the fading, so the setting
+ * can change without every link having to be visited again.
  */
 function markLink(link, state) {
-  if (getComputedStyle(link).position === 'static') link.classList.add(HOST_CLASS)
-  // Tagged even at full opacity — the root variable does the fading, so the
-  // setting can change without every link having to be visited again.
   if (state.status === 'read') link.classList.add(READ_CLASS)
-  link.append(makeMark(state))
 }
 
 /** Links not looked at yet, ignoring anything that isn't a plain web link. */
@@ -173,21 +144,17 @@ function schedule() {
 }
 
 function clearMarks() {
-  for (const mark of document.querySelectorAll(`.${MARK_CLASS}`)) mark.remove()
-  for (const el of document.querySelectorAll(`.${HOST_CLASS}`)) el.classList.remove(HOST_CLASS)
   for (const el of document.querySelectorAll(`.${READ_CLASS}`)) el.classList.remove(READ_CLASS)
   for (const link of document.querySelectorAll(`[${SEEN_ATTR}]`)) link.removeAttribute(SEEN_ATTR)
 }
 
 /**
- * The sizes and opacities are settings, not marks, so they survive the
- * clear-and-rescan that follows every change to the store. Removing them there
- * meant marking any page silently reset every dot on screen to the defaults.
- * Which links are faded is a mark, though, so that class goes with `clearMarks()`.
+ * The opacity is a setting, not a mark, so it survives the clear-and-rescan that
+ * follows every change to the store. Removing it there meant marking any page
+ * silently reset every faded link on screen to the default. Which links are
+ * faded is a mark, though, so that class goes with `clearMarks()`.
  */
 function clearStyling() {
-  document.documentElement.style.removeProperty(SIZE_VAR)
-  document.documentElement.style.removeProperty(OPACITY_VAR)
   document.documentElement.style.removeProperty(READ_OPACITY_VAR)
   document.documentElement.classList.remove(DIM_CLASS)
 }
@@ -196,7 +163,7 @@ function setEnabled(next) {
   if (orphaned || next === enabled) return
   enabled = next
   if (enabled) {
-    // Turning the marker on mid-session needs the current values too.
+    // Turning the marker on mid-session needs the current value too.
     chrome.storage.local.get(STYLE_KEYS).then(applyStyling, () => {})
     observer ??= new MutationObserver(schedule)
     observer.observe(document.documentElement, { childList: true, subtree: true })
@@ -209,8 +176,8 @@ function setEnabled(next) {
   }
 }
 
-// A mark changed somewhere — re-evaluate every link, not just new ones, since an
-// existing dot may need to change colour or disappear.
+// A mark changed somewhere — re-evaluate every link, not just new ones, since a
+// link faded as read may not be read any more.
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === 'refreshMarks' && enabled) {
     clearMarks()
@@ -220,11 +187,7 @@ chrome.runtime.onMessage.addListener((message) => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return
-  if (enabled) {
-    if (changes[MARKER_SIZE_KEY]) setMarkerSize(changes[MARKER_SIZE_KEY].newValue)
-    if (changes[MARKER_OPACITY_KEY]) setMarkerOpacity(changes[MARKER_OPACITY_KEY].newValue)
-    if (changes[READ_OPACITY_KEY]) setReadOpacity(changes[READ_OPACITY_KEY].newValue)
-  }
+  if (enabled && changes[READ_OPACITY_KEY]) setReadOpacity(changes[READ_OPACITY_KEY].newValue)
   // One key, this site's — a toggle on some other site changes a key we never
   // look at, so nothing here reacts to it.
   if (annotateKey && changes[annotateKey]) setEnabled(!!changes[annotateKey].newValue)

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Site Marker",
   "version": "1.0.0",
-  "description": "Mark any page unread, read or favorite. The toolbar icon shows the current page's state, and links to marked pages get a dot. Its own store, no bookmarks involved.",
+  "description": "Mark any page unread, read or favorite. The toolbar icon shows the current page's state, and links to pages you've read can be faded. Its own store, no bookmarks involved.",
   "permissions": ["storage", "unlimitedStorage", "tabs", "favicon"],
   "action": {
     "default_popup": "views/popup.html",

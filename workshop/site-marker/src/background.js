@@ -17,8 +17,8 @@ import {
 
 // --- the toolbar icon --------------------------------------------------------
 //
-// The icon is the status of the page you are actually on: a filled dot in the
-// same colours the on-page link dots use, so the two read as one language.
+// The icon is the status of the page you are actually on: a filled dot, blue for
+// unread and grey for read, the same language the popup's own state dot speaks.
 // Drawn here rather than shipped as PNGs — there are only a handful of states,
 // and generating them keeps the colours in one place.
 
@@ -132,10 +132,13 @@ function notifyTabs(message) {
   })
 }
 
-/** What a link's dot should show, or null for a page that was never marked. */
+/**
+ * What the marker should know about a link, or null for an unmarked page. Only
+ * the read state: the page shows nothing else, so nothing else leaves the worker.
+ */
 function linkState(entry) {
   if (!entry) return null
-  return { status: entry.status, favorite: !!entry.favorite }
+  return { status: entry.status }
 }
 
 // The content script only ever reads. Marking is the popup's job, so nothing on
@@ -188,7 +191,7 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type !== 'entriesChanged') return
   refreshAllTabs()
-  notifyTabs({ type: 'refreshMarks' }) // link dots update without a reload
+  notifyTabs({ type: 'refreshMarks' }) // faded links update without a reload
 })
 
 // The service worker is torn down when idle; re-sync whenever it wakes back up.

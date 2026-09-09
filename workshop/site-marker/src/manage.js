@@ -2,13 +2,9 @@
 // export and import files.
 
 import {
-  MARKER_OPACITY_KEY,
-  MARKER_SIZE_KEY,
   READ_OPACITY_KEY,
   annotatedSites,
   applyEntries,
-  clampMarkerOpacity,
-  clampMarkerSize,
   clampReadOpacity,
   counts,
   exportText,
@@ -29,10 +25,6 @@ const el = {
   import: document.getElementById('import'),
   annotated: document.getElementById('annotated'),
   annotatedEmpty: document.getElementById('annotated-empty'),
-  markerSize: document.getElementById('marker-size'),
-  markerSizeValue: document.getElementById('marker-size-value'),
-  markerOpacity: document.getElementById('marker-opacity'),
-  markerOpacityValue: document.getElementById('marker-opacity-value'),
   readOpacity: document.getElementById('read-opacity'),
   readOpacityValue: document.getElementById('read-opacity-value'),
   importPanel: document.getElementById('import-panel'),
@@ -235,7 +227,7 @@ function renderAnnotated() {
       chip.className = 'chip is-active'
       chip.type = 'button'
       chip.textContent = `${site} ✕`
-      chip.title = `Stop showing link dots on ${site}`
+      chip.title = `Stop fading read links on ${site}`
       chip.addEventListener('click', async () => {
         await setSiteAnnotated(site, false)
         await reload()
@@ -444,25 +436,12 @@ el.drop.addEventListener('drop', async (event) => {
 // --- wiring ------------------------------------------------------------------
 
 /**
- * The appearance sliders, which differ only in the key they write, the clamp
- * that guards it and the unit in the readout. The clamps already answer an
- * unset key with the default, so there is nothing else to say about a first run.
+ * The appearance sliders — one so far — which differ only in the key they write,
+ * the clamp that guards it and the unit in the readout. The clamps already
+ * answer an unset key with the default, so there is nothing else to say about a
+ * first run.
  */
 const sliders = [
-  {
-    input: el.markerSize,
-    output: el.markerSizeValue,
-    key: MARKER_SIZE_KEY,
-    unit: 'px',
-    clamp: clampMarkerSize,
-  },
-  {
-    input: el.markerOpacity,
-    output: el.markerOpacityValue,
-    key: MARKER_OPACITY_KEY,
-    unit: '%',
-    clamp: clampMarkerOpacity,
-  },
   {
     input: el.readOpacity,
     output: el.readOpacityValue,

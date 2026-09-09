@@ -1,11 +1,6 @@
 /* Injected into every page — keep the surface tiny and the names unlikely to
    clash. */
 
-/* Added to a marked link only when the page leaves it statically positioned. */
-.smk-host {
-  position: relative;
-}
-
 /* Links to pages already read, faded by however much the setting says.
 
    `!important` because a single class loses to nearly any rule a site writes for
@@ -15,57 +10,7 @@
    the setting is below 100%. That keeps the default a true no-op: at 100% this
    does not match at all, so a site that fades its own visited links keeps doing
    exactly that. The variable is on the root too, so changing the setting
-   restyles every faded link at once.
-
-   The dot sits inside the link, and opacity applies to the whole subtree, so a
-   faded read link fades its own dot with it. That is the right reading of the
-   setting — the entry is de-emphasised as a whole — and there is no way to opt a
-   descendant back out anyway. */
+   restyles every faded link at once. */
 .smk-dim-read .smk-read-link {
   opacity: var(--smk-read-opacity, 1) !important;
-}
-
-.smk-mark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* Overhang the corner slightly so the dot sits beside the link's first
-     character instead of on top of it. */
-  transform: translate(-30%, -30%);
-  z-index: 2147483000;
-  display: block;
-  box-sizing: border-box;
-  /* The size is a setting, set as a custom property on the page root so changing
-     it resizes every dot at once. `!important` because these are our own spans
-     inside someone else's link, and a site rule for `a > span` would otherwise
-     decide how big they are. */
-  width: var(--smk-mark-size, 16px) !important;
-  height: var(--smk-mark-size, 16px) !important;
-  /* Also a setting, and `!important` for the same reason: a page that fades its
-     own `a span` would otherwise decide how visible our dot is. */
-  opacity: var(--smk-mark-opacity, 1) !important;
-  /* The ring scales with the dot: 2px at the default 16, thinner when smaller. */
-  border: max(1px, calc(var(--smk-mark-size, 16px) / 8)) solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
-  /* Never takes a click: the dot only reports, and it sits inside the <a>, so
-     anything interactive here would be a way to change a mark by accident. */
-  pointer-events: none;
-}
-
-.smk-mark--unread {
-  background: #2f6fed;
-}
-
-.smk-mark--read {
-  background: #9aa0aa;
-}
-
-/* Starred but with no read state — the entry exists as a favourite only. */
-.smk-mark--marked {
-  background: #fff;
-}
-
-.smk-mark--fav {
-  border-color: #f0bb45;
 }

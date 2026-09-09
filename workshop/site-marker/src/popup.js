@@ -229,9 +229,9 @@ function renderCurrent() {
 }
 
 /**
- * The link-dot switch, which is **this site's** — the popup is the only place
- * that knows which site you're on, so it's the only place that can ask the
- * question. Lit means the dots are on here; every other site is unaffected.
+ * The on-page marker's switch, which is **this site's** — the popup is the only
+ * place that knows which site you're on, so it's the only place that can ask the
+ * question. Lit means read links are faded here; every other site is unaffected.
  */
 function renderAnnotate() {
   el.annotate.disabled = !state.site
@@ -240,10 +240,10 @@ function renderAnnotate() {
     el.annotate,
     'marker',
     !state.site
-      ? 'No site to show link dots on'
+      ? 'No site to fade read links on'
       : state.annotate
-        ? `Stop showing link dots on ${siteKey(state.site)}`
-        : `Show link dots on ${siteKey(state.site)}`
+        ? `Stop fading read links on ${siteKey(state.site)}`
+        : `Fade read links on ${siteKey(state.site)}`
   )
 }
 
@@ -296,7 +296,7 @@ el.tabs.addEventListener('click', (event) => {
 
 /**
  * Writes can fail the same way a mark can, so put the switch back rather than
- * leaving a button that says the dots are on when nothing was saved.
+ * leaving a button that says the marker is on when nothing was saved.
  */
 el.annotate.addEventListener('click', async () => {
   if (!state.site) return

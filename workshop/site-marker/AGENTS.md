@@ -42,7 +42,7 @@ it before changing anything here.
   useful moves are flipping the read state and starring, so those rows carry both. Under ★
   the only one is unstarring — the read state is already whatever the other tabs show.
 - **The popup's header also carries the on-page marker's switch for the site you're on** —
-  the button left of Manage, lit while the link dots are on there. It's the one control
+  the button left of Manage, lit while read links are faded there. It's the one control
   that is about the site rather than a page, which is why it sits by the site's name.
 - Nothing in the popup returns a page to **unmarked**. To drop a page entirely, use the
   manage page.
@@ -79,10 +79,10 @@ The state lives in two places, split by what watches it:
   of rewriting the whole store. All the plumbing is in [`db.js`](src/db.js); everything
   else goes through the store functions in [`common.js`](src/common.js).
 - **Settings stay in `chrome.storage.local`**, every key prefixed **`app:`**
-  (`app:markerSize`, `app:markerOpacity`, `app:readOpacity`, and one
-  `app:annotate:<site>` per site the on-page marker is on for). They stay because they
-  are exactly the keys live things _watch_ via `chrome.storage.onChanged` — the content
-  script restyles dots when a slider moves and watches its own site's annotate key.
+  (`app:readOpacity`, and one `app:annotate:<site>` per site the on-page marker is on
+  for). They stay because they are exactly the keys live things _watch_ via
+  `chrome.storage.onChanged` — the content script refades read links when the slider
+  moves and watches its own site's annotate key.
   IndexedDB has no change events, so moving a handful of tiny values there would have
   meant rebuilding that plumbing for nothing.
 
@@ -130,9 +130,9 @@ so there is always a way back.
 site** — the toggle is the leftmost button in the popup's header, next to the site's name,
 and while off the script only listens for that site's flag and touches nothing.
 
-**The switch is per site, and every site starts off.** The dots answer "have I been here
-before" on the sites where you actually collect pages; on everything else they are noise
-sitting inside someone else's links, and a global switch made the second group pay for the
+**The switch is per site, and every site starts off.** The fade answers "have I been here
+before" on the sites where you actually collect pages; on everything else it is a change to
+someone else's page for no reason, and a global switch made the second group pay for the
 first. A site is on while `app:annotate:<site>` exists, and turning it off deletes the key —
 so the store holds exactly the sites you said yes to. The site is the same identity the
 popup groups by (`siteKey()`), so under the default `MATCH: 'domain'` turning it on for
@@ -143,48 +143,43 @@ knows which site you mean. The manage page's **Settings** tab, under **On-page m
 lists the sites it is on for as chips, and clicking one turns that site off — review and
 undo from anywhere, without a text box for typing a domain in slightly wrong.
 
-When on, it puts a dot on every link pointing at a page you have marked: **blue for unread,
-grey for read**, with a **gold ring** when it's a favourite — the same language the toolbar
-icon uses. A debounced `MutationObserver` catches links added later (infinite scroll, SPA
-navigation), and any change re-marks open pages immediately.
+When on, it **fades every link pointing at a page you have marked read** and leaves every
+other link alone. Nothing is added to the page — no dot, no badge, no element of ours inside
+someone else's link — so the only thing that ever changes is one CSS property on links you
+are already done with. A debounced `MutationObserver` catches links added later (infinite
+scroll, SPA navigation), and any change re-marks open pages immediately.
 
-The three appearance settings stay on the manage page's **Settings** tab and stay **global**
-— they are how the dots look wherever they are on, not where they show up. **Dot size**:
-8–28 pixels, default 16. Bigger is easier to spot on a busy page, smaller keeps the dots out
-of dense text. The white ring scales with them.
-**Dot opacity** is beside it: 10–100%, default 100 — turn it down to let a dot sit over a
-page without hiding what is underneath. The floor is 10 rather than 0 because a dot you
-cannot see is just the marker being off, and the site's toggle already does that. It is stored as a
-whole percentage rather than a 0–1 fraction, which keeps both sliders and both clamps on
-integers.
+Unread and favourite are deliberately **not** shown on the page. The toolbar icon and the
+popup answer "what is this page", and the page itself only answers "have I read this" — the
+one question worth a change to someone else's layout.
 
-**Read link opacity** fades the link itself once it points at a page you have marked read:
-20–100%, default 100, which leaves the page exactly as it styles its own links. What is
-left at full strength is what you have not got to yet. The dot sits inside the link and
-opacity applies to a whole subtree, so a faded link fades its dot with it — the right
-reading of the setting, and not something CSS lets a descendant opt out of.
+**Read link opacity**, the marker's one appearance setting, stays on the manage page's
+**Settings** tab and stays **global** — it is how the fade looks wherever the marker is on,
+not where it shows up. 20–100%, default 100, which leaves the page exactly as it styles its
+own links. What is left at full strength is what you have not got to yet. The floor is 20
+rather than 0 because this fades the page's own text, and past that a link stops being
+readable at all. It is stored as a whole percentage rather than a 0–1 fraction, which keeps
+the slider and the clamp on integers.
 
-All three are CSS custom properties on the page root, so dragging a slider restyles every
-dot and every faded link on every open tab at once — no rescan, nothing in the DOM touched
-again. Links are tagged `.smk-read-link` when they are marked read whatever the setting
-says, so changing it never means visiting them again.
+It is a CSS custom property on the page root, so dragging the slider restyles every faded
+link on every open tab at once — no rescan, nothing in the DOM touched again. Links are
+tagged `.smk-read-link` when they are marked read whatever the setting says, so changing it
+never means visiting them again.
 
-`!important` throughout: these are our own spans sitting inside someone else's link, and a
-site rule as ordinary as `a span { width: 4px }` is more specific than a single class, so
-without it the page would decide how they look — and for the fade, a rule for a site's own
-links beats ours just as easily. The fade is additionally gated behind a `.smk-dim-read`
-class on the root, added only below 100%, so at the default the rule matches nothing at all
-and a site that fades its own visited links keeps doing exactly that.
+`!important` on the fade: a rule for a site's own links beats a single class of ours easily,
+and without it the setting would silently do nothing on most pages. The fade is additionally
+gated behind a `.smk-dim-read` class on the root, added only below 100%, so at the default
+the rule matches nothing at all and a site that fades its own visited links keeps doing
+exactly that.
 
 An earlier build had this fade under `app:readLinkOpacity`, holding a 0–1 fraction. The
 setting is back under a different name (`app:readOpacity`), so a stale `0.5` can never be
 read as half a percent of one.
 
-The dots are **read-only** — `pointer-events: none`, and the content script has no way to
-write. A dot sits _inside_ its link on pages you are clicking through quickly, so anything
-interactive there is a way to rewrite a mark by accident. Marking is the popup's job. The
-worker only answers `checkLinks`; it accepts no write messages at all, so nothing running
-in a page can change a status even if it tried.
+The marker is **read-only** — it adds a class and nothing else, and the content script has
+no way to write. Marking is the popup's job. The worker only answers `checkLinks`; it
+accepts no write messages at all, so nothing running in a page can change a status even if
+it tried.
 
 The comparison uses `urlKey()` from [`common.js`](src/common.js). Normalisation lives **only**
 in the service worker — the content script sends hrefs and gets back state — so there is
@@ -274,10 +269,9 @@ Most knobs are the `CONFIG` block at the top of [`common.js`](src/common.js):
   either way.
 - `SORT` (default `'oldest'`) — order the popup's list by when a page was first marked.
 
-The link dot's colours are in [`marker.css`](styles/marker.css) — its size and both opacities are
-settings now — and the toolbar icon's are in the `ICON` block at the top of
-[`background.js`](src/background.js). Keep the two in step, since they are meant to read as the
-same language. The on-page marker's switch is per site (`app:annotate:<site>` in
+The read-link fade is in [`marker.css`](styles/marker.css) — how deep it goes is a setting —
+and the toolbar icon's colours are in the `ICON` block at the top of
+[`background.js`](src/background.js). The on-page marker's switch is per site (`app:annotate:<site>` in
 `chrome.storage.local`), not a `CONFIG` knob — though `MATCH` decides what counts as one
 site there too.
 
@@ -298,17 +292,17 @@ site there too.
 - **A field-level change rewrites a whole line** in an export, since an entry is one line.
   That's the trade NDJSON makes for clean one-line insertions; `git diff --word-diff` shows
   the field that actually moved.
-- **Link dots are whole-URL, not per-site.** A link is dotted only if that exact page is
-  marked (modulo `#fragment`, `www.` and a trailing slash) — the popup's looser domain
+- **The fade is whole-URL, not per-site.** A link fades only if that exact page is marked
+  read (modulo `#fragment`, `www.` and a trailing slash) — the popup's looser domain
   matching doesn't apply there.
-- **Link dots skip iframes** and any link whose href isn't `http(s)`.
-- **A corner dot can be clipped** by a link inside a container with `overflow: hidden`,
-  and on a link that wraps across lines it lands on the first line's corner. Reduce the
-  overhang in [`marker.css`](styles/marker.css) (the `transform: translate(...)`) if that bites.
+- **The fade skips iframes** and any link whose href isn't `http(s)`.
+- **A site rule can still beat the fade.** Ours is `!important`, which clears the ordinary
+  case, but a site rule that is also `!important` and more specific wins — and on a link the
+  site already renders faded, the setting has nothing visible left to do.
 - **Reloading the extension orphans the marker in tabs that are already open.** Chrome
   gives those content scripts no runtime to talk to, and `chrome.*` calls then throw
   synchronously (`Extension context invalidated`). `marker.js` detects this and tears
-  itself down — dots removed, observers disconnected — rather than throwing on
+  itself down — fades removed, observers disconnected — rather than throwing on
   every DOM mutation. **Reload the tab** to get the marker back. This only happens while
   developing; a normal browsing session never sees it.
 
@@ -322,7 +316,7 @@ site-marker/
     common.js       # CONFIG, URL normalisation, the entry store, export/import
     db.js           # the entry store's IndexedDB plumbing — the only file touching the API
     background.js   # toolbar icon per page state, link lookups, which site a tab is on
-    marker.js       # read-only dots on links pointing at marked pages
+    marker.js       # read-only fading of links pointing at pages already read
     popup.js        # current-page controls, per-site tabs and list
     manage.js       # tabs, grouping, filtering, file drop/pick
     icons.js        # inline SVG icons for the buttons
@@ -330,7 +324,7 @@ site-marker/
     popup.html      # popup markup
     manage.html     # two tabs — the all-sites list and filters, and the settings
   styles/
-    marker.css      # the link dot and the read-link fade, injected into every page
+    marker.css      # the read-link fade, injected into every page
     ui.css          # styling for both views (light + dark)
   README.md         # the short about
   AGENTS.md         # this file

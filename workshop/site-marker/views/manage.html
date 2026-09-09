@@ -98,37 +98,18 @@
             <h2>On-page marker</h2>
           </div>
           <p class="panel-lede">
-            Puts a dot on every link pointing at a page you've marked — blue for unread, grey for
-            read, gold for a favorite. The dots are display-only; marking is the popup's job. It's
-            <strong>per site</strong> and starts off everywhere: turn it on for the site you're on
-            from that site's popup. Tabs already open pick the change up without a reload.
+            Fades every link pointing at a page you've marked read, so what's left standing is what
+            you haven't got to. Nothing is added to the page, and it's display-only; marking is the
+            popup's job. It's <strong>per site</strong> and starts off everywhere: turn it on for
+            the site you're on from that site's popup. Tabs already open pick the change up without
+            a reload.
           </p>
           <div id="annotated" class="chips chips--wrap"></div>
           <p id="annotated-empty" class="panel-lede" hidden>Not on for any site yet.</p>
 
           <p class="panel-lede">
-            The three settings below are how the dots look wherever they're on, not where they show
+            The setting below is how the fade looks wherever the marker is on, not where it shows
             up.
-          </p>
-
-          <div class="field">
-            <label class="field-label" for="marker-size">Dot size</label>
-            <input id="marker-size" type="range" min="8" max="28" step="1" />
-            <output id="marker-size-value" class="field-value" for="marker-size"></output>
-          </div>
-          <p class="panel-lede">
-            How big the dots are, in pixels. Bigger is easier to spot on a busy page; smaller keeps
-            them out of the way of dense text. Open tabs resize as you drag.
-          </p>
-
-          <div class="field">
-            <label class="field-label" for="marker-opacity">Dot opacity</label>
-            <input id="marker-opacity" type="range" min="10" max="100" step="5" />
-            <output id="marker-opacity-value" class="field-value" for="marker-opacity"></output>
-          </div>
-          <p class="panel-lede">
-            How solid the dots are. Turn it down to let a dot sit over a page without hiding what's
-            underneath it. Open tabs update as you drag.
           </p>
 
           <div class="field">
@@ -137,9 +118,8 @@
             <output id="read-opacity-value" class="field-value" for="read-opacity"></output>
           </div>
           <p class="panel-lede">
-            Fades the link itself when it points at a page you've marked read, so what's left is
-            what you haven't got to. At 100% the page is left alone. A faded link fades its dot
-            too.
+            How faded a link is when it points at a page you've marked read. At 100% the page is
+            left alone. Open tabs update as you drag.
           </p>
         </section>
       </section>

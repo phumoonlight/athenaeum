@@ -45,10 +45,9 @@ const SETTING_PREFIX = 'app:'
  */
 export const SITE_ANNOTATE_PREFIX = `${SETTING_PREFIX}annotate:`
 
-/** How the dots look, on the other hand, is one setting for every site. */
-export const MARKER_SIZE_KEY = `${SETTING_PREFIX}markerSize`
-export const MARKER_OPACITY_KEY = `${SETTING_PREFIX}markerOpacity`
 /**
+ * How deep the fade goes, on the other hand, is one setting for every site.
+ *
  * Deliberately not `app:readLinkOpacity`: an earlier build of this same fade
  * used that name for a 0–1 fraction, and a leftover `0.5` read as a percentage
  * would clamp to the faintest links rather than to half. A different name means
@@ -56,48 +55,23 @@ export const MARKER_OPACITY_KEY = `${SETTING_PREFIX}markerOpacity`
  */
 export const READ_OPACITY_KEY = `${SETTING_PREFIX}readOpacity`
 
-/** The dot's diameter in pixels. 16 is what it was before it was adjustable. */
-export const MARKER_SIZE_DEFAULT = 16
-export const MARKER_SIZE_MIN = 8
-export const MARKER_SIZE_MAX = 28
-
 /**
- * How opaque the dot is, as a whole percentage rather than the 0–1 fraction CSS
- * wants: it keeps the slider and the clamp on integers, the same as the size,
- * with no float rounding on a value written every time the drag ends. 100 is
- * fully opaque, which is what the dot was before it was adjustable. The floor is
- * 10 rather than 0 — a dot you cannot see is indistinguishable from the marker
- * being off, and the toggle already covers that.
- */
-export const MARKER_OPACITY_DEFAULT = 100
-export const MARKER_OPACITY_MIN = 10
-export const MARKER_OPACITY_MAX = 100
-
-/**
- * How opaque a link to a page you have already read is — a percentage too, and
+ * How opaque a link to a page you have already read is, as a whole percentage
+ * rather than the 0–1 fraction CSS wants: it keeps the slider and the clamp on
+ * integers, with no float rounding on a value written every time the drag ends.
  * 100 means the page is left exactly as it styles its own links. The floor is 20
- * rather than 10: this fades the page's own text, not a dot of ours, and past
- * that point a link stops being readable at all.
+ * rather than 0 — this fades the page's own text, and past that point a link
+ * stops being readable at all.
  */
 export const READ_OPACITY_DEFAULT = 100
 export const READ_OPACITY_MIN = 20
 export const READ_OPACITY_MAX = 100
 
 /**
- * Anything unusable falls back to the default rather than to a dot you can't
- * see. Empty values are checked before `Number()` gets to them: it turns both
- * `null` and `''` into 0, which would otherwise clamp to the smallest dot.
+ * Anything unusable falls back to the default, which leaves read links untouched.
+ * Empty values are checked before `Number()` gets to them: it turns both `null`
+ * and `''` into 0, which would otherwise clamp to the faintest links.
  */
-export function clampMarkerSize(value) {
-  return clampSetting(value, MARKER_SIZE_MIN, MARKER_SIZE_MAX, MARKER_SIZE_DEFAULT)
-}
-
-/** As `clampMarkerSize()`, on the percentage. */
-export function clampMarkerOpacity(value) {
-  return clampSetting(value, MARKER_OPACITY_MIN, MARKER_OPACITY_MAX, MARKER_OPACITY_DEFAULT)
-}
-
-/** As `clampMarkerOpacity()`; unusable values leave read links untouched. */
 export function clampReadOpacity(value) {
   return clampSetting(value, READ_OPACITY_MIN, READ_OPACITY_MAX, READ_OPACITY_DEFAULT)
 }
