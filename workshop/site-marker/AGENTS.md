@@ -42,7 +42,7 @@ it before changing anything here.
   useful moves are flipping the read state and starring, so those rows carry both. Under ★
   the only one is unstarring — the read state is already whatever the other tabs show.
 - **The popup's header also carries the on-page marker's switch for the site you're on** —
-  the button left of Manage, lit while read links are faded there. It's the one control
+  the button left of Manage, lit while links to marked pages are styled there. It's the one control
   that is about the site rather than a page, which is why it sits by the site's name.
 - Nothing in the popup returns a page to **unmarked**. To drop a page entirely, use the
   manage page.
@@ -81,8 +81,8 @@ The state lives in two places, split by what watches it:
 - **Settings stay in `chrome.storage.local`**, every key prefixed **`app:`**
   (`app:readOpacity`, and one `app:annotate:<site>` per site the on-page marker is on
   for). They stay because they are exactly the keys live things _watch_ via
-  `chrome.storage.onChanged` — the content script refades read links when the slider
-  moves and watches its own site's annotate key.
+  `chrome.storage.onChanged` — the content script refades links when the slider moves
+  and watches its own site's annotate key.
   IndexedDB has no change events, so moving a handful of tiny values there would have
   meant rebuilding that plumbing for nothing.
 
@@ -130,7 +130,7 @@ so there is always a way back.
 site** — the toggle is the leftmost button in the popup's header, next to the site's name,
 and while off the script only listens for that site's flag and touches nothing.
 
-**The switch is per site, and every site starts off.** The fade answers "have I been here
+**The switch is per site, and every site starts off.** The marker answers "have I been here
 before" on the sites where you actually collect pages; on everything else it is a change to
 someone else's page for no reason, and a global switch made the second group pay for the
 first. A site is on while `app:annotate:<site>` exists, and turning it off deletes the key —
@@ -143,34 +143,52 @@ knows which site you mean. The manage page's **Settings** tab, under **On-page m
 lists the sites it is on for as chips, and clicking one turns that site off — review and
 undo from anywhere, without a text box for typing a domain in slightly wrong.
 
-When on, it **fades every link pointing at a page you have marked read** and leaves every
-other link alone. Nothing is added to the page — no dot, no badge, no element of ours inside
-someone else's link — so the only thing that ever changes is one CSS property on links you
-are already done with. A debounced `MutationObserver` catches links added later (infinite
+When on, it styles **every link pointing at a page you have marked**: links to **unread**
+pages glow blue (the toolbar icon's unread blue), and links to **read** pages can be faded,
+with unread ones fading half as far.
+Unmarked links are left alone. Nothing is added to the page — no dot, no badge, no element of
+ours inside someone else's link — so the only things that ever change are CSS properties on
+links already there. A debounced `MutationObserver` catches links added later (infinite
 scroll, SPA navigation), and any change re-marks open pages immediately.
 
-Unread and favourite are deliberately **not** shown on the page. The toolbar icon and the
-popup answer "what is this page", and the page itself only answers "have I read this" — the
-one question worth a change to someone else's layout.
+**Why nothing is added.** An earlier build put a dot inside each marked link. On dense pages
+small links sat close enough that the dots covered their neighbours, and anything inside a
+link is part of someone else's layout. Everything now is a property on the link itself —
+`filter` and `opacity` take no space and draw nowhere a click lands.
+
+**The unread glow is a `drop-shadow` filter**, not a colour filter. `sepia` / `hue-rotate`
+only rework the colour already there, so black or white link text — most links on most sites
+— would come out unchanged; a blue shadow follows the shape of the text or image whatever its
+colour. The glow bleeds a pixel or two past the link, visually only. It is not a setting:
+it is the marker being on.
+
+Favourite is deliberately **not** shown on the page. The toolbar icon and the popup answer
+"what is this page"; the page itself only answers "have I got to this yet".
 
 **Read link opacity**, the marker's one appearance setting, stays on the manage page's
-**Settings** tab and stays **global** — it is how the fade looks wherever the marker is on,
-not where it shows up. 20–100%, default 100, which leaves the page exactly as it styles its
-own links. What is left at full strength is what you have not got to yet. The floor is 20
-rather than 0 because this fades the page's own text, and past that a link stops being
-readable at all. It is stored as a whole percentage rather than a 0–1 fraction, which keeps
-the slider and the clamp on integers.
+**Settings** tab and stays **global** — it is how marked links look wherever the marker is
+on, not where it shows up. 20–100%, default 100, which leaves the page exactly as it styles
+its own links. The floor is 20 rather than 0 because this fades the page's own text, and past
+that a link stops being readable at all. It is stored as a whole percentage rather than a 0–1
+fraction, which keeps the slider and the clamp on integers.
 
-It is a CSS custom property on the page root, so dragging the slider restyles every faded
-link on every open tab at once — no rescan, nothing in the DOM touched again. Links are
-tagged `.smk-read-link` when they are marked read whatever the setting says, so changing it
-never means visiting them again.
+**Unread links take half the fade** of read ones: opacity `100 − (100 − setting) / 2`, so at
+40% read links sit at 40% and unread at 70%. Not a setting of its own — the order that
+matters — unread links never fainter than read ones — holds at every position of the one
+slider, and a second slider would only let the two cross. The ratio is the `fade` share per status in
+[`marker.js`](src/marker.js).
 
-`!important` on the fade: a rule for a site's own links beats a single class of ours easily,
-and without it the setting would silently do nothing on most pages. The fade is additionally
-gated behind a `.smk-dim-read` class on the root, added only below 100%, so at the default
-the rule matches nothing at all and a site that fades its own visited links keeps doing
-exactly that.
+Both opacities are CSS custom properties on the page root, so dragging the slider restyles
+every marked link on every open tab at once — no rescan, nothing in the DOM touched again.
+Links are tagged `.smk-read-link` / `.smk-unread-link` by status whatever the setting says,
+so changing it never means visiting them again. [`marker.js`](src/marker.js) keeps the class,
+variable, gate and fade share for each status in one `STATUSES` table.
+
+`!important` throughout: a rule for a site's own links beats a single class of ours easily,
+and without it the marker would silently do nothing on most pages. Each opacity is
+additionally gated behind a class on the root (`.smk-dim-read` / `.smk-dim-unread`), added
+only below 100%, so at the default the rule matches nothing at all and a site that fades its
+own visited links keeps doing exactly that.
 
 An earlier build had this fade under `app:readLinkOpacity`, holding a 0–1 fraction. The
 setting is back under a different name (`app:readOpacity`), so a stale `0.5` can never be
@@ -269,9 +287,10 @@ Most knobs are the `CONFIG` block at the top of [`common.js`](src/common.js):
   either way.
 - `SORT` (default `'oldest'`) — order the popup's list by when a page was first marked.
 
-The read-link fade is in [`marker.css`](styles/marker.css) — how deep it goes is a setting —
-and the toolbar icon's colours are in the `ICON` block at the top of
-[`background.js`](src/background.js). The on-page marker's switch is per site (`app:annotate:<site>` in
+The unread glow's colour and the fades are in [`marker.css`](styles/marker.css) — how deep
+each fade goes is a setting — and the toolbar icon's colours are in the `ICON` block at the top of
+[`background.js`](src/background.js). Keep the glow's blue in step with the icon's unread
+fill. The on-page marker's switch is per site (`app:annotate:<site>` in
 `chrome.storage.local`), not a `CONFIG` knob — though `MATCH` decides what counts as one
 site there too.
 
@@ -292,17 +311,20 @@ site there too.
 - **A field-level change rewrites a whole line** in an export, since an entry is one line.
   That's the trade NDJSON makes for clean one-line insertions; `git diff --word-diff` shows
   the field that actually moved.
-- **The fade is whole-URL, not per-site.** A link fades only if that exact page is marked
-  read (modulo `#fragment`, `www.` and a trailing slash) — the popup's looser domain
+- **The marker is whole-URL, not per-site.** A link is styled only if that exact page is
+  marked (modulo `#fragment`, `www.` and a trailing slash) — the popup's looser domain
   matching doesn't apply there.
-- **The fade skips iframes** and any link whose href isn't `http(s)`.
-- **A site rule can still beat the fade.** Ours is `!important`, which clears the ordinary
-  case, but a site rule that is also `!important` and more specific wins — and on a link the
-  site already renders faded, the setting has nothing visible left to do.
+- **The marker skips iframes** and any link whose href isn't `http(s)`.
+- **A site rule can still beat the marker.** Ours is `!important`, which clears the
+  ordinary case, but a site rule that is also `!important` and more specific wins — and on a
+  link the site already renders faded, the setting has nothing visible left to do.
+- **The unread glow can be clipped** by a container with `overflow: hidden` hugging the link,
+  and it makes the link a stacking context, which can very occasionally reorder a dropdown
+  or `position: fixed` element nested inside a link.
 - **Reloading the extension orphans the marker in tabs that are already open.** Chrome
   gives those content scripts no runtime to talk to, and `chrome.*` calls then throw
   synchronously (`Extension context invalidated`). `marker.js` detects this and tears
-  itself down — fades removed, observers disconnected — rather than throwing on
+  itself down — styling removed, observers disconnected — rather than throwing on
   every DOM mutation. **Reload the tab** to get the marker back. This only happens while
   developing; a normal browsing session never sees it.
 
@@ -316,7 +338,7 @@ site-marker/
     common.js       # CONFIG, URL normalisation, the entry store, export/import
     db.js           # the entry store's IndexedDB plumbing — the only file touching the API
     background.js   # toolbar icon per page state, link lookups, which site a tab is on
-    marker.js       # read-only fading of links pointing at pages already read
+    marker.js       # read-only styling of links pointing at read and unread pages
     popup.js        # current-page controls, per-site tabs and list
     manage.js       # tabs, grouping, filtering, file drop/pick
     icons.js        # inline SVG icons for the buttons
@@ -324,7 +346,7 @@ site-marker/
     popup.html      # popup markup
     manage.html     # two tabs — the all-sites list and filters, and the settings
   styles/
-    marker.css      # the read-link fade, injected into every page
+    marker.css      # the unread glow and both fades, injected into every page
     ui.css          # styling for both views (light + dark)
   README.md         # the short about
   AGENTS.md         # this file

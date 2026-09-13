@@ -231,7 +231,8 @@ function renderCurrent() {
 /**
  * The on-page marker's switch, which is **this site's** — the popup is the only
  * place that knows which site you're on, so it's the only place that can ask the
- * question. Lit means read links are faded here; every other site is unaffected.
+ * question. Lit means links to marked pages are styled here; every other site is
+ * unaffected.
  */
 function renderAnnotate() {
   el.annotate.disabled = !state.site
@@ -240,10 +241,10 @@ function renderAnnotate() {
     el.annotate,
     'marker',
     !state.site
-      ? 'No site to fade read links on'
+      ? 'No site to mark links on'
       : state.annotate
-        ? `Stop fading read links on ${siteKey(state.site)}`
-        : `Fade read links on ${siteKey(state.site)}`
+        ? `Stop marking links on ${siteKey(state.site)}`
+        : `Mark read and unread links on ${siteKey(state.site)}`
   )
 }
 

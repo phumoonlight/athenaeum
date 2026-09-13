@@ -1,10 +1,11 @@
-// The on-page half of Site Marker: links pointing at a page you have already
-// read are faded, so what's left standing on a page is what you haven't got to
-// yet. Nothing is added to the page — no dot, no badge — and the script is
-// read-only besides: it can never change a status, so a mistimed click on a busy
-// page can't quietly rewrite your marks. Marking is the popup's job. The marker
-// is **per site** and off until this site's toggle in the popup is on — while
-// off this script only watches that site's flag and touches nothing.
+// The on-page half of Site Marker: links pointing at a page you have marked
+// unread glow blue, and links to pages you have already read can be faded, so
+// what stands out on a page is what you haven't got to yet. Nothing is added to
+// the page — no dot, no badge, only a class on links already there — and the
+// script is read-only besides: it can never change a status, so a mistimed click
+// on a busy page can't quietly rewrite your marks. Marking is the popup's job.
+// The marker is **per site** and off until this site's toggle in the popup is
+// on — while off this script only watches that site's flag and touches nothing.
 //
 // Everything goes through the service worker: this script sends URLs and gets
 // back state, so `urlKey()` in common.js stays the only definition of "the same
@@ -14,13 +15,29 @@
 
 const READ_OPACITY_KEY = 'app:readOpacity'
 
-/** Set on the page root; see `.smk-dim-read` in ../styles/marker.css. */
-const READ_OPACITY_VAR = '--smk-read-opacity'
-
-/** On the page root, and only below 100% — see `setReadOpacity()`. */
-const DIM_CLASS = 'smk-dim-read'
-
-const READ_CLASS = 'smk-read-link'
+/**
+ * One entry per status the page shows. `link` tags a link with that status. Its
+ * opacity goes through `variable` on the page root and is armed by `dim` there,
+ * only below 100% — see `setOpacity()` and ../styles/marker.css. `fade` is how
+ * much of the Read link opacity setting's fade the status takes: unread links
+ * fade half as far as read ones, so they dim with the page without ever sinking
+ * to where read links sit.
+ */
+const STATUSES = {
+  read: {
+    link: 'smk-read-link',
+    variable: '--smk-read-opacity',
+    dim: 'smk-dim-read',
+    fade: 1,
+  },
+  unread: {
+    link: 'smk-unread-link',
+    variable: '--smk-unread-opacity',
+    dim: 'smk-dim-unread',
+    fade: 0.5,
+  },
+}
+const MARKED = Object.values(STATUSES)
 const SEEN_ATTR = 'data-smk'
 const DEBOUNCE_MS = 300
 const CHUNK = 400
@@ -77,38 +94,43 @@ function clampSetting(value, min, max, fallback) {
 }
 
 /**
- * How faded a link to a page already read is. Stored as a whole percentage (see
- * common.js); CSS wants the 0–1 fraction. It's set as a custom property on the
- * page root rather than on each link, so the links themselves are tagged once
- * and never touched again when the setting changes — no rescan, nothing in the
- * DOM to revisit.
+ * How faded marked links are. The setting is stored as a whole percentage (see
+ * common.js) and each status takes its `fade` share of the distance below 100;
+ * CSS wants the 0–1 fraction. It's set as a custom property on the page root
+ * rather than on each link, so the links themselves are tagged once and never
+ * touched again when the setting changes — no rescan, nothing in the DOM to
+ * revisit.
  */
-function setReadOpacity(value) {
+function setOpacity(value) {
   const percent = clampSetting(value, 20, 100, 100)
   const root = document.documentElement
-  root.style.setProperty(READ_OPACITY_VAR, String(percent / 100))
-  // The class is what arms the `!important` rule, so at 100% we match nothing
-  // and a site that fades its own read links keeps doing exactly that.
-  root.classList.toggle(DIM_CLASS, percent < 100)
+  for (const status of MARKED) {
+    const opacity = 100 - (100 - percent) * status.fade
+    root.style.setProperty(status.variable, String(opacity / 100))
+    // The class is what arms the `!important` rule, so at 100% we match nothing
+    // and a site that fades its own visited links keeps doing exactly that.
+    root.classList.toggle(status.dim, percent < 100)
+  }
 }
 
 /** The appearance settings, read together and applied together. */
 const STYLE_KEYS = [READ_OPACITY_KEY]
 
 function applyStyling(stored) {
-  setReadOpacity(stored[READ_OPACITY_KEY])
+  setOpacity(stored[READ_OPACITY_KEY])
 }
 
 /**
- * A link is only touched when it points at a page already read — anything else a
- * mark could say is the popup's to say, and saying nothing leaves the page
- * exactly as its own site styled it.
+ * A link is only touched when it points at a page marked read or unread. Whether
+ * it's a favourite is the popup's to say, and saying nothing about an unmarked
+ * page leaves that link exactly as its own site styled it.
  *
  * Tagged even at full opacity: the root variable does the fading, so the setting
  * can change without every link having to be visited again.
  */
 function markLink(link, state) {
-  if (state.status === 'read') link.classList.add(READ_CLASS)
+  const status = STATUSES[state.status]
+  if (status) link.classList.add(status.link)
 }
 
 /** Links not looked at yet, ignoring anything that isn't a plain web link. */
@@ -144,19 +166,24 @@ function schedule() {
 }
 
 function clearMarks() {
-  for (const el of document.querySelectorAll(`.${READ_CLASS}`)) el.classList.remove(READ_CLASS)
+  for (const { link } of MARKED) {
+    for (const el of document.querySelectorAll(`.${link}`)) el.classList.remove(link)
+  }
   for (const link of document.querySelectorAll(`[${SEEN_ATTR}]`)) link.removeAttribute(SEEN_ATTR)
 }
 
 /**
- * The opacity is a setting, not a mark, so it survives the clear-and-rescan that
- * follows every change to the store. Removing it there meant marking any page
- * silently reset every faded link on screen to the default. Which links are
- * faded is a mark, though, so that class goes with `clearMarks()`.
+ * The opacities are settings, not marks, so they survive the clear-and-rescan
+ * that follows every change to the store. Removing them there meant marking any
+ * page silently reset every faded link on screen to the default. Which links are
+ * read or unread is a mark, though, so those classes go with `clearMarks()`.
  */
 function clearStyling() {
-  document.documentElement.style.removeProperty(READ_OPACITY_VAR)
-  document.documentElement.classList.remove(DIM_CLASS)
+  const root = document.documentElement
+  for (const status of MARKED) {
+    root.style.removeProperty(status.variable)
+    root.classList.remove(status.dim)
+  }
 }
 
 function setEnabled(next) {
@@ -177,7 +204,7 @@ function setEnabled(next) {
 }
 
 // A mark changed somewhere — re-evaluate every link, not just new ones, since a
-// link faded as read may not be read any more.
+// link styled as read or unread may be neither any more.
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === 'refreshMarks' && enabled) {
     clearMarks()
@@ -187,7 +214,7 @@ chrome.runtime.onMessage.addListener((message) => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return
-  if (enabled && changes[READ_OPACITY_KEY]) setReadOpacity(changes[READ_OPACITY_KEY].newValue)
+  if (enabled && changes[READ_OPACITY_KEY]) setOpacity(changes[READ_OPACITY_KEY].newValue)
   // One key, this site's — a toggle on some other site changes a key we never
   // look at, so nothing here reacts to it.
   if (annotateKey && changes[annotateKey]) setEnabled(!!changes[annotateKey].newValue)
